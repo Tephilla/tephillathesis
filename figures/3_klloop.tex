@@ -1,0 +1,13 @@
+\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto] 
+\node[state,initial] (s)   {$s_0$}; 
+\node[state] (s1) [ right=of s] {$s_1$}; 
+\node[state] (sl) [ right=of s1] {$s_l$};		
+\node[state] (sl1) [ right=of sl] {};
+\node[state] (sk) [ right=of sl1] {$s_k$};
+\path[->] 
+(s) edge  node {} (s1)
+(s1) edge  node {} (sl)
+(sl)	edge  node{} (sl1)
+(sl1)	edge  node {}(sk)
+(sk)	edge [bend right] node {}(sl);
+\end{tikzpicture}

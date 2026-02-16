@@ -1,0 +1,98 @@
+\begin{figure}[ht]
+    \centering
+   % \resizebox{.79\columnwidth}{!}{
+    \begin{tikzpicture}[scale=0.45]
+                \tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    punkt/.style={
+        rectangle,
+        rounded corners,
+        draw=black, very thick,
+        text width=8.5em,
+        minimum height=2em,
+        text centered},
+    % Define arrow style
+    pil/.style={
+        ->,
+        thick,
+        shorten <=2pt,
+        shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+\node[place,label=above:{\small $a_E b_E$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (aEbE) at (-4,0){$\bullet$} ;
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{b}}] (b0) at (0,1) {};
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:\tiny{{b}}] (b1) at (0,-1) {};
+
+\node[place,label=above:{\small $a_E b_O$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (aEbO) at (4,0){} ;
+
+
+
+
+%Row 2
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{a}}] (a0) at (-5,-3) {};
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{a}}] (a1) at (-3,-3) {};
+
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{a}}] (a2) at (3,-3) {};
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{a}}] (a3) at (5,-3) {};
+
+
+
+
+
+%Row 3
+
+\node[place,label=below:{\small $a_O b_E$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm,] (aObE) at (-4,-6){} ;
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{b}}] (b2) at (0,-5) {};
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\tiny{b}}] (b3) at (0,-7) {};
+
+\node[place,label=below:{\small $a_O b_O$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (aObO) at (4,-6){} ;
+
+
+\draw[->] (aEbE) -- (b0);
+\draw[->] (b0)-- (aEbO);
+\draw[->] (aEbO) -- (b1);
+\draw[->] (b1)-- (aEbE);
+
+
+\draw[->] (aObE) -- (b2);
+\draw[->] (b2)-- (aObO);
+\draw[->] (aObO) -- (b3);
+\draw[->] (b3)-- (aObE);
+
+
+\draw[->] (aEbE) -- (a0);
+\draw[->] (a0)-- (aObE);
+\draw[->] (aObE) -- (a1);
+\draw[->] (a1)-- (aEbE);
+
+
+\draw[->] (aEbO) -- (a3);
+\draw[->] (a3)-- (aObO);
+\draw[->] (aObO) -- (a2);
+\draw[->] (a2)-- (aEbO);
+\end{tikzpicture}
+% }
+    \caption{Petri net $N_2$ counting the parity of $a$ and $b$ in a word}
+    \label{fig:cardpn}
+\end{figure}

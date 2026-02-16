@@ -1,0 +1,256 @@
+% \newcommand{\Lstar}{$\mathsf{UCSTL}$}
+\newcommand{\Lstar}{$\mathsf{FOTL_1}$}
+%
+\newtheorem{dfn}{Definition}[section]
+\newtheorem{prop}[dfn]{Proposition}
+\newtheorem{lem}[dfn]{Lemma}
+\newtheorem{thm}[dfn]{Theorem}
+\newtheorem{cor}[dfn]{Corollary}
+\newtheorem{eg}[dfn]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand\beq{\begin{equation}}
+\newcommand\enq{\end{equation}}
+
+
+\newcommand{\LC}{$LTL_{LIA}$}
+
+%
+\newcommand{\RightBox}{{\phantom{a}}\hfill $\Box$ \\}
+\newenvironment{prf}{{\bf Proof~Idea:~}}{\RightBox}
+
+%
+\newcommand{\Dfn}[1]{Definition \ref{dfn:#1}}
+\newcommand{\Prop}[1]{Proposition \ref{prop:#1}}
+\newcommand{\Lem}[1]{Lemma \ref{lem:#1}}
+\newcommand{\Thm}[1]{Theorem \ref{thm:#1}}
+\newcommand{\Cor}[1]{Corollary \ref{cor:#1}}
+
+%Action-indexed diamond modality
+\newcommand{\Adiam}[1]{\mbox{$\langle #1 \rangle$}}
+\newcommand{\diamin}{\Diamond\kern-0.5em{\raisebox{.25ex}{\rm -}}\kern0.175em}
+\newcommand{\until}{\mbox{\large\bf U}}
+\newcommand{\since}{\mbox{\large\bf S}}
+\newcommand{\nxt}{\mbox{$\bigcirc$}}
+\newcommand{\nxtdot}{\displaystyle \bigodot}
+\newcommand{\past}{\diamin}
+\newcommand{\ifpast}{\mbox{$\boxminus$}}
+\newcommand{\now}{\mbox{$\langle now \rangle$}}
+\newcommand{\Now}{\mbox{$[now]$}}
+\newcommand{\pres}{\mbox{$\rangle \langle$}}
+\newcommand{\snd}{\mbox{\large\bf s}}
+\newcommand{\rec}{\mbox{\large\bf r}}
+\newcommand{\nc}{\mathbf{no\_comm}}
+
+%Propositional connectives
+%\newcommand{\implies}{{\raisebox{.20ex}{$\scriptstyle ~\supset~$}}}
+\newcommand{\Not}{\mbox{$\lnot$}}
+\newcommand{\xor}{\oplus}
+\newcommand{\True}{\mathit{True}}
+\newcommand{\False}{\mathit{False}}
+\newcommand{\Imply}{\supset}
+%Large symbols
+\newcommand{\andover}{\displaystyle \bigwedge}
+\newcommand{\orover}{\displaystyle \bigvee}
+\newcommand{\capover}{\displaystyle \bigcap}
+\newcommand{\cupover}{\displaystyle \bigcup}
+\newcommand{\piover}{\displaystyle \Pi}
+\newcommand{\ohat}[1]{\widehat{#1}}
+\newcommand{\otilde}[1]{\widetilde{#1}}
+\newcommand{\obar}[1]{\overline{#1}}
+\newcommand{\Sigtil}{\mbox{$\otilde{\Sigma}$}}
+\newcommand{\DA}{\mbox{$\Sigtil~=~(\Sigma_1, \dots, \Sigma_n)$}}
+
+%Useful symbols
+\newcommand{\derives}{\vdash}
+\newcommand{\defn}{\mbox{$~\stackrel{\rm def}{=}~$}}
+\newcommand{\qneq}{\mbox{$~\stackrel{\rm ?}{=}~$}}
+\newcommand{\eqv}{\approx}
+% \newcommand{\hash}{\sharp}
+\newcommand{\restr}{\lceil}
+%\newcommand{\bot}{\bottom}
+\newcommand{\nat}{{\bf N}}
+\newcommand{\pfin}[1]{\mbox{$\wp_{fin}(#1)$}}
+%\newcommand{\mod}[1]{\mbox{$|#1|$}}
+\newcommand{\memb}[2]{\mbox{${#1} \in {#2}$}}
+\newcommand{\E}{\mathbf{E}}
+
+
+
+%Some roman words in math mode
+\newcommand{\Iff}{\mbox{~iff~}}
+%\newcommand{\For}{\mbox{~for~}}
+\newcommand{\Where}{\mbox{~where~}}
+%\newcommand{\And}{\mbox{~and~}}
+\newcommand{\Implies}{\mbox{~implies~}}
+
+% structures
+\newcommand{\Sigstr}{\mbox{$\Sigma^*$}}
+% \newcommand{\TS}{\mbox{$TS = (Q,\to)$}}  %generates TS=(Q,->)
+
+% classes
+\newcommand{\mdl}[1]{\mbox{${\cal M}_{#1}$}}%generates script M with subscript
+\newcommand{\dmodels}{\mbox{$\models_{Det}~$}}
+
+% For transitions steps
+\newcommand{\step}[1]{\mbox{$\stackrel{#1}{\to}$}}
+\newcommand{\squigto}{\rightsquigarrow}
+\newcommand{\longstep}[1]{\mbox{$\stackrel{#1}{\longrightarrow}$}}
+\newcommand{\emptystep}{\step{\emptyset}}
+% \newcommand{\reach}[1]{\mbox{${\cal R}(#1)$}}
+% \newcommand{\reachin}[2]{\mbox{${\cal R}_{#1}(#2)$}}
+
+% For a "double-lined" transition relation
+\newcommand{\To}{\Rightarrow}
+\newcommand{\From}{\Leftarrow}
+\newcommand{\Step}[1]{\mbox{$\stackrel{#1}{\To}$}}
+\newcommand{\Longstep}[1]{\mbox{$\stackrel{#1}{\Longrightarrow}$}}
+\newcommand{\Longlongstep}[1]{\mbox{$\stackrel{#1}{\Longlongrightarrow}$}}
+\newcommand{\Emptystep}{\Step{\emptyset}}
+
+% Net theory
+\newcommand{\presca}[1]{\mbox{${ }^{\bullet}#1$}}
+\newcommand{\postsca}[1]{\mbox{$#1 \, { }^{\bullet}$}}%
+
+%space optimization
+
+\newcommand{\ldot}{{\rm <}\kern-0.37em{\raisebox{.25ex}{\bf .}}\kern0.375em}
+
+\newcommand{\fmset}[1]{\{\{#1\}\}}
+
+
+% \usepackage{todonotes}
+% \usepackage{amsfonts}
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+%\newcommand{\fmset}[1]{\{\{#1\}\}} %commented out
+%%
+%% One can fix some overfulls
+% \sloppy
+
+%%
+%% Minted listings support 
+%% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
+%\usepackage{minted}
+%% auto break lines
+%\setminted{breaklines=true}
+
+
+
+
+
+% \usepackage{amsmath}
+% \usepackage{amsfonts}
+% \usepackage{amssymb}
+% \usepackage{amsthm}
+% \usepackage{caption}
+% \usepackage{subcaption}
+% \usepackage{multirow}
+% \usepackage{hyperref}
+% \usepackage{paralist}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{remark}
+\newtheorem{example}{Example}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+% \usepackage{paralist}
+
+\newcommand{\multiset}[1]{\boldsymbol{#1}}
+\newcommand{\rightmayr}{\xrightarrow[\text{Mayr}]}
+\newcommand{\predecessor}{\mathit{Pred}}
+\newcommand{\os}{\ensuremath{\mathfrak{E}}}
+%\newcommand{\tup}[1]{\left\langle#1\right\rangle}
+\newcommand{\tup}[1]{\langle#1\rangle}
+\newcommand{\id}{\mathit{id}}
+\newcommand{\supp}{\mathit{supp}}
+\newcommand{\resN}{\overline{N}}
+\newcommand{\sqleq}{\sqsubseteq}
+\newcommand{\sqgeq}{\sqsupseteq}
+\newcommand{\sqg}{\sqsupset}
+\newcommand{\sql}{\sqsubset}
+\newcommand{\reach}{\ensuremath{\mathit{Reach}}}
+\newcommand{\cover}{\ensuremath{\mathit{Cover}}}
+\newcommand{\tss}{\mathfrak{K}}
+\newcommand{\lang}{\mathcal{L}}
+\newcommand{\sem}{\mathcal{S}}
+\newcommand{\runs}[2]{\mathit{Runs}(#1,#2)}
+\newcommand{\lruns}[3][\ell]{\mathit{Runs}_{#1}(#2,#3)}
+\newcommand{\ellruns}[2]{\mathit{Runs}_{\ell}(#1,#2)}
+\newcommand{\infruns}{\mathit{InfRuns}}
+\newcommand{\perf}[1]{\lfloor#1\rfloor}
+\newcommand{\imperf}[1]{\lceil#1\rceil}
+\newcommand{\support}[1]{\texttt{Support}(#1)}
+\newcommand{\nset}[1]{[#1]}
+\newcommand{\upc}[1]{\uparrow #1}
+\newcommand{\dnc}[1]{\downarrow #1}
+\newcommand{\suc}[1]{\texttt{Succ}(#1)}
+\newcommand{\pred}[1]{\texttt{Pred}(#1)}
+\newcommand{\prefun}{{\ensuremath{\tt pre}}}
+\newcommand{\postfun}{{\ensuremath{\tt post}}}
+\newcommand{\tapaal}{\textsc{tapaal}}
+
+\newcommand{\xrun}[1]{\xrightarrow[]{#1}}
+\newcommand{\event}{\tup{e,\lambda,\rho}}
+% \usepackage{tikz}
+
+% \usepackage{soul}
+
+%LETTERS
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\D}{\mathcal{D}}
+% \newcommand{\E}{\mathfrak{E}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+%\newcommand{\H}{\mathcal{H}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\J}{\mathcal{J}}
+\newcommand{\K}{\mathcal{K}}
+%\newcommand{\L}{\mathcal{L}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\N}{\mathcal{N}}
+%\newcommand{\O}{\mathcal{O}}
+%\newcommand{\P}{\mathcal{P}}
+\newcommand{\Q}{\mathcal{Q}}
+\newcommand{\R}{\mathcal{R}}
+%\newcommand{\S}{\mathcal{S}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\Z}{\mathcal{Z}}
+\newcommand{\markings}[1]{\mathcal{M}(#1)}
+%PN
+\newcommand{\pre}[1]{\raisebox{0.2em}{\(\bullet\)}{#1}}
+\newcommand{\post}[1]{{#1}\raisebox{0.2em}{\(\bullet\)}}
+
+%EOS
+\newcommand{\proj}[2]{\Pi^{#1}_{#2}}
+\newcommand{\fin}{\mathit{fin}}
+
+\newcommand{\TS}{\mathit{TS}}
+
+\newcommand{\nestTok}{\T}
+% \usepackage{tikz}
+
+%Recall Figures Environment
+\newenvironment{recallfigure}[2][htbp]
+  {\addtocounter{figure}{-1}%
+   \renewcommand{\theHfigure}{dupe-fig}% If you're using hyperref
+   \renewcommand{\thefigure}{\ref{#2}}% Figure counter is \ref
+   %\renewcommand{\thefigure}{\ref{#2} (repeated)}% Figure counter + "(repeated)"
+   \renewcommand{\addcontentsline}[3]{}% Avoid placing figure in LoF
+   \begin{figure}[#1]}
+  {\end{figure}}

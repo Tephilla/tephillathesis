@@ -1,0 +1,39 @@
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance= .5cm and 1cm]
+
+    \begin{scope}
+        \node[place,label={[name=countLab]left:$\mathit{count}$}](count){};
+        \node[place,below=of count,label={[name=modLab]left:$p_{(\ell+1) \mathtt{mod} 2}$}](mod){};
+        \node[rectangle, fit={(count)(mod)(modLab)(countLab)},label={left:$\G$}](g){};
+        \draw[gray] (g.south west) -- (g.south east) -- (g.north east) -- (g.north west);
+
+        \draw[dashed] (g.north east) ++ (1,0);
+    \end{scope}
+
+
+
+    \begin{scope}[xshift=2.5cm]
+        \node[place,label={[name=c0Lab]right:$c_0$}](c0){};
+        \node[place,right=of c0,label={[name=c1Lab]right:$c_1$}](c1){};
+        \node[place,below=of c0,label={[name=garbLab]right:$g$}](garb){};
+        \node[place,right=of garb,label={[name=q0Lab]right:$\mathit{q_0}$}](q0){};
+        \node[rectangle, fit={(q0)(q0Lab)(c0)(c0Lab)(c1)(c1Lab)(garb)(garbLab)
+        },label={right:$\E_{\K}$}](ek){};
+        \draw[gray]    (ek.north east) -- (ek.north west) --(ek.south west) -- (ek.south east);
+    \end{scope}
+
+    \path (g) -- node[midway,transvert,label={below :$\mathit{enabling}$}](enabling){} (ek);
+
+\draw [->] (count) -- node[midway,above]{$\ell$} (enabling);
+\draw [->] (mod) -- (enabling);
+\draw [->] (enabling) -- (q0.north west);
+
+\draw [->] (enabling.east) -- (c1.south west);
+\draw [->] (enabling) -- (garb);
+\draw [->] (enabling) -- (c0);
+        
+    \end{tikzpicture}
+    \caption{The places, transitions, and conditions we add on top of $\M$.}
+    \label{fig:addeToM}
+\end{figure}

@@ -1,0 +1,125 @@
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{0.32\textwidth}
+    \resizebox{.95\columnwidth}{!}{
+            \begin{tikzpicture}
+    \begin{scope}[rotate=90,xscale=-1]
+        \node[place,label=above:$c_j$] (cj)at (0,1.25){};
+        \node[place,label=below:$c_j'$](cj')at (2,1.25){$n$};
+        \node[place,label=right:$\mathit{next}_i$] (next)at (1,0){};
+        \node[transhor,label=above:$t_i^1\tup{\mathit{inc}_N}$] (t1)at (0,0){};
+        \node[transhor,label=below:$t_i^2$](t2)at (2,0){};
+        \node[place,label=above:$q$](q)at (0,-1.25){\scriptsize $\blacksquare$};
+        \node[place,label=below:$q'$](q')at (2,-1.25){};
+    \end{scope}
+
+        \begin{scope}[xshift=-3.75cm,yshift=-1.25cm]
+        \node[transvert,label={[name=incNlab,xshift=.125cm]above:$\mathit{inc}_N$}](incN)at (0,0){};
+        \node[place,label={[name=pLab]above:$p$}](p)at(.75,0){$n$};
+        \node[transvert,label={[name=decNlab,xshift=-.16cm]above:$\mathit{dec}_N$}](decN)at (1.5,0){};
+        \draw[->](incN)--(p);
+        \draw[<-](decN)--(p);
+        \node[draw=black,fit={(incNlab)(incN)(pLab)(p)(decNlab)(decN)}](obj){};
+        \end{scope}
+
+        \draw[dashed] (obj) -- (cj.center);
+        \draw[<->] (t1)--(cj);
+        \draw[->] (q)--(t1);
+        \draw[->] (t1)--(next);
+        \draw[->] (next)--(t2);
+        \draw[->] (t2)--(cj');
+        \draw[->] (t2)--(q');
+        
+    \end{tikzpicture}
+    }
+    \caption{}
+    \label{fig:objectLossy2CMinc}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.32\textwidth}
+    \resizebox{.95\columnwidth}{!}{
+            \begin{tikzpicture}
+
+    \begin{scope}[rotate=90,xscale=-1]
+        \node[place,label=above:$c_j$] (cj)at (0,1.25){};
+        \node[place,label=below:$c_j'$](cj')at (2,1.25){$n$};
+        \node[place,label=right:$\mathit{next}_i$] (next)at (1,0){};
+        \node[transhor,label=above:$t_i^1\tup{\mathit{dec}_N}$] (t1)at (0,0){};
+        \node[transhor,label=below:$t_i^2$](t2)at (2,0){};
+        \node[place,label=above:$q$](q)at (0,-1.25){\scriptsize $\blacksquare$};
+        \node[place,label=below:$q'$](q')at (2,-1.25){};
+    \end{scope}
+
+
+        \begin{scope}[xshift=-3.75cm,yshift=-1.25cm]
+        \node[transvert,label={[name=incNlab,xshift=.125cm]above:$\mathit{inc}_N$}](incN)at (0,0){};
+        \node[place,label={[name=pLab]above:$p$}](p)at(.75,0){$n$};
+        \node[transvert,label={[name=decNlab,xshift=-.16cm]above:$\mathit{dec}_N$}](decN)at (1.5,0){};
+        \draw[->](incN)--(p);
+        \draw[<-](decN)--(p);
+        \node[draw=black,fit={(incNlab)(incN)(pLab)(p)(decNlab)(decN)}](obj){};
+        \end{scope}
+
+        \draw[dashed] (obj) -- (cj.center);
+        \draw[<->] (cj)--(t1);
+        \draw[->] (q)--(t1);
+        \draw[->] (t1)--(next);
+        \draw[->] (next)--(t2);
+        \draw[<-] (t2)--(cj');
+        \draw[->] (t2)--(q');
+        
+    \end{tikzpicture}
+    }
+    \caption{}
+    \label{fig:objectLossy2CMdec}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.32\textwidth}
+    \resizebox{.95\columnwidth}{!}{
+    \begin{tikzpicture}
+    \begin{scope}[rotate=90,xscale=-1]
+        \node[place,label=below:$c_j$] (cj)at (2,1.25){};
+        \node[place,label=right:$\mathit{next}_i$] (next)at (1,0){};
+        \node[transhor,label=above:$t_i^1$] (t1)at (0,0){};
+        \node[transhor,label=below:$t_i^2$](t2)at (2,0){};
+        \node[place,label=above:$q$](q)at (0,-1.25){\scriptsize $\blacksquare$};
+        \node[place,label=below:$q'$](q')at (2,-1.25){};
+        \node[place,label=above:$g$](g)at (0,1.25){};
+    \end{scope}
+
+        \begin{scope}[xshift=-3.75cm,yshift=-.25cm]
+        \node[transvert,label={[name=incNlabg,xshift=.125cm]above:$\mathit{inc}_N$}](incNg)at (0,0){};
+        \node[place,label={[name=pLabg]above:$p$}](pg)at(.75,0){};
+        \node[transvert,label={[name=decNlabg,xshift=-.16cm]above:$\mathit{dec}_N$}](decNg)at (1.5,0){};
+        \draw[->](incNg)--(pg);
+        \draw[<-](decNg)--(pg);
+        \node[draw=black,fit={(incNlabg)(incNg)(pLabg)(pg)(decNlabg)(decNg)}](objg){};
+        \end{scope}
+
+        \begin{scope}[xshift=-3.75cm,yshift=-2.25cm]
+        \node[transvert,label={[name=incNlab,xshift=.125cm]above:$\mathit{inc}_N$}](incN)at (0,0){};
+        \node[place,label={[name=pLab]above:$p$}](p)at(.75,0){$n$};
+        \node[transvert,label={[name=decNlab,xshift=-.16cm]above:$\mathit{dec}_N$}](decN)at (1.5,0){};
+        \draw[->](incN)--(p);
+        \draw[<-](decN)--(p);
+        \node[draw=black,fit={(incNlab)(incN)(pLab)(p)(decNlab)(decN)}](obj){};
+        \end{scope}
+
+        \draw[dashed] (obj) -- (cj.center);
+        \draw[dashed] (objg) -- (g.center);
+        \draw[->] (cj)--(t1);
+        \draw[<->] (t1)--(g);
+        \draw[->] (q)--(t1);
+        \draw[->] (t1)--(next);
+        \draw[->] (next)--(t2);
+        \draw[->] (t2)--(cj);
+        \draw[->] (t2)--(q');
+        
+    \end{tikzpicture}
+    }
+    \caption{}
+    \label{fig:objectLossy2CMcheck}
+    \end{subfigure}
+    \caption{Part of $\E_{\K}$ capturing an~(\subref{fig:objectLossy2CMinc}) increment,~(\subref{fig:objectLossy2CMdec}) decrement, or~(\subref{fig:objectLossy2CMcheck}) zero-check instruction $i\in\delta$.}
+    \label{fig:objectLossy2CM}
+\end{figure}

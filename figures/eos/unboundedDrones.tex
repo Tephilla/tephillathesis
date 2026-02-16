@@ -1,0 +1,57 @@
+\begin{figure}[ht]
+    \centering
+    \resizebox{.79\columnwidth}{!}{
+\begin{tikzpicture}
+    \begin{scope}
+        \node[place,label={[name=baseLab]above:{\scriptsize base}}] (base)at (-1.5,0){};
+        \node(baseContent) at (base){};
+        \node[place,label={[name=fieldLab]above:\scriptsize field}] (field)at (1.5,0){};
+        \node[transhor,label={[name=rechargeLab]above:\scriptsize charge},label={[name=rechargeLab2]below:\scriptsize $\tup{\text{charge1}}\tup{\text{charge2}}$}] (recharge)at (-3,0){};
+        \node[transhor,label={[name=takeOffLab]above:\scriptsize takeOff $\tup{\text{move}}$}] (takeOff)at (0,.2){};
+        \node[transhor,label={[name=landLab]below:\scriptsize land $\tup{\text{move}}$}] (land)at (0,-.2){};
+        \node[draw=black,fit={(takeOff)(takeOffLab)(land)(landLab)(base)(baseLab)(field)(fieldLab)(recharge)(rechargeLab)(rechargeLab2)
+        }](sysNet){};
+        \node[rotate=90,text width=2cm,align=center] at ($(sysNet.west)+(-.35,0)$){System net\\ $\hat{N}$};
+        
+        \draw[<->] (recharge) -- (base);
+        \draw[->] (base.north east) -- (takeOff.west);
+        \draw[->] (takeOff.east) -- (field.north west);
+        \draw[->] (field.south west) -- (land.east);
+        \draw[->] (land.west) -- (base.south east);
+        
+    \end{scope}
+    \begin{scope}[xshift=4.75cm]
+    
+        \node[transhor,label={[name=charging1Lab]above:\scriptsize charge1}] (charging1)at (-1.5,0){};
+        \node[transhor,label={[name=charging2Lab]above:\scriptsize charge2}] (charging2)at (-1.5,-.7){};
+        \node[transhor,label={[name=movingLab]above:\scriptsize move}] (moving)at (1,0){};
+        \node[place,label={[name=charge1Lab]above:\scriptsize batt1}] (charge1)at (0,0){};
+        \node at(charge1){$\bullet\bullet$};
+        \node[place,label={[name=charge2Lab]above:\scriptsize batt2}] (charge2)at (2,0){};
+        
+        \node[draw=black,fit={(charging1)(charging1Lab)(charging2)(charging2Lab)(moving)(movingLab)(charge1)(charge1Lab)(charge2)(charge2Lab)}](objNet){};
+        \node[rotate=-90,text width=2cm,align=center] at ($(objNet.east)+(.4,0)$){Object net\\ ${\tt drone}$};
+
+        \draw[->] (charging1.east) --node[midway, above]{$2$} (charge1.west);
+        \draw[->] let
+        \p1 = (charging2.east),
+        \p2 = (charge2.south)
+        in
+        (\p1) -- node[midway, above]{$2$} (\x2,\y1) -- (\p2);
+        \draw[->] (charge1.east) -- (moving.west);
+        \draw[->] (charge2.west) -- (moving.east);
+    \end{scope}
+
+    \draw[dashed]
+        let
+        \p1 =(base),
+        \p2 =($(sysNet.south)+(0,1.25mm)$),
+        \p3 =(objNet.west)
+        in
+    (\p1) -- (\x1,\y2) -- (\x3,\y2);
+\end{tikzpicture}
+}
+    \caption{EOS in Example~\ref{ex:eosdrone} with marking $\fmset{\tup{\mathtt{drone},\fmset{\mathtt{batt1},\mathtt{batt1}}}}$. The idle transitions are omitted.
+    }
+    \label{fig:unboundedDrones}
+\end{figure}

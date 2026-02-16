@@ -1,0 +1,125 @@
+
+\usepackage[english]{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathabx}
+\usepackage{hyperref}
+% \usepackage{thm-restate}
+\usepackage{xcolor}
+\usepackage{comment}
+\usepackage{todonotes}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{paralist}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+\usepackage[nottoc]{tocbibind}
+
+\usepackage{enumerate}
+
+\usepackage{relsize}
+\usepackage[all]{xy}
+\usepackage{ifthen}
+\usepackage{array}
+\usepackage{float}
+
+\usepackage{circle,latexsym}
+% \usepackage[pagebackref]{hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{inputenc}
+
+\usepackage[acronym,symbols,nonumberlist,sort=use]{glossaries}
+% \usepackage[automake]{glossaries-extra}
+\usepackage{appendix}%necessary for creating subappendices for a chapter instead of the larger document appendix at the end of the document
+
+\usepackage{cite,tkz-graph,forest,tikz,mathtools,csquotes}
+\usetikzlibrary{arrows,petri,automata,positioning}
+
+
+\usetikzlibrary{patterns,shapes,arrows,calc,fit,arrows.meta}
+\tikzstyle{place}=[circle,minimum height=6mm,draw]
+\tikzstyle{transvert}=[rectangle,minimum width=2mm, minimum height=8mm,draw]
+\tikzstyle{transhor}=[rectangle,minimum width=8mm, minimum height=2mm,draw]
+\tikzset{>={Stealth[scale=1.2]}}
+
+
+\tikzset{every state/.style={minimum size=0pt}}
+\tikzset{
+  %Define standard arrow tip
+  >=stealth',
+  %Define style for boxes
+  punkt/.style={
+    rectangle,
+    rounded corners,
+    draw=black, very thick,
+    text width=8.5em,
+    minimum height=2em,
+    text centered},
+  % Define arrow style
+  pil/.style={
+    ->,
+    thick,
+    shorten <=2pt,
+    shorten >=2pt,}
+}
+
+\sloppy
+\usepackage{multicol}
+\setlength{\multicolsep}{0.0pt }
+\usepackage{listings}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    numbers=left,
+    morekeywords={if, prev, choice, not},
+    keywordstyle={\textbf},
+    escapechar=|,
+    breaklines=true,
+    breakatwhitespace,
+    numbers=left,
+    numbersep=2pt,%3pt,
+    columns=fullflexible,
+    backgroundcolor=\color{backcolour},
+    frame=lines,
+    escapeinside={\%*}{*)},
+    inputencoding=utf8
+    }
+
+
+\usepackage{graphicx}
+\usepackage{times}
+% \usepackage[compress]{cite}
+\usepackage{url}
+
+%for live windows
+\usepackage{pgfgantt}
+\definecolor{foobarblue}{RGB}{0,153,255}
+\newganttchartelement{foobar}{
+foobar/.style={
+shape=rectangle,
+inner sep=0pt,
+draw=foobarblue!50!black,
+very thick,
+fill=white
+}
+}
+\newcommand\textganttbar[4]{%
+    \ganttfoobar{#1}{#3}{#4}
+    \ganttfoobar[inline,bar label font=\footnotesize]
+    {#2}{#3}{#4}
+}
+
+% \allowdisplaybreaks %allows multi line display breaks in align environment globally
+
+% for local align environment, use the following:
+% \begingroup
+% \allowdisplaybreaks
+% \begin{align} 
+% \end{align}
+% \endgroup

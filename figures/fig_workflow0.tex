@@ -1,0 +1,46 @@
+\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]		
+		
+\begin{tikzpicture}[node distance = 5em, auto]
+\node [node distance=5em,text width = 5em,fill=green!20] (negate) {Negated property $\psi$};
+\node [left of=negate,text width=8em,xshift=-4em,text width = 5em,fill=green!20] (readip) {System Description (M) and bound};
+
+\node [aldecision,below of=negate,text width=10em, node distance=14em] (decide0) {At $k=0$,\\ $\lambda=0,~\kappa=0$\\ Is $[\mathcal{M},\psi]_{(0,0)}$ SAT?};
+\node [allibrary, right of=negate, ,xshift=1em] (Z3k0) {Z3};
+\node [text width=8em,left of=decide0,xshift=-8em,text width = 8em,fill=green!20] (counterex0) {Counter example found at $k=0$. EXIT};
+\node [allibrary, below of=decide0, node distance=12em,fill=green!20] (nocounterex0) {A};
+			
+% Draw edges
+\path [line] (readip) -- (decide0);
+\path [line] (negate) -- (decide0);
+\path [line,dashed] (Z3k0) -- (decide0);
+\path [line,dashed] (decide0) -- (Z3k0);
+			
+\path [line] (decide0) -- node [near start, color=black] {Yes} (counterex0);
+			
+\path [line] (decide0) -- node [, color=black,text width=10em,left] {No. Counter example is not found at $k=0$}(nocounterex0);		
+			
+\end{tikzpicture}

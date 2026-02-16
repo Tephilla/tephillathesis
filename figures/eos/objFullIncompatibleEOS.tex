@@ -1,0 +1,27 @@
+\begin{figure}[ht]
+    \centering
+\begin{tikzpicture}
+    \begin{scope}
+
+        \node[place,label={[name=p1Lab]above:\scriptsize $p_1$}] (p1)at (-1.5,0){};
+        \node[place,label={[name=p2Lab]above:\scriptsize $p_2$}] (p2)at (1.5,0){};
+        \node[transhor,label={[name=tLab]above:\scriptsize $t$}] (t)at (0,0){};
+        \node[draw=black,fit={(t)(tLab)(p1)(p1Lab)(p2)(p2Lab)}](sysNet){};
+        \node[rotate=90,text width=2cm,align=center] at ($(sysNet.west)+(-.35,0)$){System net};
+        
+        \draw[->] (p1) -- (t);
+        \draw[->] (t) -- (p2);
+        
+    \end{scope}
+    \begin{scope}[xshift=4.75cm]
+    
+        \node[place,label={[name=pLab]above:\scriptsize $p$}] (p)at (0,0){};
+        \node[draw=black,fit={(p)(pLab)}](objNet){};
+        \node[rotate=-90,text width=2cm,align=center] at ($(objNet.east)+(.4,0)$){Object net};
+    \end{scope}    
+\end{tikzpicture}
+
+    \caption{An EOS with system net $(\{p_1,p_2\},\{t\},\{(p_1,t),(t,p_2)\})$ and types $d(p_1)=(\{p\},\emptyset,\emptyset)$, $d(p_2)=\bullet$.
+    }
+    \label{fig:objFullIncompatibleEOS}
+\end{figure}

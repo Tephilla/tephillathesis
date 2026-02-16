@@ -1,0 +1,45 @@
+Chapter 1: Introduction
+Chapter 2: Models for Unbounded Concurrency
+Chapter 3: Logics for Unbounded Concurrency
+Chapter 4: Problem Statement
+		4.1: Questions
+		4.1.1: Modeling systems with unbounded agents
+		4.1.2 Verification of Unbounded Client server systems
+		4.1.3 Verification of higher order petri nets
+Chapter 5: LTL Tool over Petri Nets
+		5.1: SMT encoding of Petri Nets
+		5.2: Extending Petri nets with identifiers
+		5.3: Implementation details and correctness
+		5.4: Benchmarks and comparisons
+Related paper: Two-dimensional Bounded Model Checking for Petri Nets, Formal Methods in Computer Aided Design (Student Track, FMCAD 2023)		
+
+Chapter 6: First Order LTL Tool with Monodic restriction
+		6.1: FO LTL over Petri Nets with names
+		6.2: SMT Encoding of the model
+		6.3: Implementation			
+		6.4: Benchmarks and comparison
+Related paper: On Verifying Unbounded Client-Server Systems, 20th European Conference on Multi-Agent systems (EUMAS 2023), LNCS	
+
+Chapter 7: Verification of lossy higher order Petri nets
+		7.1: Introduction to Elementay Object Systems
+		7.2: Lossiness at various levels in EOSs
+		7.3: Decidability of rechability, coverability in EOSs
+		7.4: Tool to verify lossy Petri Nets and lossy EOSs
+		7.4.1: ASP encoding of lossy Petri Nets and EOSs
+		7.4.2:Benchmarks of the tool
+Related Papers:
+1. Deciding Reachability and Coverability in Lossy EOS, International Workshop on Petri Nets and Software Engineering (PNSE 2023) - Francesco and Soumodev
+2. Bounded Verification of Petri Nets and EOSs using Telingo: an Experience Report, 39th Italian Conference on Computational Logic (CILC 2024) - Francesco
+
+Chapter 8: Conclusion
+		8.1: Summary
+		8.2: Extensions to the work
+		8.3: Limitations
+		8.4: Open questions
+
+
+List of Publications:
+- On Verifying Unbounded Client-Server Systems, 20th European Conference on Multi-Agent systems (EUMAS 2023), LNCS
+-Deciding Reachability and Coverability in Lossy EOS, International Workshop on Petri Nets and Software Engineering (PNSE 2023)
+- Bounded Verification of Petri Nets and EOSs using Telingo: an Experience Report, 39th Italian Conference on Computational Logic (CILC 2024)
+- Two-dimensional Bounded Model Checking for Petri Nets, Formal Methods in Computer Aided Design (Student Track, FMCAD 2023)

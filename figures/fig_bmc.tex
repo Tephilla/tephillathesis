@@ -1,0 +1,51 @@
+\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]	
+\begin{tikzpicture}[node distance = 5em, auto, fit label/.style={yshift={(height("#1")+4pt)/2},
+inner ysep={(height("#1")+8pt)/2}, label={[anchor=north,font=\itshape]north:#1}}]
+	
+	\node [ node distance=2em, xshift=-3em,fill=green!20] (property) {Property Formula};
+	\node [ node distance=2em, below of=property, yshift=-1em, fill=green!20] (sysdesc) {Abstract Model};
+
+	\node [alblock, node distance=7em, right of=property, xshift=4em, minimum width=4em] (tool) {BMC Module};
+
+	
+	\node [allibrary, right of= tool,xshift=1em,rotate=90](z3){SAT/SMT Solver};
+
+	\node [ node distance=2em, below of=tool,yshift=-2em,,xshift=-2em, fill=green!20] (sat) {sat + trace};
+	\node [ node distance=2em, right of=sat,  xshift=3em,fill=green!20] (unsat) {unsat};
+
+
+	\path [line] (sysdesc) -- (tool);
+	\path [line] (property) -- (tool);
+
+	\path [line] (z3) -- (tool);
+	\path [line] (tool) -- (z3);
+	\path [line] (tool) -- (sat);
+	\path [line] (tool) -- (unsat);
+	\path [line] (unsat) --([xshift=2em]unsat.east) -- ([xshift=1em,yshift=-1em]tool.east) -- (tool);
+
+	
+\end{tikzpicture}

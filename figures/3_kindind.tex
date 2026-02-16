@@ -1,0 +1,8 @@
+\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto] 
+\node[state] (s)   {$p$}; 
+\node[state] (s1) [ right=of s] {$\bar{p}$}; 
+\path[->] 
+(s) edge[loop]  node {} (s)
+(s) edge  node {} (s1)
+(s1)	edge[loop]  node{} (s1);
+\end{tikzpicture}

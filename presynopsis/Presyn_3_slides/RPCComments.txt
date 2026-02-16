@@ -1,0 +1,34 @@
+4th APS
+RPC Comments:
+
+5. \models_{k} \Psi not \models_{\Delta} \Psi
+
+
+Bounded Semantics LTL:
+9. IFF statement Bounded semantics line 9
+AND
+
+11. \varrho, i \not\models G\psi
+Is this false, for a finite state system as well? Yes
+
+Global formulas are always false in bounded runs. Maybe write this outside.
+Is G capturing the neg F in the bounded semantics? Is it the dual?
+
+Answer: From Biere's 03 paper on BMC, for bounded semantics, the duality between G and F do not hold. 
+"Note that if π is not a k-loop, then we say that G f is not valid along π in the bounded
+semantics with bound k since f might not hold along π k+1 . These constraints imply that
+for the bounded semantics the duality between G and F (¬F f ≡ G¬ f ) no longer holds."
+
+
+
+For Unbounded/ Bounded semantics formulas 1,2,3, the client formulas
+it should contain \Delta subscript 
+
+and correspondingly for bounded semantics, we will have \models_{\Delta}^{k} both k and Delta are here for the client formulas. In comparison, Server formulas dont have \Delta
+
+
+Do we need Delta? it is obvious from the semantics?
+
+Bounded semantics equation 7: for formula F \Psi ... where j=min(l,i) the notation seems off. the explanation didnt seem obvious to the reader on reading the equation. 
+Make a note to cite Biere03 here.
+

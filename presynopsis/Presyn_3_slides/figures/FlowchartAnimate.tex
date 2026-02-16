@@ -1,0 +1,28 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\begin{document}
+	\begin{frame}
+	\pagestyle{empty}
+	\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+	text width=4.5em, text badly centered, node distance=4.5em, inner sep=0pt]
+	\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+	text width=5em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+	
+	\begin{tikzpicture}[scale=2, node distance = 5em, auto]
+	\node [alblock] (node1) {Node1};
+\only<2->{\node [alblock, below of=node1,node distance=6em] (node2) {Node2};}
+\only<3->{	\node [aldecision, below of=node2,node distance=8em] (decision) {Yes or no?};}
+\only<4->{	\node [alblock, left of=node2, node distance=2.5cm] (node3) {Restart};}
+\only<5>{	\node [alblock, below of=decision, node distance=2.5cm] (nonode4) {Exit};}
+
+
+\only<2->{\path [line] (node1) -- (node2);}
+\only<3->{	\path [line] (node2) -- (decision);}
+\only<4->{	\path [line] (decision) -| node [near start, color=black] {yes} (node3);}
+\only<5>{	\path [line] (decision) -- node [, color=black] {no}(nonode4);}
+	\end{tikzpicture}
+\end{frame}
+\end{document}

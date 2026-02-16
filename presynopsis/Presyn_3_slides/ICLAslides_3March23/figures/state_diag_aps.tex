@@ -1,0 +1,57 @@
+
+		\begin{tikzpicture}[scale=0.4]
+			\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+		
+		\node 	(s1)		at	(0,10) 	[ellipse, thick, draw=red!50,fill=blue!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small server\_ready(SR)};
+		
+		
+		\node 	(s0)		at	(-12,10) 	[ellipse, thick, draw=red!50,fill=blue!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small server\_busy(SB)};
+		
+		
+		\node 	(s2)		at	(-6,3) 	[ellipse, thick, draw=red!50,fill=blue!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small request\_granted(RG)};
+		
+				
+		\node 	(s3)		at	(-6,-1) 	[ellipse, thick, draw=red!50,fill=blue!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small deallocate\_parking\_lot(DP)};
+		
+				
+		\node 	(s4)		at	(6,6) 	[ellipse, thick, draw=red!50,fill=blue!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small request\_rejected(RR)};
+		
+	
+		\draw[->, bend left=10,thick]	(s0)	to	node[auto]{\small completed\_processing(cp)}	(s1);
+		
+		\draw[->, bend left=10, thick]	(s1)	to	node[auto]{\small processing}	(s0);
+		
+		\draw[->, thick]	(s1)	to	node[left]{\small accept}	(s2);
+		
+		\draw[->, thick]	(s1)	to	node[auto,swap]{\small reject}	(s4);
+		
+		\draw[->, thick]	(s2)	to	node[left]{\small successful vehicle exit(exit)}	(s3);
+		
+		\draw[->, thick, bend right = 10]	(s4)	to	node[auto,swap]{\small unsuccessful vehicle exit($u\_exit$)}	(s1);
+
+		
+		\end{tikzpicture}

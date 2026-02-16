@@ -1,0 +1,892 @@
+\chapter{Verification of Elementary Object Systems}\label{cheos}
+
+\section{Introduction}
+Imperfections are natural in the context of message passing systems: imperfect communication channels may spontaneously lose, duplicate, or shuffle carried messages or even deliver new unwanted ones. When compared to their perfect counterpart, verification of imperfect systems is usually easier. For example, reachability in Communicating Finite Automata (CFA) over \emph{perfect} (FIFO) channels is undecidable~\cite{brand_communicating_1983}, but it is decidable when the channels are \emph{lossy}~\cite{hutchison_mixing_2008} (messages may be non-deterministically lost and never delivered) or \emph{unordered}~\cite{georgiou_network_2021} (the message sending and reception order may be different).
+The same principle generally holds even outside CFA. Specifically, two counter machines can encode Turing Machines~\cite{MinskyComputationFinite,dershowitz_lets_2021} and suffer from undecidable reachability. Instead, Mayr~\cite{Mayr_LCM_1998,mayr-undecidable-2003} showed that if lossiness is applied to the counters (the natural numbers stored in the counters may non-deterministically decrease), then reachability becomes decidable; nevertheless, several other problems remain undecidable. Similar results are also available for Petri Nets (PNs): Bouajjani and Mayr~\cite{mayr_1999} studied the impact of lossiness on the model checking problem of Vector Addition Systems with States (VASS, equivalent to Petri Nets) against fragments of the Modal $\mu$-Calculus. In this case, while the EF (and EG) fragment of the UB language (which includes negation and labeled variants of the CTL next operator) is undecidable for VASS~\cite{esparza_decidability_1997}, it is decidable for lossy VASS.
+
+Imperfections may be naturally interpreted as perturbations of the system configurations and, thus, verification of imperfect systems can be studied under the lens of robustness~\cite{baroglio_fragility_2020,Bussmeier23a}, i.e., checking whether a property holds if at most $k$ perturbations occur, for some given $k\leq |\mathbb{N}|$. Recently, K\"ohler-Bussmeier and Capra~\cite{Bussmeier23a} put forward the nets-within-nets paradigm~\cite{kanade_object_2004}
+to naturally specify robustness properties in a Multi Agent System (MAS) context.
+Specifically, in the PN setting, \emph{black tokens} that mark a fixed set of places are moved around by a fixed set of transitions. In contrast, in nets-within-nets, the tokens could additionally be PN objects themselves.
+Thus, even without further expert information on the net design, these \emph{object tokens}
+naturally model agents, which might be affected by perturbations.
+In~\cite{Bussmeier23a}, perturbations follow a drastic \emph{let it crash} approach, causing agent break-downs. Technically, this is achieved by enforcing a deadlock in the object token. However, nets-within-nets with less disruptive perturbations may still be suitable to model perturbed MAS, where the agents may suffer imperfections even without completely breaking down.
+
+We focus on Elementary Object Systems (EOSs)~\cite{kohler-busmeier_survey_2014}, which are a simple nets-within-nets model, yet featuring most of the important ingredients. Moreover, they can be generalized to more sophisticated models, such as full-fledged Object Systems~\cite{kanade_object_2004}. This makes EOSs an excellent candidate for our study.
+Our key contributions are: \begin{compactenum}
+    \item We formally define three forms of lossiness in the EOS setting, corresponding to the nesting levels of the tokens.
+    \item We provide examples illustrating the relevance of these lossiness relations and formalize lossy reachability/coverability problems on them.
+    \item We completely chart the decidability status of these problems (see Tab.~\ref{tab:results}).
+\end{compactenum}
+Standard reachability/coverability problems have been studied in~\cite{kohler-busmeier_survey_2014}, but only in a perfect setting, i.e., without lossiness. Preliminary results on EOS robustness were put forward in \cite{Bussmeier23a}. However, they do not address the problem of perturbations on reachability/coverability in a systematic way. To the best of our knowledge, ours is the first work that attempts a full formal classification of EOS reachability/coverability with lossy perturbations. As discussed above, the concept of lossiness is well established in the PN literature; the most relevant works are~\cite{mayr_1999,mayr-undecidable-2003,schnoe_cheat_2010}.
+However, their approach uniformly interleaves each standard step with lossiness and, thus, does not properly address robustness, where also the number of lossy events is of interest. Moreover, when compared to PNs, EOSs offer more room for lossiness because of the nesting of tokens. This may significantly complicate the picture.
+Instead, we consider the full spectrum of lossiness, from one occurrence to infinitely many, at all nesting levels.
+
+
+\section{Preliminaries}\label{sec:prelims}
+\subsection{Binary Relations}
+Let us fix some notation for binary relations. Given a set $X$, the \emph{identity relation} $\id_X$ on $X$ is the relation $\{(x,x)\in X^2\mid x\in X\}$. Given a binary relation $<$ on $X$, we denote its \emph{reflexive closure} $<\cup\id_X$ by $\leq$ and its \emph{anti-reflexive part}  $<\setminus \id_X$ by $\lneq$. We use the symbol $>$ to denote the relation such that, $x>y$ iff $y<x$. For example, if $<$ is transitive, then $\leq$ and $\geq$ are transitive and reflexive (i.e., quasi orders). The same applies to the symbols $\prec$ and $\succ$ and their closures. From now on, we use $\prec$ to denote arbitrary transitive relations, and $<$ (possibly with a subscript) to represent fixed transitive relations, e.g., the standard order of $\mathbb{N}$.
+
+\subsection{Multisets}
+A \emph{multiset} $\multiset{m}$ on a set $D$ is a mapping $\multiset{m}:D\rightarrow \mathbb{N}$. The \emph{support} of $\multiset{m}$ is the set $\support{m} = \{i \mid \multiset{m}(i) > 0\}$. The multiset $\multiset{m}$ is finite if its $\support{\multiset{m}}$ is finite. The family of all multisets over $D$ is denoted by $D^\oplus$. We denote a finite multiset $\multiset{m}$ by enumerating the elements $d\in\support{\multiset{m}}$ exactly $\multiset{m}(d)$ times in between $\{\{$ and $\}\}$, where the ordering is irrelevant. For example, the finite multiset ${\multiset{m}:\{p,q\}\longrightarrow \mathbb{N}}$ such that $\multiset{m}(p)=1$ and $\multiset{m}(q)=2$ is denoted by $\fmset{p,q,q}$.
+The empty multiset $\fmset{}$ (with empty support) is also denoted by $\emptyset$. On the empty domain $D=\emptyset$ the only defined multiset is $\emptyset$; to stress this out we denote this special case, i.e., the empty multiset over the empty domain, by $\varepsilon$.
+Given two multisets $\multiset{m_1}$ and $\multiset{m_2}$ on $D$, we define $\multiset{m_1} + \multiset{m_2}$ and $\multiset{m_1} - \multiset{m_2}$ on $D$ as follows:
+$(\multiset{m_1} + \multiset{m_2})(d) = \multiset{m_1}(d)  + \multiset{m_2}(d)$ and
+$(\multiset{m_1} - \multiset{m_2})(d) = max(\multiset{m_1}(d)  - \multiset{m_2}(d),0)$.
+Similarly, for a finite set $I$ of indices, $\sum_{i\in I} \fmset{d_i}$ denotes the multiset $\multiset{m}$ over $\bigcup_{i\in I}\{d_i\}$ such that $\multiset{m}(d)=|\{i\in I \mid d_i=d\}|$ for each $d\in D$. With a slight abuse of notation, we omit the double brackets, i.e., $\sum_{i\in I} \fmset{d_i}= \sum_{i\in I} {d_i}$. If $I=\{1,\dots,n\}$, then $\sum_{i\in I} {d_i}=\sum_{i=1}^n {d_i}$.
+Finally, we write $\multiset{m_1} \sqleq \multiset{m_2}$ if, for each $d\in D$, we have $\multiset{m_1}(d)  \leq \multiset{m_2}(d)$.
+
+\subsection{Petri Nets}\label{ssec:petrinetnotation}
+We recall the standard definition for PN from Definition.~\ref{def:pn} and ${\prefun}_N$ and ${\postfun}_N$  Definition.~\ref{defn:prepostPN}. In this chapter, we use the marking according to the multiset notation. For example, the marking $\mu$ that places one token on place $p$ and two on place $q$ is denoted by $\fmset{p,q,q}$. The empty marking is denoted by $\emptyset$. We also work with the special \emph{empty PN} $\blacksquare=(\emptyset,\emptyset,\emptyset)$, whose only marking is $\varepsilon$. A transition $t\in T$ is \emph{enabled} on a marking $\mu$ (finite multiset of places) if, for each place $p\in P$, we have $\prefun_N(t)(p)\leq \mu(p)$. Its firing results in the marking $\mu'$ such that $\mu'(p)=\mu(p)-\prefun_N(t)(p)+\postfun_N(t)(p)$, for each $p\in P$.
+
+\subsection{Elementary Object Systems}\label{sec:eos}
+An EOS~\cite{kohler-busmeier_survey_2014} is, intuitively, a PN (called system net) whose tokens carry an internal PN (called object net), taken from a finite set $\N$.
+Each place can host only one fixed type of internal PN. The EOS fires events, which synchronize a transition $\tau$ in the system net and multisets $\theta(N)$ of transitions in the object nets $N$ consumed by $\tau$. EOSs are formally defined in Definition.~\ref{def:bussy14_eos}.
+
+
+
+
+Since the nets in $\N$ are disjoint, we can denote each event $\tup{\hat{\tau},\theta}$, as a pair $\tup{\hat{\tau},M}$ for a multiset $M$ over $\bigcup_{(P,T,F)\in\N}T$ such that $M(t)=\theta(N)(t)$ where $N=(P,T,F)\in\N$ and $t\in T$.
+EOS tokens are nested, i.e., each token at a system place $p$ carries a PN marking $\mu$ for the object net $d(p)$. EOS markings, also called nested markings, are multisets of nested tokens. With a slight abuse of notation, we denote markings omitting double curly brackets from multiset notation.
+
+\begin{definition}[Nested Markings]
+    Let $\os=\tup{\hat{N},\N,d,\Theta}$ be an EOS. The set of \emph{nested tokens} $\nestTok(\os)$ of $\os$ is the set $\bigcup_{(P,T,F)\in\N} (d^{-1}{(P,T,F)}\times P^{\oplus})$. The set of \emph{nested markings} $\M(\E)$ of $\os$ is $\nestTok(\os)^{\oplus}$.
+    Given $\lambda,\rho\in \M(\E)$, we say that $\lambda$ is a \emph{sub-marking} of $\mu$ if $\lambda \sqleq \mu$.
+\end{definition}
+Note that $\lambda$ is a sub-marking of $\mu$ iff there is some nested marking $\mu'$ such that $\mu=\lambda+\mu'$. EOSs inherit the graphical representation of PNs with the provision that we represent nested tokens via a dashed line from the system net place to an instance of the object net where the internal marking is represented in the standard PN way. However, if the nested token is $\tup{p,\varepsilon}$ for a system net place $p$ of type $\blacksquare$, we represent it with a black-token $\blacksquare$ on $p$. If a place $p$ hosts $n>2$ black-tokens, then we represent them by writing $n$ on $p$. Each event $\tup{\hat{\tau},\theta}$ is depicted by labeling $\hat{\tau}$ by $\tup{\theta}$ (possibly omitting double curly brackets). If there are several events involving $\hat{\tau}$, then $\hat{\tau}$ has several labels. Fig.~\ref{fig:ucseos} shows the client server system with unbounded number of clients represented as an EOS.
+
+\input{figures/7_ucseos}
+
+\begin{example}\label{ex:eosdrone}
+    Fig.~\ref{fig:unboundedDrones} depicts the system net $\hat{N}$ (the idle transitions are omitted) and object net $\tt drone$ of an EOS $\os=\tup{\hat{N},\N,d,\Theta}$ modeling a drone that
+    \begin{inparaenum}[\itshape (1)]
+        \item moves between a base and a field,
+        \item has two batteries,
+        \item consumes one charge-unit per battery per movement, and
+        \item charges its batteries by multiples of two charge-units when at base.
+    \end{inparaenum}
+    Technically, $\N=\{{\tt drone},\blacksquare\}$ (even if $\blacksquare$ is unused), $d({\tt base})=d({\tt field})={\tt drone}$, and $\Theta$ synchronizes $\tt takeOff$ and $\tt land$ (respectively $\tt charge$) in $\hat{N}$ with $\tt move$ ($\tt charge1$ and $\tt charge2$) in $\tt drone$.
+    Formally,
+    $\Theta=\{\tup{{\tt takeOff},\fmset{{\tt move}}},\tup{{\tt land},\fmset{{\tt move}}}, \tup{{\tt charge},\fmset{{\tt charge1}}},\tup{{\tt charge},\fmset{{\tt charge2}}}\}.$
+    The marking $\mu={\tup{\mathtt{drone},\fmset{\mathtt{batt1},\mathtt{batt1}}}}$ represents a single partially charged drone at $\tt base$, with two charge units in the first battery.
+\end{example}
+\input{figures/eos/unboundedDrones}
+
+When firing an event $\tup{\tau,\theta}$, nested tokens in the system net are consumed according to the preconditions of $\tau$ in the standard PN way. At the same time, for each object net $N$, the inner tokens are merged so as to obtain a PN marking $\mu(N)$ for $N$ (possibly empty). Then, transitions in $\theta(N)$ are fired in the standard PN way obtaining markings $\mu'(N)$. Next, nested markings with empty inner markings are produced in the system net according to the postconditions of $\tau$. Finally, the markings $\mu'(N)$ are non-deterministically distributed among the empty nested tokens, according to the typing function. To be fired, the event must be enabled at both the system and at the object net level. This is captured by the enabledness condition, which makes use of projection operators at the system ($\Pi^1$) and at the object net level ($\Pi^2_N$ for each $N\in\N$).
+
+\begin{definition}[{Projection Operators}]
+    Let $\os$ be an EOS $\tup{\hat{N},\N,d,\Theta}$. The \emph{projection operators $\Pi^1$} maps each nested marking $\mu=\sum_{i\in I}\tup{\hat{p}_i,M_i}$ for $\E$ to the PN marking $\sum_{i\in I}\hat{p}_i$ for $\hat{N}$. Given an object net $N\in\N$, the \emph{projection operators $\Pi^2_N$} maps each nested marking $\mu=\sum_{i\in I}\tup{\hat{p}_i,M_i}$ for $\E$ to the PN marking $\sum_{j\in J} M_j$ for ${N}$ where $J=\{i\in I\mid d(\hat{p}_i)=N\}$.
+\end{definition}
+
+To define the enabledness condition, we need the following notation. We set $\prefun_{N}(\theta(N))=\sum_{i\in I}\prefun_N(t_i)$ where $(t_i)_{i\in I}$ is an enumeration of $\theta(N)$ counting multiplicities. We analogously set $\postfun_{N}(\theta(N))=\sum_{i\in I}\postfun_N(t_i)$. The EOS enabledness condition is already defined in Definition.~\ref{def:bussy14_enable}.
+
+
+\begin{example}
+    In the setting of the EOS $\os$ and marking $\mu$ in Ex.~\ref{ex:eosdrone} (Fig.~\ref{fig:unboundedDrones}), the event $\tup{\mathtt{charge},\fmset{\mathtt{charge1}}}$ is enabled on $\mu={\tup{\mathit{base},\fmset{\mathtt{batt1},\mathtt{batt1}}}}$ with mode $(\lambda,\rho)$ where $\lambda=\mu$ and $\rho={\tup{\mathit{base},\fmset{\mathtt{batt1},\mathtt{batt1},\mathtt{batt1},\mathtt{batt1}}}}$. Since $\lambda=\mu$, its firing results in the step $\mu\xrightarrow{\tup{e,\lambda,\rho}}\rho$.
+    Instead, the event $\tup{\mathtt{charge},\fmset{\mathtt{charge2}}}$ is enabled on $\mu$ with mode $(\lambda,\rho')$ where $\rho'={\tup{\mathit{base},\fmset{\mathtt{batt1},\mathtt{batt1},\mathtt{batt2},\mathtt{batt2}}}}$. Its firing results in the step $\mu\xrightarrow{\tup{e,\lambda,\rho'}}\rho'$. These are the only enabling modes for $\tup{\mathtt{charge},\fmset{\mathtt{charge1}}}$ and $\tup{\mathtt{charge},\fmset{\mathtt{charge2}}}$ on $\mu$. No other event is enabled on $\mu$, irrespective of the mode.
+\end{example}
+
+The reachability problem for EOSs is defined in the usual way, i.e., whether there is a run (sequence of event firings) from an initial marking $\mu_0$ to a target marking $\mu_f$. Also coverability definition is standard, but with respect to the order $\leq_f$ (denoted by $\preceq$ in~\cite{kohler-busmeier_survey_2014}; see Def.~\ref{def:lossyRel} below) that allows one to add both
+\begin{inparaenum}[\itshape (1)]
+    \item tokens in the inner markings of available nested tokens
+    \item or nested tokens with some internal marking on the system net places.
+\end{inparaenum}
+It is known that both these problems are undecidable (Th. 4.3 in~\cite{kohler-busmeier_survey_2014}. However, coverability is decidable on the fragment of \emph{conservative EOSs} (cEOSs; Th. 5.2 in~\cite{kohler-busmeier_survey_2014}). Nevertheless, reachability remains undecidable (Th. 5.5 in~\cite{kohler-busmeier_survey_2014}).
+
+In cEOSs, for each system net transition $t$, if $t$ consumes a nested token on a place of type $N$, then it also produces at least one token on a place of the same type $N$.  We give the formal definition of cEOS below:
+
+\begin{definition}[{cEOS}]
+    A cEOS is an EOS $\os=\tup{\hat{N},\N,d,\Theta}$ with $\hat{N} = \tup{\hat{P},\hat{T},\hat{F}}$ where, for all $\hat{t} \in \hat{T}$ and $\hat{p} \in \support{\prefun_{\hat{N}}(\hat{t})}$, there exists $\hat{p}' \in \support{\postfun_{\hat{N}}(\hat{t})}$ such that $d(\hat{p}) = d(\hat{p}')$.
+\end{definition}
+
+We use conservativity to obtain the decidability results in this chapter.
+
+\section{Problem}\label{sec:problem}
+We study reachability and coverability of EOSs (cEOSs) affected by several forms of lossiness. First, we define three lossiness relations
+and show their relevance.
+Second, we formally define the problem we study in the following sections.
+
+\subsection{Lossy EOSs}\label{sec:lossyEOS}
+We study EOSs (cEOSs) affected by lossiness, where nested markings may non-deterministically lose their tokens according to a quasi order, called lossiness relation. Lossiness can occur
+\begin{inparaenum}[\itshape (1)]
+    \item at the object level, if lossiness removes only tokens from the inner markings of nested tokens,
+    \item at the system level, if lossiness removes whole nested tokens only, and
+    \item at both levels (the full EOS), if both whole nested tokens and/or regular tokens from the remaining nested tokens are removed.
+\end{inparaenum}
+These levels are captured, respectively, by the lossiness quasi orders $\leq_o$ (object-lossiness), $\leq_s$ (system-lossiness), and $\leq_f$ (full-lossiness) as defined next.
+
+\begin{definition}\label{def:lossyRel}Given an EOS $\os$ and two nested markings $\mu$ and $\mu'$ for $\os$, we have
+    \begin{inparaenum}[\itshape (1)]
+        \item $\mu\leq_s\mu'$ if $\mu\sqleq \mu'$ or, equivalently, there is some $\mu''$ such that $\mu'=\mu+\mu''$,
+        \item $\mu\leq_o\mu'$ if we can write $\mu=\sum_{i\in I}\tup{\hat{p}_i,M_i}$ and $\mu'=\sum_{i\in I}\tup{\hat{p}_i,M'_i}$ and, for each $i\in I$, $M_i\sqleq M'_i$, and
+        \item $\mu\leq_f\mu'$ if there is some nested marking $\mu''$ such that $\mu\leq_o\mu''\leq_s\mu'$.
+    \end{inparaenum}
+\end{definition}
+
+\begin{example}
+    Consider the marking $\mu={\tup{\mathtt{base},\fmset{\mathtt{batt1},\mathtt{batt1}}}}$ in Ex.~\ref{ex:eosdrone}. By removing $1$ or $2$ charge units we obtain the markings $\mu_1={\tup{\mathtt{base},\fmset{\mathtt{batt1}}}}$ and $\mu_2={\tup{\mathtt{base},\emptyset}}$. By adding to $\mu$ a discharged token at place $\mathtt{field}$, we obtain the $\mu'={\tup{\mathtt{base},\fmset{\mathtt{batt1},\mathtt{batt1}}} + \tup{\mathtt{field},\emptyset}}$. By removing the drone from $\mu$, we obtain $\mu''=\emptyset$. We have, among the others, $\mu'\geq_s\mu$, $\mu\geq_o\mu_1\geq_o \mu_2$, $\mu'\geq_f\mu$, $\mu'\geq_f \mu_2$, and $\mu'\geq_f\mu''$.
+\end{example}
+
+The relation $\leq_f$ coincides with $\preceq$ in~\cite{kohler-busmeier_survey_2014}.
+Moreover, the order of $\leq_o$ and $\leq_s$ is irrelevant in $\leq_f$ definition (Rem.~\ref{lem:fulllossy} below). An EOS (cEOS) suffering from object-, system-, or full-lossiness is called, respectively, object-, system-, or full-lossy EOS (cEOS) or, simply lossy EOS (cEOS).
+
+These lossiness relations are relevant to model non-deterministic phenomena not directly captured by the EOS. For example, in the context of Ex.~\ref{ex:eosdrone}, object-lossiness results in the non-deterministic loss of tokens at places $\mathtt{batt1}$ and $\mathtt{batt2}$, which models the partial/total discharge of drone batteries because of non-modeled drone movements within the base or the field, or because of other unexpected phenomena.
+In a slightly more complex EOS, with intermediate places capturing the flight from base to field and vice-versa, object-lossiness captures also the non-deterministic usage of extra charge-units because of contingencies like strong winds.
+Instead, system lossiness results in the loss of nested tokens modeling drones. This captures the loss of drones because of, e.g., break-downs, wrong flight paths, or seizure from higher priority processes (assuming the EOS is a module in a more complex system). Full-lossiness capture both aspects.
+Similar interpretations can be given each time the (nested) tokens represent resources, like charge-units or drones in Ex.~\ref{ex:eosdrone}. These scenarios are common in the literature (see, e.g., water- and fire-units in~\cite{kanade_object_2004} and raw-resources in production plants in~\cite{capraK23}).
+
+Lossy EOSs are relevant also to capture partial/total internal break-downs. This happens, e.g., when the tokens model resource containers instead of resources themselves. For example, after modifying the $\tt drone$ object net into the object net  $\tt drone2$ in Fig.~\ref{fig:boundedDrones},\footnote{Also the events have to be modified accordingly, i.e., for each $n\in\{0,1,2\}$, by synchronizing $\tt takeOff$ and $\tt landing$ with $\tt discharge\, n$ object net transitions, and $\tt charge$ with the $\tt charge\, n$ object net transitions.} each regular token represents a battery with bounded capacity. Its charge level is captured by its position in the object net.
+Consequently, object-lossiness represents the break-down of internal components, in this case the battery. The loss of all batteries results in drone deadlock (cf.~\cite{Bussmeier23a}). This case is analogous to the application of system-lossiness discussed above, since drones can be seen as internal components of a higher level process (captured by the whole EOS): the loss/break-down of all drones results in system deadlock. More in general, this interpretation applies when the EOS uses conservative system and/or object nets. Also these scenario are common in the literature (see, e.g., the finite control of robots~\cite{kohler-busmeier_survey_2014}, the internal state of fire-fighters in~\cite{kanade_object_2004}, and customers and cars in~\cite{lomazova00}).
+\input{figures/eos/boundedDrones.tex}
+
+\subsection{Lossy-reachability/coverability}
+We study the problem of $\ell$-reachability/coverability, i.e., whether a target nested marking can be reached/covered from an initial one via a run suffering at most $\ell$ lossy steps, where $\ell\in\mathbb{N}\cup\{\omega\}$.\footnote{Recall that $\omega$ is the first limit ordinal, whose cardinality is $|\mathbb{N}|$, i.e., the same as $\mathbb{N}$.} These problems are relevant to study EOS robustness in front of losses/break-downs.
+
+\begin{definition}
+    Given a transition system $\TS=(V,\rightarrow)$, a transitive relation $\prec$ on $V$, and an $\ell\in\mathbb{N}\cup\{\omega\}$, a \emph{$(\prec,\ell)$-run} in $\TS$ is a run whose steps are labeled either by $\rightarrow$, called \emph{standard steps}, or by $\succ$, called \emph{$\prec$-lossy} or \emph{lossy steps}, and at most $\ell$ steps are lossy. The set of $(\prec,\ell)$-runs from $\mu_0$ is denoted by $\lruns[\ell]{\prec}{\mu_0}$. A $(\prec,\ell)$-run is called \emph{$\ell'$-strong} if it contains exactly $\ell'$ lossy steps.
+\end{definition}
+
+The definition also applies to reflexive or anti-reflexive transitive relations, i.e., we can also talk about $(\preceq,\ell)$-runs and $(\precneq,\ell)$-runs. We denote a labeled step from $\mu$ to $\mu'$ by $\mu\leadsto\mu'$. To stress that the step is labeled by $\rightarrow$ or by $<$, we denote it by $\mu\rightarrow\mu'$ or by $\mu>\mu'$, respectively.
+Whenever we have a lossy run $\sigma$ from $\mu$ to $\mu'$, we write $\mu\leadsto^\sigma\mu'$.
+The $(<,\ell)$-reachability/coverability problems ask whether a target can be reached/covered under $\prec$ from an initial configuration with at most $\ell$ $\prec$-lossy steps.
+
+\begin{definition}[$(\prec,\ell)$-reachability/coverability for EOSs (cEOSs)]
+    Let $\ell\in\mathbb{N}\cup\{\omega\}$.
+    \begin{compactitem}
+        \item[Input:] An EOS (cEOS) $E$, an initial marking $\mu_0$ and a target marking $\mu_1$ for $E$.
+        \item[Output of reachability:] Is there a run $\sigma\in\lruns[\ell] {\prec}{\mu_0}$ such that $\mu_0\leadsto^\sigma\mu_1$?
+        \item[Output of coverability:] Is there a run $\sigma\in\lruns[\ell] {\prec}{\mu_0}$ such that $\mu_0\leadsto^\sigma\mu\geq\mu_1$ for some $\mu$?
+    \end{compactitem}
+\end{definition}
+
+We call these problems \emph{lossy-problems}. A \emph{$\prec$-lossy-problem} is a lossy-problem under $\prec$. The \emph{degree} of a $(\prec,\ell)$-reachability/coverability problem is $\ell$.
+If $\ell=0$ we obtain standard reachability/coverability, i.e., over perfect runs. Our objective is to fully chart the decidability status of the lossy-problems for $\leq_f$, $\leq_s$, and $\leq_o$. Previous results for EOSs are available only for $\ell=0$ and the relation $\leq_f$. Consequently, they do not inform us on the status of the other (proper) lossy-problems, whose study still requires a careful and in-depth analysis.
+
+
+
+\section{Coincident Problems}\label{sec:coincidentProblems}
+
+The well known notion of compatibility from WSTS has a strong impact on $\ell$-reachability problems. In fact, we now show that all these problems, for $\ell\geq 1$ (including $\omega$) and any quasi order $\preceq$, collapse to $(\preceq,0)$-coverability if and only if the lossiness relation is compatible.
+
+\begin{lemma}\label{lem:reachCoverIncrease}
+    Each yes-instance of $(\preceq,\ell)$-reachability is also a yes instance of $(\preceq,\ell)$-coverability.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    Immediate consequence of reflexivity of the quasi order $\preceq$.
+\end{proof}
+\begin{lemma}\label{lem:coverReachIncrease}
+    Each yes-instance of $(\preceq,\ell)$-coverability is also a yes instance of $(\preceq,\ell+1)$-reachability, if $\ell$ is finite, and a yes-instance of $(\preceq,\omega)$-reachability, if $\ell=\omega$.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    If $\mu_1$ is coverable from $\mu_0$, then there is a $(\preceq,\ell)$-run $\sigma$ from $\mu_0$ to $\mu$ and $\mu\succeq \mu_1$. Take the run $\sigma'$ as the run $\sigma$ followed by the lossy step $\mu \succeq \mu_1$. Thus, $\sigma'$ reaches $\mu_1$ from $\mu_0$. Moreover, if $\ell$ is finite, then $\sigma'$ is a $(\preceq, \ell+1)$-run and, otherwise, $\sigma'$ is a $(\preceq,\omega)$-run.
+\end{proof}
+\begin{corollary}\label{cor:omegaReachCover}
+    $(\preceq,\omega)$-reachability and $(\preceq,\omega)$-coverability coincide.~\cite{CosmoMP24}
+\end{corollary}
+Note that Cor.~\ref{cor:omegaReachCover} is consistent with other lossy PN models (see, e.g.,~\cite{mayr_1999}).
+\begin{lemma}
+    Each yes-instance of $(\preceq,\ell)$-reachability or $(\preceq,\ell)$-coverability is also a yes instance of $(\preceq,\omega)$-reachability or $(\preceq,\omega)$-coverability, respectively.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    Immediate consequence of the fact that each $(\preceq,\ell)$-run is also a $(\preceq,\omega)$-run.
+\end{proof}
+
+Summarising, for each quasi order $\preceq$, the $\preceq$-lossy-problems form a hierarchy ordered according to inclusion of the yes-instance sets. For each $i\in\mathbb{N}$, the $i$-th hierarchy level for $\preceq$ is the $(\preceq, i/2)$-reachability problem, if $i$ is even, and the $(\preceq, (i-1)/2)$-coverability problem, if $i$ is odd.
+We say that the hierarchy \emph{collapses} if all the $(\preceq,\ell)$-reachability and $(\preceq,\ell)$-coverability problems with $\ell\geq 1$ coincide with (standard) $(\preceq,0)$-coverability or, equivalently, if the yes-instances of $(\preceq,\omega)$-reachability are also yes-instances of $(\preceq,0)$-coverability. The next lemma states that this latter property is equivalent to compatibility, that is, if $\mu_1\succeq \mu_2\rightarrow \mu_3$, then there is a $\mu_4$ such that $\mu_1\rightarrow^* \mu_4\succeq \mu_3$.
+
+\begin{lemma}\label{lem:reachCoverOmega}
+    $\preceq$ is compatible iff each yes-instance of $(\preceq,\omega)$-reachability is also a yes-instance of $(\preceq,0)$-coverability.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    Assume that $\preceq$ is compatible. If $v_1$ is reachable from $v_0$ via an $\omega$-run $\sigma$, then, without loss of generality, we can assume that $\sigma$ is finite and, thus, it is a $\ell$-run for some finite $\ell$. By compatibility, we can push, one by one, the finitely many lossy steps in $\sigma$ at the end of the run, obtaining an $\ell$-run $\sigma'$ (possibly with different length) where all lossy steps occur at the end, i.e., $\sigma'$ is of the form $v_0\rightarrow^*w_1\succeq w_2\dots\succeq w_{\ell}\succeq v_1$. By transitivity of $\succeq$, there is also a run $\sigma''$ of the form $v_0\rightarrow^*w_1\succeq v_1$, which witness that $v_1$ is $\preceq$-coverable from $v_0$.
+    Vice-versa, assume that each yes-instance of $(\preceq,\omega)$-reachability is also a yes-instance of $(\preceq,0)$-coverability. If $v_0\succeq v_1\rightarrow v_2$, then $v_2$ is $(\preceq,1)$-reachable from $v_0$, as well as $(\preceq,\omega)$-reachable. Thus, $v_2$ is also coverable from $v_0$, i.e., $v_0\rightarrow^*v_1\succeq v_2$.
+\end{proof}
+\begin{corollary}\label{cor:hierachyCollapses}
+    The hierarchy of lossy-problems induced by $\preceq$ collapses iff $\preceq$ is compatible.~\cite{CosmoMP24}
+\end{corollary}
+Note that Cor.~\ref{cor:hierachyCollapses} can be generalized to other lossy models, since its proof does not take advantage of the technical details of lossy EOSs, but relies only on a compatible quasi order.
+This fact has some immediate consequence on the lossy-problems we are studying. In fact, it is known that $\leq_f$ is strong compatible on cEOSs, that is, if $\mu_1\geq_f\mu_2\xrun{\event}\mu_3$, then there is some $\mu_4$ such that $\mu_1\xrun{\event}\mu_4$ (Lemma 5.1 in~\cite{kohler-busmeier_survey_2014}).
+Thus, the hierarchy for full-lossy cEOSs collapses.
+Note that $\leq_f$ is not compatible over EOSs. This helps to prove the undecidability of reachability and coverability over them (cf. Th.4.3 in~\cite{kohler-busmeier_survey_2014}). Since $(\leq_f,0)$-coverability for cEOSs is decidable (Th. 5.2 in~\cite{kohler-busmeier_survey_2014}), we obtain the following theorem.
+
+\begin{theorem}
+    For $\ell\geq 1$, $(\leq_f,\ell)$-reachability and $(\leq_f,\ell)$-coverability for cEOSs are decidable.~\cite{CosmoMP24}
+\end{theorem}
+
+Instead $\leq_s$ is compatible for both EOSs and cEOSs, as shown next.
+\begin{lemma}\label{lemma:systemEnablePreservation}
+    If $(\lambda,\rho)$ enables the event $e$ on $\mu$ and $\mu'\geq_s\mu$, then $(\lambda,\rho)$ enables the event $e$ also on $\mu'$.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    If $(\lambda,\rho)$ enables the event $e$ on $\mu$, then the enabledness formula $\Phi(e,\lambda,\rho)$ holds and $\lambda\leq_s\mu$. Since $\mu\leq_s\mu'$, by transitivity of $\leq_s$, we have that $\lambda\leq_s\mu'$. Thus, $(\lambda,\rho)$ enables $e$ on $\mu'$.
+\end{proof}
+\begin{lemma}\label{lem:systemGeneralCompatible}
+    $\leq_s$ is strong compatible on EOSs.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    If $\mu_1\geq_s\mu_2\xrun{\event}\mu_3$, then $\lambda\leq_s\mu_2$, $\mu_3=\mu_2-\lambda+\rho$, and there is some $\Delta(\mu_2)$ such that $\mu_1=\mu_2+\Delta(\mu_2)$. Moreover, since $(\lambda,\rho)$ enables $e$ on $\mu_2$, then, by Lemma~\ref{lemma:systemEnablePreservation}, $(\lambda,\rho)$ enables $e$ on $\mu_1$. Thus, there is a $\mu_4$ such that $\mu_1\xrun{\event}\mu_4$. Moreover, by EOS semantics and the fact that $\lambda\leq_s\mu_2$, we have that $\mu_4=\mu_1-\lambda+\rho=\mu_2+\Delta(\mu_2)-\lambda+\rho \geq_s\mu_2-\lambda+\rho=\mu_3$.
+\end{proof}
+
+\begin{theorem}\label{th:systemCompatible}
+    The hierarchies for system-lossy EOSs and system-lossy cEOSs collapse.~\cite{CosmoMP24}
+\end{theorem}
+Thus, the study of system-lossiness on EOSs and cEOSs boils down to $(\leq_s,0)$-coverability for EOSs and cEOSs (we study them in Th.~\ref{th:systemConservativeUndec} below).
+Finally, we show that $\leq_o$ is compatible on cEOSs.
+The following preliminary remarks can be easily proved.
+
+\begin{remark}
+    $\leq_f=\leq_o\circ\leq_s=\leq_s\circ\leq_o$.\label{lem:fulllossy}
+\end{remark}
+\begin{remark}
+    $\Pi^1(\mu_1)+\Pi^1(\mu_2)=\Pi^1(\mu_1+\mu_2)$. If $\mu_1\leq_o\mu_2$, then $\Pi^1(\mu_1)=\Pi^1(\mu_2)$. \label{lem:proj}
+\end{remark}
+
+\begin{lemma}\label{lemma:object-conservative-compatible}
+    $\leq_o$ is strong compatible on cEOSs.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    The proof is depicted in Fig.~\ref{fig:object-compatibility-conservative}.
+    If $\mu_1\geq_o\mu_2\xrun{\event}\mu_3$, then, since $\leq_o\subseteq\leq_f$ and $\leq_f$ is strong compatible on cEOSs (Th. 5.1 in~\cite{kohler-busmeier_survey_2014}), there is some $\mu_4$ such that $\mu_1\xrun{\event}\mu_4\geq_f \mu_3$.
+    Since $\leq_f=\leq_s\circ\leq_o$ (Rem.~\ref{lem:fulllossy}), there is also some $\mu_4'$ such that $\mu_3\leq_s\mu_4'\leq_o\mu_4$. Thus, there is some $\Delta(\mu_3)$ such that $\mu_4'=\mu_3+\Delta(\mu_3)$ and, by Rem.~\ref{lem:proj}, we have $\Pi^1(\mu_4')=\Pi^1(\mu_4)$. Note that, by EOS semantics, $\mu_1$ and $\mu_2+\Delta(\mu_3)$ have respectively the predecessors $\mu_4=\mu_1-\lambda+\rho$ and $\mu_4'=\mu_2+\Delta(\mu_3)-\lambda+\rho$. By some simple algebra,\footnote{$\Pi^1(\mu_1)+\Pi^1(\lambda)+\Pi^1(\rho)=\Pi^1(\mu_1-\lambda+\rho)=\Pi^1(\mu_4)=\Pi^1(\mu_4')=\Pi^1(\mu_2+\Delta(\mu_3)-\lambda+\rho)=\Pi^1(\mu_2+\Delta(\mu_3))-\Pi^1(\lambda)+\Pi^1(\rho)$.} $\Pi^1(\mu_1)=\Pi^1(\mu_2+\Delta(\mu_3))$.
+    However, again by Rem.~\ref{lem:proj}, since $\mu_2\leq_o\mu_1$, we have $\Pi^1(\mu_1)=\Pi^1(\mu_2)$ and, summarising, $\Pi^1(\mu_2)+\Pi^1(\Delta(\mu_3))=\Pi^1(\mu_2+\Delta(\mu_3))=\Pi^1(\mu_1)=\Pi^1(\mu_2)$.
+    Thus, $\Pi^1(\Delta(\mu_3))=\emptyset$. Consequently, $\Delta(\mu_3)=\emptyset$ and $\mu_4\geq_o\mu_4'=\mu_3+\Delta(\mu_3)=\mu_3$.
+
+
+\end{proof}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \node[](1){$\mu_1$};
+        \node[below of=1](2){$\mu_2$};
+        \node[node distance=3cm,right of=1](4){${\mu_4=\mu_1-\lambda+\rho}$};
+
+        \node[below of=4](3){${\mu_3=\mu_2-\lambda+\rho}$};
+        \node[node distance=1.5cm,left of=2](aux){${\mu_2+\Delta(\mu_3)}$};
+
+        \path (4) -- node[sloped,midway](midRight){$\geq_f$} (3);
+        \node[node distance=4.5cm,right of=midRight](4prime){${\mu_4'=\mu_3+\Delta(\mu_3)=\mu_2+\Delta(\mu_3)-\lambda+\rho}$};
+
+
+        \path (1) -- node[midway,sloped]{$\geq_o$} (2);
+        \path (aux) -- node[midway,sloped]{$\geq_s$} (2);
+        \path (4) -- node[midway,sloped]{$\geq_o$} (4prime);
+        \path (4prime) -- node[midway,sloped]{$\leq_s$} (3);
+
+        \draw[->] (1) -- node[midway,above]{\scriptsize{$\event$}} (4);
+        \draw[->] (2) -- node[midway,above]{\scriptsize{$\event$}} (3);
+        \draw[->]
+        let
+        \p1=($(aux)-(0,.4)$),
+        \p2=(4prime.south)
+        in
+        (aux) --(\p1)-- node[pos=0.8,above]{\scriptsize{$\event$}}(\x2,\y1) -- (\p2);
+    \end{tikzpicture}
+    \caption{Depiction of proof of Th.~\ref{lemma:object-conservative-compatible}.}
+    \label{fig:object-compatibility-conservative}
+\end{figure}
+
+\begin{theorem}\label{thm:objectConservativeCompatible}
+    The hierarchy for object-lossy cEOSs collapses.~\cite{CosmoMP24}
+\end{theorem}
+Thus, the study of object-lossiness on cEOSs boils down to $(\leq_o,0)$-coverability (we study this problem in Th.~\ref{th:objectConservativeUndec}).
+Summarising, compatibility considerably simplifies the landscape of lossy problems for lossy cEOSs and for system-lossy EOSs. Specifically, for cEOSs, the only relevant problems are only the status of $(\leq_o,0)$-coverability and of $(\leq_s,0)$-coverability. Similarly, for system-lossy EOSs, the only relevant question is the status of $(\leq_s,0)$-coverability.
+
+\section{Distinct Problems}\label{sec:distinct}
+Unfortunately, compatibility does not hold for $\leq_o$ and $\leq_f$ on EOSs. This is the main fact allowing the simulation of inhibitory nets via EOSs in~\cite{kohler-busmeier_survey_2014}. Thus, the hierarchies induced by $\leq_o$ and $\leq_f$ do not collapse. In fact, we now show that all the problems in the hierarchy are distinct. We make use of a gadget with a dedicated place that counts the lossy steps.
+\begin{definition}\label{def:lossiness-counterGadget}
+    The \emph{lossiness-counter gadget} $\G$ is the EOS $(\hat{N},\N,d,\Theta)$ depicted in Fig.~\ref{fig:objFullMayrDegree} where
+    \begin{compactenum}
+        \item $\hat{N}$=$(\hat{P},\hat{T},\hat{F})$ where $\hat{P}=\{p_1,p_2,\mathit{count}\}$,
+        $\hat{T}=\{\tau_1,\tau_2\}$,
+        $\hat{F}(x)=1$ if $x\in \{(p_1,\tau_1),$
+        $ (\tau_1,\mathit{count}),(\tau_1,p_2),(p_2,\tau_2),(\tau_2,\mathit{count}),(\tau_2,p_1)\}$ and $\hat{F}(x)=0$ otherwise,
+        \item $\N=\{N_1,N_2\}$ where $N_1=(\{p\},\{\mathit{inc}_1\},F_1)$, $F_1(\{(\mathit{inc}_1,p)\})=1$, $F_1(\{(p,\mathit{inc}_1)\})$, $N_2=(\{q\},\{\mathit{inc}_2\},F_2\})$, $F_2(\{(\mathit{inc}_2,q)\})=1$, and $F_2(\{(q,\mathit{inc}_12)\})$,
+        \item $d(p_1)=N_1$, $d(p_2)=N_2$, and $d(\mathit{count})=\blacksquare$, and
+        \item $\Theta=\{\tup{\tau_1,\mathit{inc}_2},\tup{\tau_2,\mathit{inc}_1}\}$.
+    \end{compactenum}
+\end{definition}
+In what follows, we work with a fixed initial nested marking $\mu_0={\tup{p_1,\fmset{p}}}$ of $\G$.
+\input{figures/eos/objFullMayrDeg}
+
+
+\subsection{Distinct Problems for Object-lossy EOSs}
+We first study the case of object-lossiness.
+\begin{lemma}
+    Let $\prec$ be a transitive relation.
+    Given $\ell\in\mathbb{N}\cup\{\omega\}$, we have that $\mu$ is $(\preceq,\ell)$-reachable from $\mu_0$ in $\G$ iff $\mu$ is $(\precneq,\ell)$-reachable from $\mu_0$.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    Each $\precneq$-lossy step $\mu_1\succneq\mu_2$ can be interpreted as a $\preceq$-lossy step $\mu_1\succeq\mu_2$. Thus, each $(\precneq,\ell)$-run can be interpreted as a $(\preceq,\ell)$-run. Similarly, each $(\preceq,\ell)$-run that does not contain \emph{reflexive} lossy steps of the form $\mu\succeq \mu$ can be interpreted as a $(\precneq,\ell)$-run. Moreover, each maximal finite or infinite sub-run $\mu\succeq \mu\succeq\dots \mu\succeq\dots$ of an arbitrary $(\preceq,\ell)$-run $\sigma$ can be substituted by a single occurrence of $\mu$, obtaining a $(\preceq,\ell)$-run without reflexive lossy steps.
+\end{proof}
+
+\begin{lemma}\label{lemma:gadgetObjectMaximalRun}
+    For each $\ell\geq 0$, the lossiness-counter gadget $\G$ exhibits a single maximal $\ell$-strong $(\lneq_o,\ell)$-run from its initial nested-marking $\mu_0$. This run has the form
+    \[\mu_0\gneq_o \mu_0'\rightarrow \mu_1\gneq_o\mu_1'\rightarrow\mu_2\gneq_o\dots\mu_{\ell-1}\gneq_o\mu_{\ell-1}'\rightarrow \mu_{\ell}\]
+    where, for each $i\leq\ell$, we have $\mu_i=\tup{x_i,\fmset{y_i}}+i\tup{\mathit{count},\varepsilon}$ and $\mu_i'=\tup{x_{i+1},\emptyset}+i\tup{\mathit{count},\varepsilon}$ where, for each $j\in\mathbb{N}$, $x_j=p_1$  and $y_j=p$ if $j$ is even and $x_j=p_2$ and $y_j=q$  if $j$ is odd.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    By induction on $\ell$. If $\ell=0$, then, since $\mu_0$ is a deadlock for $\rightarrow$, the run $\mu_0$ of length $0$ is the only $(\lneq_o,\ell)$-run. Moreover, $0$ is even and $\mu_0=\tup{p_1,\fmset{p}}+0\tup{\emph{count},\varepsilon}$.
+
+    If the inductive hypothesis holds for an arbitrary even $\ell$, then $\mu_\ell=\tup{p_1,\fmset{p}}+\ell\tup{\mathit{count},\varepsilon}$ is a deadlock for $\rightarrow$. The only way to continue the run is by one $\gneq_o$ step.
+    However, the only token that can be lost under $\leq_o$ is the token inside $\tup{p_1,\fmset{p}}$, thus, the only $\leq_o$-successor of $\mu_\ell$ is $\mu_{\ell}'=\tup{p_1,\emptyset}+\ell\tup{\mathit{count},\varepsilon}$.
+    On $\mu_{\ell}'$ there is no available $\gneq_o$ step and the only enabled event is $(\tau_1,\mathit{inc}_2)$ with mode $(\lambda,\rho)$ where
+    $\lambda=\tup{p_1,\emptyset}$ and $\rho=\tup{p_2,\fmset{q}}+\tup{\mathit{count},\varepsilon}$. Its firing reaches $\mu_{\ell+1}=\tup{p_2,\fmset{q}}+(\ell+1)\tup{\mathit{count},\varepsilon}$. This configuration is a deadlock for $\rightarrow$ and the so obtained $(\lneq_o,\ell+1)$-run from $\mu_0$ to $\mu_{\ell+1}$ already contains $\ell+1$ $\lneq_o$-steps. Thus, this run is maximal among the $(\lneq_o,\ell+1)$-runs.
+
+    If the inductive hypothesis holds for an arbitrary odd $\ell$, the same argument applies with the provision that $p_1$ and $p_2$, $p$ and $q$, as well as $(\tau_1,\mathit{inc}_2)$ and $(\tau_2,\mathit{inc}_1)$, have to be swapped.
+\end{proof}
+
+\begin{corollary}
+    For each finite $\ell$, the set of nested markings which are $(\leq_o,\ell)$-reachable from $\mu_0$ is $\{\mu_i\mid i\in\{0,\dots,\ell\}\}\cup\{\mu_i'\mid i\in\{0,\dots,\ell-1\}\}$ where $\mu_i$ and $\mu_i'$ are defined as in Lemma~\ref{lemma:gadgetObjectMaximalRun}.~\cite{CosmoMP24}
+\end{corollary}
+Consequently, using the same notation as in Lem.~\ref{lemma:gadgetObjectMaximalRun}, for each $\ell\in\mathbb{N}$, we have that $\mu_{\ell}'$
+is $(\leq_o,\ell)$-coverable but not $(\leq_o,\ell)$-reachable and $\mu_{\ell+1}$ is $(\leq_o,\ell+1)$-reachable but not $(\leq_o,\ell)$-coverable. Thus, the sequence of yes-instance sets of $(\leq_o,\ell)$-reachability/coverability problems (recall Lem.~\ref{lem:reachCoverIncrease} and Lem.~\ref{lem:coverReachIncrease}) is a sequence of proper subsets.
+Consequently, for each finite $\ell$, all $(\leq_o,\ell)$-reachability/coverability problems are pairwise distinct. Moreover, while $(\leq_o,\omega)$-reachability coincides with $(\leq_o,\omega)$-coverability by Lem.~\ref{lem:reachCoverOmega}, also $(\leq_o,\omega)$-reachability is distinct from $(\leq_o,\ell)$-reachability/coverability for each $\ell$.\footnote{Otherwise, it would coincide also with $(\leq_o,\ell+1)$-reachability/coverability. Thus, $(\leq_o,\ell)$-reachability/coverability and $(\leq_o,\ell+1)$-reachability/coverability would coincide, which is a contradiction.}
+
+\begin{corollary}\label{cor:distinctObjectGeneral}
+    For each $\ell_1<\ell_2\leq\omega$, we have that $(\leq_o,\ell_1)$-reachability, $(\leq_o,\ell_1)$-coverability, $(\leq_o,\ell_2)$-reachability, and $(\leq_o,\ell_2)$-coverability are pair-wise distinct problems.~\cite{CosmoMP24}
+\end{corollary}
+
+
+\subsection{Distinct Problems for Full-lossy EOSs}
+
+A fact analogous to Cor.~\ref{cor:distinctObjectGeneral} applies also to $\leq_f$. In fact, even if $\G$ exhibits more complex maximal $(\lneq_f,\ell)$-runs, we still need $\ell$ lossy steps to put $\ell$ tokens on $\mathit{count}$.
+We first show that if a marking is reachable/coverable using $\leq_f$-lossy steps, then it is also covered under $\leq_s$ by some marking reachable via a run as in Lem.~\ref{lemma:gadgetObjectMaximalRun}.
+
+\begin{lemma}\label{lem:decompositionLemma}
+    If $\sigma\in\lruns[\ell]{\leq_f}{\mu_0}$
+    and $\mu_0\leadsto^\sigma\mu$, then there is some $\lambda\geq_s\mu$ and there is an $\ell'$-strong run $\sigma'\in\lruns[\ell']{\lneq_o}{\mu_0}$ such that $\mu_0\leadsto^{\sigma'}\lambda$, for some $\ell'\leq\ell$.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    Since $\leq_f=\leq_o\circ\leq_s$, we can expand each $\leq_f$-lossy step in two subsequent $\leq_o$- and $\leq_s$-lossy steps. By compatibility of $\leq_s$ on  EOSs (Lem.~\ref{lemma:object-conservative-compatible}) and the fact that $\leq_s\circ\leq_o=\leq_o\circ\leq_s$ (Rem.~\ref{lem:fulllossy}), we can push all the $\leq_s$-lossy steps at the end of the run, obtaining a run $\sigma'\in \lruns[\ell]{\leq_o}{\mu_0}$ such that $\mu_0\leadsto^{\sigma'}\lambda\geq_s\dots\geq_s\mu$, for some marking $\lambda$. By transitivity of $\leq_s$, we have $\lambda\geq_s\mu$. Moreover, we can drop the $\leq_o$-lossy steps in $\sigma'$ of the form $\pi\geq_o\pi$ for some $\pi$, obtaining an $\ell'$-strong run $\sigma''\in\lruns[\ell']{\lneq_o}{\mu_0}$ for some $\ell'\leq \ell$.
+\end{proof}
+We now show that also the sequence of yes-instance sets of $\leq_f$-lossy reachability/coverability problems (recall Lem.~\ref{lem:reachCoverIncrease} and Lem.~\ref{lem:coverReachIncrease}) is a sequence of proper subsets.
+We do that by using the same markings $\mu_\ell$ and $\mu_\ell'$ defined in Lem.~\ref{lemma:gadgetObjectMaximalRun}.
+\begin{lemma}
+    Using the notation in Lem.~\ref{lemma:gadgetObjectMaximalRun}, for each finite $\ell\in\mathbb{N}$, we have that $\mu_{\ell+1}$ is $(\leq_f,\ell+1)$-reachable, but not $(\leq_f,\ell)$-coverable.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    By Lem.~\ref{lemma:gadgetObjectMaximalRun} we know that $\mu_{\ell+1}$ is $(\leq_o,\ell+1)$-reachable and, thus, also $(\leq_f,\ell+1)$-reachable.
+    We now show that $\mu_{\ell+1}$ is not $(\leq_f,\ell)$-coverable.
+    Assume by contradiction that $\mu_{\ell+1}$ is ${(\leq_f,\ell)}$-coverable. Then, there is some run ${\sigma\in \lruns[\ell]{\leq_f}{\mu_0}}$ and a nested marking $\lambda$ such that $\mu_0\leadsto^\sigma\lambda\geq_f\mu_{\ell+1}$.
+    Since $\mu_{\ell+1}\geq_s (\ell+1) \tup{\mathit{count},\varepsilon}$, also $\lambda\geq_f (\ell+1) \tup{\mathit{count},\varepsilon}$. Thus, $\lambda\geq_s (\ell+1) \tup{\mathit{count},\varepsilon}$.\footnote{In fact, $\lambda\geq_f (\ell+1) \tup{\mathit{count},\varepsilon}$ implies that there is some $\pi$ such that $\lambda\geq_s\pi\geq_o (\ell+1)\tup{\mathit{count},\varepsilon}$; since the latter marking only places black tokens at the system net level, $\pi$ is obtained by adding zero tokens at the object net level, i.e., $\pi=(\ell+1)\tup{\mathit{count},\varepsilon}$. Hence $\lambda\geq_s(\ell+1)\tup{\mathit{count},\varepsilon}$.}
+    By applying Lem.~\ref{lem:decompositionLemma} on the run $\sigma$, there is some nested marking $\lambda'\geq_s\lambda$ and, for some $\ell'\leq\ell$, a $\ell'$-strong run $\sigma'\in\lruns[\ell']{\lneq_o}{\mu_0}$ such that $\mu_0\leadsto^{\sigma'}\lambda'$. Thus, by Lem.~\ref{lemma:gadgetObjectMaximalRun}, we have that either $\lambda'=\mu_{\ell'}$ or $\lambda'=\mu'_{\ell'-1}$ and, hence, $\lambda'$ places at most $\ell'$ black tokens on $\mathit{count}$. However, $\lambda'\geq_s\lambda\geq_s\ell+1\tup{\mathit{count},\varepsilon}$, i.e., $\lambda'$ puts at least $\ell+1$ tokens on $\mathit{count}$ even if $\ell'\leq \ell <\ell+1$, which is a contradiction.
+\end{proof}
+
+\begin{lemma}
+    Using the notation in Lem.~\ref{lemma:gadgetObjectMaximalRun}, for each finite $\ell\in\mathbb{N}$, we have that $\mu'_{\ell+1}$ is $(\leq_f,\ell)$-coverable, but not $(\leq_f,\ell)$-reachable.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    By Lem.~\ref{lemma:gadgetObjectMaximalRun} we know that $\mu'_{\ell+1}$ is $(\leq_o,\ell)$-coverable and, thus, also $(\leq_f,\ell)$-coverable.
+    We now show that $\mu'_{\ell+1}$ is not $(\leq_f,\ell)$-reachable.
+    Assume by contradiction that $\mu'_{\ell+1}$ is ${(\leq_f,\ell)}$-reachable. Then, there is some run ${\sigma\in \lruns[\ell]{\leq_f}{\mu_0}}$ such that $\mu_0\leadsto^\sigma\mu'_{\ell+1}$.
+    By applying Lem.~\ref{lem:decompositionLemma} on the run $\sigma$, there is some nested marking $\lambda\geq_s\mu'_{\ell+1}$ and, for some $\ell'\leq\ell$, a $\ell'$-strong run $\sigma'\in\lruns[\ell']{\lneq_o}{\mu_0}$ such that $\mu_0\leadsto^{\sigma'}\lambda$. Since $\lambda\geq_s\mu'_{\ell+1}\geq_s (\ell+1)\tup{\mathit{count},\varepsilon}$, we have that $\lambda$ puts at least $\ell+1$ tokens on $\mathit{count}$. However, by Lem.~\ref{lemma:gadgetObjectMaximalRun}, we have that either $\lambda=\mu_{\ell'}$ or $\lambda=\mu'_{\ell'-1}$. Hence, $\lambda$ puts at most $\ell'\leq\ell<\ell+1$ tokens on $\mathit{count}$, which is a contradiction.
+\end{proof}
+
+\begin{corollary}
+    For each $\ell_1<\ell_2\leq\omega$, we have that $(\leq_f,\ell_1)$-reachability, $(\leq_f,\ell_1)$-coverability, $(\leq_f,\ell_2)$-reachability, and $(\leq_f,\ell_2)$-coverability are pair-wise distinct problems.~\cite{CosmoMP24}
+\end{corollary}
+
+
+
+\section{Undecidability for object- and system-lossy cEOSs}\label{sec:conservativeLossy}
+We now study the decidability status of $(\leq_o,0)$-coverability and $(\leq_s,0)$-coverability for cEOSs.
+In~\cite{kohler2007reachable}, reachability for cEOSs is proved undecidable via a reduction from reachability of 2CMs. We provide a variant of that reduction that reduces reachability of 2CMs to $\leq_o$-coverability and to $\leq_s$-coverability of cEOSs.
+This proves that both coverability problems are undecidable. By Th.~\ref{thm:objectConservativeCompatible} and Th.~\ref{th:systemCompatible}, all $\ell$-reachability problems for object-lossy and system-lossy cEOSs are, thus, undecidable. Since cEOSs are a special case of EOSs, undecidability applies also to object-lossy and system-lossy EOSs.
+
+\subsection{Reduction to Reachability}
+We show a reduction from reachability of a target configuration $(q_f,n_1,n_2)$ of any 2CM $\K=(Q,\delta,q_0)$ with increment, decrement, and zero-check instructions to reachability of a cEOS $\E_{\K}$.
+
+\begin{definition}\label{def:2cmEosConcepts}
+    Given a 2CM $\K=(Q,\delta,q_0)$, we define the EOS $\E_{\K}=(\hat{N},\N,d,\Theta)$ where
+    \begin{compactenum}
+        \item $\hat{N}=(\hat{P},\hat{T},\hat{F})$ is such that:
+        \begin{compactitem}
+            \item $\hat{P}$ contains $Q$, a place $g$, a place $\emph{next}_i$ for each instruction $i\in\delta$, and two places $c_j$ and $c_j'$ for each counter $\mathit{cnt}_j$;
+            \item $\hat{T}$ contains two transitions $t_i^1$ and $t_i^2$ for each instruction $i\in\delta$;
+            \item For each increment (resp., decrement, zero-check) instruction $i\in\delta$, $\hat{F}$ captures the pre- and post-conditions depicted in Fig.~\ref{fig:objectLossy2CMinc} (Fig.~\ref{fig:objectLossy2CMdec}, Fig.~\ref{fig:objectLossy2CMcheck}).
+        \end{compactitem}
+        \item $\N$ contains the net $\blacksquare$ and a single net $N=(P,T,F)$ where $P=\{p\}$, $T=\{\mathit{inc}_N,\mathit{dec_N}\}$, $F(\mathit{inc}_N,p)=F(p,\mathit{dec}_N)=1$, and $F(p,\mathit{inc}_N)=F(\mathit{dec}_N,p)=0$.
+        \item $d(c_1)=d(c_2)=d(g)=N$ and $d(x)=\blacksquare$ for each other place $x\in \hat{P}\setminus\{c_1,c_2,g\}$.
+        \item The synchronization structure $\Theta$ contains the events
+        \begin{compactitem}
+            \item $e_i^1=(t_i^1,\{\{\mathit{inc}_N\}\})$ and $e_i^2=(t_i^2,\emptyset)$ for each increment instruction $i$.
+            \item $e_i^1=(t_i^1,\{\{\mathit{dec}_N\}\})$ and $e_i^2=(t_i^2,\emptyset)$ for each decrement instruction $i$.
+            \item $e_i^1=(t_i^1,\emptyset)$ and $e_i^2=(t_i^2,\emptyset)$ for each zero-check instruction $i$.
+        \end{compactitem}
+    \end{compactenum}
+\end{definition}
+\input{figures/eos/objectLossy2CMunified}
+Note that $\E_{\K}$ is a cEOS. It weakly simulates the increment and decrement instructions of $\K$ and performs zero-guesses in place of zero-check instructions. These guesses may be wrong but leave behind them two irreversible evidences: tokens in the internal marking of the object net at $g$ and non-matching numbers of tokens on the place $c_j$ and in the object net on $c_j'$, for some $j\in\{0,1\}$. The former can be detected by $(\leq_s,0)$-coverability; the latter can be detected by $(\leq_o,0)$-coverability.
+We make these notions precise.
+\begin{definition}\label{c}
+    We say that a nested marking $\mu$ for $\E_{\K}$ is \emph{legal} if it places exactly one object-token $N$ at $c_0$, $c_1$, and $g$, exactly one $\blacksquare$ on exactly one place $q\in Q$, and no token on any place in $\hat{P}\setminus\{c_0',c_1',q\}$. If $\mu$ is legal, we denote \begin{compactenum}
+        \item by $[\mu]_j'$ the number of black tokens placed at $c_j'$,
+        \item by $[\mu]_j$ the number of black-tokens in the object-token at $c_j$,
+        \item by $[\mu]_g$ the number of black-tokens in the object-token at $g$, and
+        \item by $[\mu]_Q$ the place $q\in Q$ marked by $\mu$ with a black-token.
+    \end{compactenum}
+
+    Moreover, we say that $\mu$:
+    \begin{compactenum}
+        \item is \emph{broken at (counter) $j$} if $[\mu]_j\neq[\mu]_j'$, \emph{sub-broken at $j$} if $[\mu]_j<[\mu]_j'$, \emph{broken at $g$} if $[\mu]_g\neq 0$,
+        \item is \emph{broken} if it is broken at $0$, at $1$, or at $g$,
+        \item \emph{encodes} the 2CM configuration $c=(q,n_0,n_1)$, denoted by $\mu=\tup{c}$, if $\mu$ is non-broken and c=$([\mu]_Q,[\mu]_0,[\mu]_1)$.
+    \end{compactenum}
+\end{definition}
+
+The following lemma is a direct consequence of the pre- and post-conditions of the transitions in $\E_{\K}$, the shape of its synchronization structure $\Theta$, the EOS semantics, and Def.~\ref{def:2cmEosConcepts}. Its proof consists in simple, yet space-consuming algebraic checks and, thus, it is omitted.
+\begin{lemma}\label{lemma:EOSmechanisms}
+    Let $i\in\{(q,+,j,q'),(q,-,j,q'),(q,=,j,q')\}\cap\delta$ and $\mu$ a legal nested marking for $\E_{\K}$. If $e_i^1$ is enabled on $\mu$, there is some $\mu'$ and $\mu''$ such that $\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$ and
+    \begin{compactenum}
+        \item $[\mu]_Q=q$, $\mu''$ is legal , $[\mu'']_Q=q'$, $[\mu'']_{1-j}=[\mu]_{1-j}$, and $[\mu'']_{1-j}'=[\mu]_{1-j}'$.
+        \item if $i=(q,+,j,q')$, then $[\mu'']_j=[\mu]_j+1$, $[\mu'']_j'=[\mu]_j'+1$ and $[\mu'']_g=[\mu]_g$.
+        \item if $i=(q,-,j,q')$, then $[\mu'']_j=[\mu]_j-1$, $[\mu'']_j'=[\mu]_j'-1$ and $[\mu'']_g=[\mu]_g$.
+        \item if $i=(q,=,j,q')$, then $[\mu'']_j=0$, $[\mu'']_j'=[\mu]_j'$, and  $[\mu'']_g=[\mu]_g+[\mu]_j$.~\cite{CosmoMP24}
+    \end{compactenum}
+\end{lemma}
+\begin{corollary}\label{cor:brokenCriteria}
+    Let $\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$ and $\mu$ legal. If $\mu$ is sub-broken at $0$ or at $1$, then $\mu''$ is sub-broken at $0$ or at $1$, respectively. If $\mu$ is broken at $g$, then $\mu''$ is broken at $g$.~\cite{CosmoMP24}
+\end{corollary}
+\begin{corollary}\label{cor:brokenCriteriaBis}
+    Let $\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$, and $\mu$ legal and non-broken at $0$ or at $1$. If $\mu''$ is broken at $0$ or at $1$, respectively, then $\mu''$ is sub-broken at $0$ or at $1$.~\cite{CosmoMP24}
+\end{corollary}
+\begin{corollary}\label{cor:brokenCriteriaTris}
+    Let $\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$, $\mu$ legal, and $i \in\{(q,+,j,q'),(q,-,j,q')\}\cap\delta$. If $\mu$ is non-broken, then $\mu''$ is non-broken.~\cite{CosmoMP24}
+\end{corollary}
+Cor.~\ref{cor:brokenCriteriaTris} indicates that the simulation of increment or decrement instructions cannot lead, on their own, to broken markings. We now show that this is not the case for some simulation of zero-checks, called \emph{wrong zero-guesses}.
+
+\begin{definition}
+    A \emph{wrong zero-guess} on counter $j$ is a run $\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$ where $i$ is a zero-check instruction on counter $j$, $\mu$ is legal, and $[\mu]_j>0$.
+\end{definition}
+
+\begin{lemma}
+    If $\sigma:\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$ and $\mu$ is legal and non-broken, then $\mu''$ is broken at $j$ for some $j\in\{0,1\}$ iff $\sigma$ is a wrong zero-guess on counter $j$.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    By Cor.~\ref{cor:brokenCriteriaTris}, since $\mu$ is not broken at $j$ but $\mu''$ is, $i$ is a zero-check instruction on counter $j$. If $[\mu]_j=[\mu]_j'=0$, then $[\mu'']_j=0=[\mu]_j'=[\mu'']_j'$ and $\mu''$ is not broken at $j$, contradiction. Thus, $[\mu]_j=[\mu]_j'>0$ and, thus, $\sigma$ is a wrong zero-guess.
+    Vice-versa, if $\sigma$ is a wrong-zero guess on counter $j$, then, by Lemma~\ref{lemma:EOSmechanisms}, $\mu''$ is broken at $j$.
+\end{proof}
+
+The next lemma is proved analogously.
+\begin{lemma}
+    If $\sigma:\mu\xrightarrow{e_i^1}\mu'\xrightarrow{e_i^2}\mu''$ and $\mu$ is legal and non-broken, then $\mu$ is broken at $g$ iff $\sigma$ is a wrong zero-guess.~\cite{CosmoMP24}
+\end{lemma}
+
+\begin{corollary}
+    If $\sigma:\tup{(q_0,0,0)}\rightarrow^*\mu$ is a run of even length, then the following are equivalent:
+    \begin{inparaenum}[\itshape (1)]
+        \item $\mu$ is sub-broken at $0$ or $1$,
+        \item $\mu$ is broken at $g$,
+        \item $\mu$ is broken, and
+        \item $\sigma$ has a wrong zero-guess.~\cite{CosmoMP24}
+    \end{inparaenum}
+
+\end{corollary}
+
+Clearly, for each run $c_0\xrightarrow{i_0} c_1 \rightarrow{i_1} \dots$ in $\K$ there is a run ${\tup{c_0}\xrightarrow{e^1_{i_0}}\mu_0\xrightarrow{e^2_{i_0}}\tup{c_1}\xrightarrow{e^1_{i_1}}\mu_1\xrightarrow{e^2_{i_1}}\dots}$. If the target configuration $(q_f,n_0,n_1)$ is reachable from $(q_0,0,0)$ in $\K$, then $\mu_f=\tup{(q_f,n_0,n_1)}$ is reachable from $\mu_0=\tup{(q_0,0,0)}$ in $\E_{\K}$. Vice-versa, if $\mu_f$ is reachable from $\mu_0$ in $\E_{\K}$ via a run $\sigma$, then, $\mu_f$ is legal, non-broken, $[\mu_f]_Q=q_f$, and $\sigma$ has even length. Thus, $\sigma$ does not have any wrong zero-guess and can be simulated by a corresponding run in $\K$ from $(q_0,0,0)$.
+\begin{theorem}\label{th:2cmUndecRed}
+    $(q_f,n_0,n_1)$ is reachable from $(q_0,0,0)$ in $\K$ iff $\mu_f=\tup{(q_f,n_0,n_1)}$ is reachable from $\mu_0=\tup{(q_0,0,0)}$ in $\E_{\K}$.~\cite{CosmoMP24}
+\end{theorem}
+Note that the EOS in Def.~\ref{def:2cmEosConcepts} is a cEOS. Thus, since 2CM reachability is undecidable, our result confirms that reachability for cEOSs is undecidable. However, we can conclude more.
+
+\subsection{From Reachability to \texorpdfstring{$(\leq_o,0)$}{leqo}-coverability}
+
+We now show that our construction yields undecidability also for $(\leq_o,0)$-coverability. This is based on the fact that the nested marking $\mu_f$ in Th.~\ref{th:2cmUndecRed} is reachable if and only if it is $(\leq_o,0)$-coverable. In fact, if $\mu_0\rightarrow^*\mu\geq_o\mu_f$, then, for each $j\in\{0,1\}$,
+\begin{compactenum}
+    \item $\mu$ and $\mu_f$ mark in the same way all system net places of type $\blacksquare$.
+    \item $[\mu]_Q$ is well-defined, $[\mu]_Q=[\mu_f]_Q=q_f$, $\mu$ is reachable only via runs of even length, and $\mu$ is legal.
+    \item for each $j\in\{0,1\}$, $[\mu]_j'=[\mu_f]_j'=[\mu_f]_j\leq [\mu]_j$;
+    \item if $\mu$ is broken at $j$, then by Cor.~\ref{cor:brokenCriteria} and Cor.~\ref{cor:brokenCriteriaBis} it is sub-broken at $j$ and, thus, $[\mu]_j<[\mu]_j'\leq[\mu]_j$, contradiction; thus, $\mu$ is not broken at $j$ and is not broken at $0$ and, consequently, not broken at $g$.
+    \item $[\mu]_j=[\mu]_j'=[\mu_f]_j'=[\mu_f]_j$ and $[\mu]_g=0=[\mu_f]_g$.
+\end{compactenum}
+Summarising $\mu$ and $\mu_f$ coincide. Thus, $\mu_f$ is $(\leq_o,0)$-coverable from $\mu_0$ iff it is reachable. By Th.~\ref{th:2cmUndecRed}, we obtain the following result.
+
+\begin{theorem}\label{th:objectConservativeUndec}
+    $(\leq_o,0)$-coverability for cEOSs is undecidable.~\cite{CosmoMP24}
+\end{theorem}
+By Th.~\ref{thm:objectConservativeCompatible}, by undecidability of reachability for cEOSs (Th.5.5 in~\cite{kohler-busmeier_survey_2014}), and by the fact that each cEOS is also an EOS, we obtain the following result.
+\begin{corollary}
+    For each $\ell\in\mathbb{N}\cup\{\omega\}$, we have that $(\leq_o,\ell)$-reachability and $(\leq_o,\ell)$-coverability for cEOSs and for EOSs are undecidable.~\cite{CosmoMP24}
+\end{corollary}
+
+
+\subsection{From Reachability to \texorpdfstring{$(\leq_s,0)$}{leqs}-coverability}
+
+We now show that similar statements apply also for $(\leq_s,0)$-coverability.
+In fact, if $\mu_0\rightarrow^*\mu\geq_s\mu_f$, then, for each $j\in\{0,1\}$,
+\begin{compactenum}
+    \item $\mu$ places at least one black-token on $[\mu_f]_Q=q_f$, thus $\mu$ is reachable only via runs of even length, and $\mu$ is legal.
+    \item possibly with the exception of $c_0'$ and $c_1'$, $\mu$ and $\mu_f$ coincide on all system net places, including all object-tokens on them.
+    \item $[\mu]_j=[\mu_f]_j=[\mu_f]_j'\leq[\mu]_j'$ and $[\mu]_g=[\mu_f]_g$, thus $\mu$ is not broken and $[\mu]_j'=[\mu]_j=[\mu_f]_j$.
+\end{compactenum}
+Summarising $\mu$ and $\mu_f$ coincide. Thus, $\mu_f$ is $(\leq_s,0)$-coverable from $\mu_0$ iff it is reachable. By Th.~\ref{th:2cmUndecRed}, we obtain the following result.
+\begin{theorem}\label{th:systemConservativeUndec}
+    $(\leq_s,0)$-coverability for cEOSs is undecidable.~\cite{CosmoMP24}
+\end{theorem}
+By Th.~\ref{th:systemCompatible}, by undecidability of reachability for cEOSs (Th.5.5 in~\cite{kohler-busmeier_survey_2014}), and the fact that each cEOS is also an EOS, we obtain the following corollaries.
+\begin{corollary}
+    For each $\ell\in\mathbb{N}\cup\{\omega\}$, we have that $(\leq_s,\ell)$-reachability and $(\leq_s,\ell)$-coverability for cEOSs and for EOSs are undecidable.~\cite{CosmoMP24}
+\end{corollary}
+
+
+
+\section{Undecidability for full-lossy EOSs}\label{sec:fullEOSundecidability}
+We now show that all $(\leq_f,\ell)$-reachability problems for EOSs with finite $\ell\geq 1$ are undecidable. This is achieved via a reduction of reachability of 2CMs to $(\leq_f,\ell)$-reachability with any given $\ell$.
+
+Fix the value of $\ell\geq 1$. Given an arbitrary 2CM $\K=(Q,\delta,q_0)$, a target configuration $(q_f,n_1,n_2)$ of $\K$, and its simulating EOS $\E_{\K}=(\hat{N}_{\K},\N_{\K},d_{\K},\Theta_{\K})$ as in Sec.~\ref{sec:conservativeLossy}, we merge $\E_{\K}$ with the lossiness-counter gadget $\G=(\hat{N}_{\G},\N_{\G},d_{\G},\Theta_{\G})$ from Sec.~\ref{sec:coincidentProblems}. Specifically, for $\hat{N}_{\K}=(\hat{P}_{\K}, \hat{T}_{\K},\hat{F}_{\K})$ and $\hat{N}_{\G}=(\hat{P}_{\G}, \hat{T}_{\G},\hat{F}_{\G})$,
+we start with the EOS $\M=(\hat{M},\N_{\K}\cup\N_{\G},d_{\K}\cup d_{\G},\Theta_{\K}\cup\Theta_{\G})$ where
+$\hat{M}=(\hat{P}_{\K}\cup\hat{P}_{\G}, \hat{T}_{\K}\cup\hat{T}_{\G},\hat{F}_{\K}\cup\hat{F}_{\G})$.
+
+We now add to $\M$
+a system net transition $\mathit{enabling}$ together with a dedicated event $e=\tup{\mathit{enabling},\emptyset}$ (see Fig.~\ref{fig:addeToM}). This transition consumes
+\begin{inparaenum}[\itshape (1)]
+    \item $\ell$ tokens from $\mathit{count}$,
+    \item one from $p_1$ if $\ell$ is even,
+    \item one from $p_2$ if $\ell$ is odd.
+\end{inparaenum}
+The transition $\mathit{enabling}$ produces
+\begin{inparaenum}[\itshape (1)]
+    \item one in $q_0$, and
+    \item one object-token with empty internal marking in each of $g$, $c_0$, and $c_1$.
+\end{inparaenum}
+We call the so obtained EOS $\F$. The initial marking $\mu_0$ of $\F$ is $\tup{p_1,\fmset{p}}$, as for $\G$.
+
+\input{figures/eos/addedToM}
+
+Note that, along the runs of $\F$, the event $e=\tup{\mathit{enabling},\emptyset}$ fires at most once. Before firing $e$, there is no token on $\E_{\K}$
+while, after firing $e$, there is no token on $\G$.
+Let $\sigma$ be a $(\leq_f,\ell)$-run of $\F$.
+If $e$ is not fired along $\sigma$, then $\sigma$ does not reach the target marking $\mu_f=\tup{(q_f,n_1,n_2)}$ (which puts some token on $\E_{\K}$).
+Otherwise, $\sigma$ can be split into two runs $\sigma_1$ and $\sigma_2$, such that $\sigma=\sigma_1\xrun{e}\sigma_2$.
+Since $e$ consumes $\ell$ tokens from $\mathit{count}$ and one from either $p_1$ or $p_2$ in $\G$, the last marking $\mu_1$ in $\sigma_1$ has to put at least $\ell$ tokens on $\mathit{count}$ and at least one token on either $p_1$ or $p_2$, respectively.
+
+If $\sigma_1$ is not $\ell$-strong, then it is $\ell'$-strong for some $\ell'<\ell$. By Lem.~\ref{lem:decompositionLemma}, there is some $\ell''$-strong run $\sigma \in\lruns[\ell'']{\lneq_o}{\mu_0}$ for some $\ell''\leq \ell'$ such that $\mu_0\leadsto^{\sigma_1'}\lambda\geq_s\mu_1$ for some marking $\lambda$. Thus, by Lem.~\ref{lemma:gadgetObjectMaximalRun}, $\lambda$ puts on $\mathit{count}$ at most $\ell''<\ell$ tokens. Since $\lambda\geq_s\mu_1$, so does $\mu_1$, which is a contradiction. Thus, $\sigma_1$ is $\ell$-strong.
+
+Consequently, since $\sigma$ is a $(\leq_f,\ell)$-run, $\sigma_2$ must be a (perfect) $(\leq_f,0)$-run of $\E_{\K}$. Also, because of the post-conditions of $\mathit{enabling}$, the first marking in $\sigma_2$ is $\tup{(q_0,0,0)}$. Thus, the 2CM $\K$ reaches the target $(q_f,n_1,n_2)$ from $(q_0,0,0)$ iff $\E_{\K}$ has a (perfect) $(\leq_f,0)$-run from $\tup{(q_0,0,0)}$ to $\mu_f=\tup{(q_f,n_1,n_2)}$ iff $\F$ exhibits an $\ell$-strong $(\leq_f,\ell)$-run from $\mu_0$ to $\mu_f$ iff $\F$ exhibits $(\leq_f,\ell)$-run from $\mu_0$ to $\mu_f$.
+Since reachability of 2CM is undecidable, we get the next theorem.
+\begin{theorem}\label{th:finiteFullGeneralUndecReach}
+    For each finite $\ell\in\mathbb{N}$, $(\leq_f,\ell)$-reachability for EOSs is undecidable.~\cite{CosmoMP24}
+\end{theorem}
+
+One can adapt this construction so as to concatenate the lossy-counter gadget $\G$ with any EOS $\E$ (in place of $\E_{\K}$ for any 2CM $\K$). If the initial marking of $\E$ contains several nested tokens, a chain of enabling events like $e$ may be necessary to initialize it. As above, in order to fire them, the $(\leq_f,\ell)$-runs of the concatenated EOS $\F$ have to preliminary fire all their lossy steps. Moreover, after firing $e$, the intended initial marking of $\E$ is initialized and the $(\leq_f,\ell)$-runs of $\F$ can continue only by simulating $\E$ without any further lossy step. Thus, $\E$ reaches/covers a target marking $\mu_f$ iff $\F$ $(\leq_f,\ell)$-reaches/covers the same target $\mu_f$ from $\mu_0=\tup{p_1,\fmset{p}}$. Since (perfect) $(\leq_f,0)$-reachability is known to be undecidable for EOSs (Th.~4.3 in~\cite{kohler-busmeier_survey_2014}), one get again Th.~\ref{th:finiteFullGeneralUndecReach}. Moreover, also (perfect) $(\leq_f,0)$-coverability is known to be undecidable (again, Th.~4.3 in~\cite{kohler-busmeier_survey_2014}). Thus, we get undecidability also for $(\leq_f,\ell)$-coverability for each finite $\ell$.
+\begin{theorem}\label{th:finiteFullGeneralUndecCover}
+    For each finite $\ell\in\mathbb{N}$, $(\leq_f,\ell)$-coverability for EOSs is undecidable.~\cite{CosmoMP24}
+\end{theorem}
+
+\section{Decidability of \texorpdfstring{$(\leq_f,\omega)$}{(leq,omega)}-reachability for EOSs}\label{sec:fullLossydecidability}
+
+We now show that $(\leq_f,\omega)$-reachability is decidable for EOSs. We use a modified semantics for full-lossy EOSs which merges standard and lossy steps.
+
+\begin{definition}
+    A \emph{merged-EOS} (mEOS) is an EOS interpreted under the semantics induced by the step relation $\leadsto$ where $\leadsto=\geq_f\cup\rightarrow$.
+\end{definition}
+Since EOSs and mEOSs are syntactically the same, given an EOS $\E$, we denote by $\E_S$ the EOS $\E$ interpreted under the standard $\rightarrow$ step relation (S stands for standard), and by $\E_M$ the EOS $\E$ interpreted under the $\leadsto{}$ step relation (M stands for merged). Similarly, we denote the set of predecessors of $\mu$ in $\E_S$ by $\predecessor_S(\mu)$ and in $\E_M$ by $\predecessor_M(\mu)$. The benefit of mEOSs is that $\leq_f$ becomes trivially compatible. This solves the major source of undecidability behind the undecidability result of $\leq_f$-reachability for EOSs.
+
+\begin{lemma}
+    $\leq_f$ is compatible for mEOSs.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    By definition of $\leadsto{}$, if $\mu_1\geq_f\mu_2\leadsto\mu_3$, then either \begin{inparaenum}[\itshape (1)]
+        \item $\mu_1\geq_f\mu_2\geq_f\mu_3$ and, by transitivity of $\geq_f$, also $\mu_1\leadsto^*\mu_1\geq_f\mu_3$, or
+        \item $\mu_1\geq_f\mu_2\rightarrow\mu_3$ and, by definition of $\leadsto$ and reflexivity of $\leq_f$, also $\mu_1\leadsto\mu_3\geq_f\mu_3$.
+    \end{inparaenum}
+\end{proof}
+Consequently, since $\leq_f$ is a well-quasi order (see Th.5.2 in~\cite{kohler-busmeier_survey_2014}, which states that boundedness and coverability are decidable for cEOSs), mEOSs with $\leq_f$ are well-structured transition systems (WSTS; see~\cite{Finkel200163}).
+Clearly, $\leq_f$ is decidable. Moreover, mEOSs have the effective pred-basis property. This is because, ${\uparrow\predecessor_M(\uparrow \mu)=}{\uparrow\{\mu\}\cup\uparrow\predecessor_S(\uparrow\mu)}$ and $\E_S$ has the effective pred-basis property~\cite{kohler-busmeier_survey_2014}, where $\uparrow X$ denotes the upward-closure of $X$.\footnote{I.e., if $X$ is a set of markings, $\uparrow X$ is the set of markings $\mu$ such that $\mu\geq_f x$ for some $x\in X$; also, $\uparrow \mu$ denotes $\uparrow\{\mu\}$.}
+
+\begin{lemma}~\label{lemma:predChar}
+    For an EOS $\E$ and a nested marking $\mu$, we have $\uparrow\predecessor_M(\uparrow\mu)=\uparrow\mu\cup\uparrow\predecessor_S(\uparrow\mu)$.~\cite{CosmoMP24}
+\end{lemma}
+\begin{proof}
+    If $\mu_1\in \uparrow\predecessor_M(\uparrow\mu)$, then there are $\mu'$ and $\mu''$ such that $\mu_1\geq_f\mu'\leadsto\mu''\geq_f\mu$. If $\mu'\geq_f\mu''$, then, by transitivity of $\leq_f$, we have that $\mu_1\in\uparrow \mu$. If $\mu'\rightarrow\mu''$, then $\mu'\in \predecessor_S(\uparrow\mu)$ and, hence,  $\mu_1\in\uparrow\predecessor_S(\uparrow\mu)$.
+    Vice-versa, since $\rightarrow\subseteq\leadsto$, we have $\predecessor_S(\mu)\subseteq\predecessor_M(\mu)$ and, thus, $\uparrow\predecessor_S(\uparrow\mu)\subseteq{\uparrow\predecessor_M(\uparrow\mu)}$. Moreover, since $\mu'\geq_f\mu$ implies $\mu'\in\predecessor_M(\mu)$, we have $\uparrow\{\mu'\}\subseteq \uparrow\predecessor_M\uparrow(\mu)$.
+\end{proof}
+
+We can then apply the theory of WSTS and obtain decidability of coverability for mEOSs.
+\begin{lemma}
+    $(\leq_f,0)$-coverability for mEOSs is decidable.~\cite{CosmoMP24}
+\end{lemma}
+Since each $(\leq_f,\omega)$-run in $\E_S$ is a $(\leq_f,0)$-run in $\E_M$ and vice-versa, we have that $(\leq_f,0)$-coverability for $\E_M$ coincides with $(\leq_f,\omega)$-coverability for $\E_S$, which, in turn, coincides with $(\leq_f,\omega)$-reachability for $\E_S$ (Cor.~\ref{lem:reachCoverOmega}).
+We thus obtain the following theorem.
+\begin{theorem}
+    $(\leq_f,\omega)$-reachability is decidable for EOSs.~\cite{CosmoMP24}
+\end{theorem}
+
+Concerning the complexity of $(\leq_f,\omega)$-reachability for EOSs, this problem extends $(\leq_f,\omega)$-reachability for cEOSs, which is equivalent to $(\leq_f,0)$-coverability for cEOSs. By noting that these can encode PN coverability, we obtain a lower bound for  $(\leq_f,\omega)$-reachability for EOSs.
+
+\begin{theorem}
+    $(\leq_f,\omega)$-reachability is EXPSPACE-hard for EOSs.~\cite{CosmoMP24}
+\end{theorem}
+
+
+We have completely charted the decidability status of all lossy-reachability problems for three lossiness relations: full-lossiness $\leq_f$, object-lossiness $\leq_o$, and system-lossiness $\leq_s$.
+The decidability landscape is summarized in Tab.~\ref{tab:results}.
+\input{figures/eos/tabConc}
+For cEOSs, proper lossy-reachability coincides with standard coverability under the respective lossiness quasi order.
+All problems for object- and system-lossy EOSs and cEOSs are undecidable. This is enabled by the fact that the orders $\leq_o$ and $\leq_s$ are not well-quasi orders (cf.~\cite{Lasota16}). For full-lossy EOSs, all $(\leq_f,\ell)$-reachability problems are undecidable even if they do not coincide with standard coverability under $\leq_f$.
+The most interesting result is the decidability of $(\leq_f,\omega)$-reachability for EOSs. This result follows from the fact that each quasi order $\preceq$ induces a WSTS when interpreted over $(\preceq,\omega)$-runs (cf.~\cite{mayr-undecidable-2003}). This problem is at least as hard as $\leq_f$-coverability for cEOSs, which, in turn, extends PN coverability. This yields an EXPSPACE lower-bound. The precise complexity of $(\leq_f,\omega)$-reachability for EOSs and, to the best of our knowledge, of $\leq_f$-coverability for cEOSs, remains uncharted. We aim to fill this gap in future works.
+
+Decidability of $(\leq_f,\omega)$-reachability enables, in principle, the analysis of EOS models, e.g., of business processes where resources may be lost both at the system and object level. However, where undecidability applies, we may still perform verification by employing partial procedures, e.g., by resorting to bounded model checking approaches. Recently, in~\cite{capraK23}, a Maude encoding of EOSs was proposed and reachability searches on a bounded EOS were performed.
+However, to the best of our knowledge, there is no tool that natively addresses (bounded) model checking of lossy EOSs. Such a tool should also be able to express formulas about the number and distribution of the lossy steps in the runs. This feature is reminiscent of program definitions in the temporal operators of Dynamic Propositional Logic (PDL)~\cite{FischerL79,balbiani13}. Interestingly, recent Answer Set Programming tools~\cite{GebserKKS19}, such as Telingo~\cite{Cabalar21}, support PDL constraints, which may be used to perform bounded model checking. A recent prototype~\cite{dicosmoprince24} is discussed in~\cite{CosmoP24}.
+The development of such a tool would enable us to practically verify the robustness of EOS models.
+
+\section{Tool to verify lossy Petri Nets and lossy EOSs}\label{sec:EOSTool}
+We provided an SMT encoding for PNs and built BMC tools. Here, we explore an alternative encoding of PNs and EOSs, to be able to compare the two approaches.
+In this section, we discuss the prototype for the simulation and analysis of lossy-PNs and lossy-EOSs based on \acrfull{ASP} technologies. Specifically, we aim at simulating and analyzing bounded lossy-EOS runs using Telingo~\cite{Cabalar21}, a specialization of the ASP system Clingo~\cite{multishotClingo} to temporal domains.
+Implementations of PN variants in Clingo are \cite{encodingHigherASP} and~\cite{encodingReversingASP}. However, none of them takes lossy PNs and EOSs in consideration and does not experiment with the temporal features of Telingo.
+In fact, the most appealing feature of Telingo is its support in constraints of Temporal Equilibrium Logic over finite traces ($\mathit{TEL}_f$) formulas, which we expect to be an excellent tool to flexibly control the amount of lossiness in the simulated runs.
+
+\subsection{Telingo}
+Telingo specializes the ASP solver Clingo to temporal domains and uses a logic program to specify finite runs. The program can use the scopes: \emph{initial},\emph{dynamic},\emph{always},\emph{final}, which are evaluated at the first, each except first, each, and last step, respectively. Rule bodies can refer to the extension of the previous configuration by prefixing the literals with a prime. Finite-, linear-time formulas can appear in the dedicated atom $\tt \&tel$ in constraints and behind default negation. For example, the constraint
+\verb|:- &tel{>?(a>a)}| filters out all runs that eventually reach (\verb|>?| stands for eventually reach) a configuration $C$ with successor $C'$ (\verb|>| stands for next) where $\tt a$ is true on both. Telingo can be called setting the option \verb|--imax| to a number of maximal step to be simulated. In the standard configuration, Telingo stops as soon as it finds a finite run satisfying the program or exceeds \verb|--imax|.
+
+\section{PNs in Telingo}
+
+\subsection{PNs in Logic Programs}
+\begin{example}\label{ex:pnlp}
+    Fig.~\ref{fig:pnlp} depicts the PN $(\{p_0,p_1,p_2\},\{t_1\},F)$ where $F(p_0,t_1)=F(p1,t_1)=F(t_1,p_2)=1$ and $F(t_1,p_0)=F(t_1,p_1)=F(p_2,t_1)$, with initial marking $\mu_0=\fmset{2p_0,5p_1}$. The net reaches $\mu_1=\fmset{3p_0,2p_2}$, covers $\mu_2=\fmset{}$, reaches a deadlock after two steps, and is not $1$-safe.
+\end{example}
+
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}
+        \node[place,label=left:$p_0$](p1)at (0,0){$2$};
+        \node[place,label=left:$p_1$](p2)at (2,0){$5$};
+        \node[transhor,label=below right:$t_1$](t1)at (4,0){};
+        \node[place,label=right:$p_2$](p3)at (6,0){};
+
+        \draw[->] (p1) -- ($(p1)-(0,.4)$)-| (t1);
+        \draw[->] (p2)-- (t1);
+        \draw[->] (t1)-- (p3);
+
+    \end{tikzpicture}
+    \caption{The PN with initial marking in Ex.~\ref{ex:pnlp}.}
+    \label{fig:pnlp}
+\end{figure}
+
+The standard syntax for PNs is the PNML language~\cite{pnml}. For example, the input PNs provided by the MCC~\cite{mcc:2023} are provided in PNML syntax. The first task we faced was the translation of PNML files into \acrfull{LP} files for Telingo. This required to fix a syntax to specify PNs in LP. Inspired by previous works (see, e.g.,~\cite{encodingReversingASP,encodingHigherASP}), we used the following solutions:
+\begin{compactitem}
+    \item The number $n$ of places and $m$ of transitions are specified by two constants via the directives
+    \verb|#const numPlaces=n| and \verb|#const numPlaces=m|. The names of the places and transition is abstracted away, i.e., they range in $\{0,\dots,n-1\}$  and $\{0,\dots,m-1\}$ respectively.
+    \item Each pre-condition $F(p,t)=n$ and post-condition $F(t,p)=n$ is explicitly specified only if $n>0$ using the fact \texttt{pre(p,t,n)} and \texttt{post(p,t,n)}, respectively. These facts must be available during the whole computation and, thus, are put in the scope of the \verb|#program always| directive.
+    \item The file contains also the specification of the initial marking, which is represented as a function from places to numbers. Specifically, for each place $p$ hosting $n\in\mathbb{N}$ tokens (possibly $n=0$), we add the fact \texttt{mark(p,n)} to the scope of the \verb|#program initial| directive.
+    Finally, we clean the Telingo output using the directive \verb|#show mark/2|.
+\end{compactitem}
+\begin{example}\label{ex:net0LP}
+    The LP specification of the PN in Ex.~\ref{ex:pnlp} is:
+    \begin{lstlisting}[multicols=3]
+#program always.
+#const numPlaces=3.
+#const numTransitions=1.
+pre(0,0,1).
+pre(1,0,1).
+post(2,0,1).
+#program initial.
+mark(0,2).
+mark(1,5).
+mark(2,0).
+#show mark/2.
+   \end{lstlisting}
+\end{example}
+
+Using ANTLR, we built an open source tool~\cite{dicosmoprince24},  implemented in C++, to produce LP specifications out of MCC benchmarks.
+
+\subsection{PN dynamics}
+
+The PN dynamics can be easily implemented in Telingo using the standard guess-and-check methodology of ASP: at each step, we
+\begin{inparaenum}[\itshape 1)]
+    \item sample a transition using a choice rule,~\label{phase:sample}
+    \item check whether it is enabled on the previous marking using a constraint, and
+    \item deduce the facts encoding the new marking using a couple of simple rules that take in consideration the sampled transition, its conditions, and the previous marking. This last step is done using the rules
+    \begin{lstlisting}[multicols=2]
+mark(P,K-N+M) :- pre(P,T,N), post(P,T,M), 'mark(P,K), fire(T).
+mark(P,K+M) :-  not pre(P,T,_), post(P,T,M), 'mark(P,K), fire(T).
+mark(P,K-N) :-  pre(P,T,N), not post(P,T,_), 'mark(P,K), fire(T).
+mark(P,K) :-    not pre(P,T,_), not post(P,T,_), 'mark(P,K), fire(T).
+    \end{lstlisting}
+\end{inparaenum}
+The lossy dynamics is supported by allowing Telingo to possibly sample, next to the transitions at phase~\ref{phase:sample}, also the \texttt{lossy} flag and, consequently, a sub-marking by firing the choice rule
+\begin{lstlisting}
+{mark(P,1..N)}=1 :- 'mark(P,N),lossy.
+\end{lstlisting}
+
+Assuming that the dynamics is encoded in \texttt{dynamic.lp}, the simulation of the runs of maximum length $n$ of a PN encoded in \texttt{pn.lp} can be executed as follows:
+\begin{lstlisting}
+Telingo dynamic.lp pn.lp 0 --imax=n 
+\end{lstlisting}
+
+\subsection{PN Verification Problems}\label{sec:pnVerification}
+We considered several problems from the MCC. Since Telingo does not natively support branching time formulas, we focused on linear paths namely reachability/coverability, deadlock detection, and $1$-safeness.
+Since Telingo simulates runs incrementally, it is sufficient to check these properties just at the last step of the finite run. In fact, reachability/coverability and deadlock detection are all eventuality properties. Moreover, also the opposite of $1$-safeness, i.e., whether a non-$1$-safe marking can be reached, is of the same type.
+\begin{example}
+    To check the reachability in Ex.~\ref{ex:pnlp} of the marking $(1,0,2)$, we need the rules
+    \begin{lstlisting}[multicols=2]
+#program final.
+:- not mark(0,1).
+:- not mark(1,0).
+:- not mark(2,2).
+    \end{lstlisting}
+    Coverability can be similarly be specified using the rules
+    \begin{lstlisting}[multicols=2]
+#program final.
+:- mark(1,N), N<1.
+:- mark(1,N), N<0.
+:- mark(2,N), N<2.
+    \end{lstlisting}
+    Deadlock reachability requires to check the enabledness of all transitions and, so, requires their enumeration in a dedicated predicate.
+    \begin{lstlisting}[multicols=2]
+#program final.
+transition(0..numTransitions-1).
+disabled(T) :- transition(T), pre(P,T,N), mark(P,M), M<N.
+enabled(T) :- not disabled(T), transition(T).
+nonDeadlock :- enabled(T).
+deadlock :- not nonDeadlock.
+:- not deadlock.
+\end{lstlisting}
+    Finally, (the opposite of) $1$-safeness is specified by
+    \begin{lstlisting}[multicols=2]
+#program final.
+unsafe :- mark(P,N), N>1.
+:- not unsafe.   
+\end{lstlisting}
+    By adding these rules, if no maximum number $m$ of steps is signaled, Telingo will return a finite run witnessing the property, if it exists, or will never terminate, otherwise. If $m$ is provided, Telingo will always terminate, but will return a witnessing run of at most $m$ steps.
+\end{example}
+
+For all these properties, we can seamlessly restrict the analysis to runs with at most $\ell\in\mathbb{N}\cup\{|\mathbb{N}|\}$ many lossy-steps for any $\ell\in\mathbb{N}$. For example, the rules
+\begin{lstlisting}[multicols=2]
+#program initial.
+:- &tel{>?(lossy >(>? lossy))}.
+\end{lstlisting}
+filter out all runs with at least two distinct lossy steps, so as to output only solutions witnessing the existence of suitable runs with at most $\ell=1$ lossy step. The parameter $\ell$ can be controlled by nesting the string \texttt{>(>? lossy)} appropriately.
+
+\subsection{PN experiments}
+In the running example above, we used a simple PN to illustrate the concepts. However, for our experimentation, we considered several standard benchmarks taken from MCC~\cite{mcc:2023}
+
+which range across various industrial case studies and have different sizes of the PNs. We experimented with the analysis of deadlock reachability and $1$-safeness, for various maximal numbers of steps ($5$, $10$, and $20$): these properties can be expressed without any expert knowledge on the PN structure. We compared the output of our prototype for all benchmarks with the output provided, on the same instances, by the state-of-the-art tool $\tapaal$
+$3.9.3$~\cite{Tapaal16}. The outputs match exactly; an indication of the correctness of the results, thereby giving our prototype a tool confidence of $100\%$ (despite noncompetitive times).
+We analyzed the benchmarks for both runs without lossy steps and with arbitrarily many lossy steps. A subset of our results and comparisons (for no loss) on a single PN is reported in Tab.~\ref{tab:pnResults}.
+
+\begin{table}[t]
+    \centering
+    \resizebox{.79\columnwidth}{!}{
+        \begin{tabular}{c|c|c|c|c|c}
+            problem      & lossiness & --imax =5 (s)    & --imax =10 (s)   & --imax =20 (s)   & $\tapaal$ (s)  \\
+            \hline
+            deadlock     & none      & UNSAT in $0.052$ & SAT in $0.622$   & SAT in $82.754$  & SAT in $5 e-6$ \\
+            deadlock     & any       & SAT in $0.009$   & SAT in $0.010$   & SAT in $0.009$   & NA             \\
+            $1$-safeness & none      & UNSAT in $0.010$ & UNSAT in $0.014$ & UNSAT in $0.027$ & UNSAT in $0$   \\
+            $1$-safeness & any       & UNSAT in $0.013$ & UNSAT in $0.018$ & UNSAT in $0.032$ & NA             \\
+        \end{tabular}
+    }
+    \caption{Comparative Results with $\tapaal$ for the Eratosthenes-PT-010 PN from the MCC benchmarks~\cite{mcc:2023}.}
+    \label{tab:pnResults}
+\end{table}
+
+
+
+\begin{table}[t]
+    \centering
+    \resizebox{.79\columnwidth}{!}{
+        \begin{tabular}{c|c|c|c|c|c}
+            PN                  & problem      & lossiness & --imax =5          & --imax =10     & --imax =20     \\
+            \hline
+            Eratosthenes-PT-010 & deadlock     & none      & UNSAT in $0.012$ s & SAT in $0.013$ & SAT in $0.013$ \\
+            Eratosthenes-PT-010 & deadlock     & any       & SAT in $0.009s$ s  & SAT in $0.009$ & SAT in $0.009$ \\
+            Eratosthenes-PT-010 & $1$-safeness & none      & UNSAT in $0.011s$  & SAT in $0.014$ & SAT in $0.023$ \\
+            Eratosthenes-PT-010 & $1$-safeness & any       & SAT in $0.010s$    & SAT in $0.010$ & SAT in $0.009$ \\
+        \end{tabular}
+    }
+    \caption{Experimental Results with the Eratosthenes-PT-010 PN from the MCC benchmarks.}
+    \label{tab:pnResultsMCC}
+\end{table}
+
+
+\section{EOSs in Telingo}\label{sec:eostelingo}
+The implementation of EOS is in Telingo was harder than the implementation of PNs. This is because the nesting of tokens and the complex EOS semantics required a more careful approach.
+
+\subsection{EOSs in Logic Programs}
+
+As for PNs, we started by fixing a syntax for EOS in logic programming. The major difference with PNs is the presence of events and of nested tokens. Events $\tup{\hat{\tau},\theta}$ are specified by a name in a predicate \texttt{event/1}, a mapping of the name to $\tau$ in a predicate \texttt{eventSys/2}, and a mapping of the name to each transition in $\theta$ with multiplicity in a predicate \texttt{eventObj/3}
+\begin{example}\label{ex:nestedTokens}
+    The event $\mathtt{takingOff}=\tup{\mathtt{takeOff},\fmset{\mathtt{move}}}$ in Ex.~\ref{ex:eosdrone} is specified by the facts
+    \begin{inparaenum}[\itshape (1)]
+        \item $\tt event(takingOff)$,
+        \item $\tt eventSys(takingOff,takeOff)$, and
+        \item $\tt eventObj(takingOff1,move,1)$.
+    \end{inparaenum}
+\end{example}
+We came up with two encoding of nested markings. The first aims at representing nested tokens directly by linearizing the carried marking in a tuple. This requires to provide an order among the places and the usage of functional symbols as well as external Python functions.
+\begin{example}
+    $2$ nested tokens $\tup{\mathtt{base},\fmset{2\mathtt{batt1}}}$ for the EOS in Ex.~\ref{ex:eosdrone} are specified by the fact $\mathtt{nM}(2,\mathtt{base},(2,0))$ assuming the order $\mathtt{batt1}\leq \mathtt{batt2}$ for the object net \texttt{drone}.
+\end{example}
+
+The second representation employs a purely relational representation of each token in a relation \texttt{tok/3}. It keeps track of a token id, the token place, and the parent token (i.e., the token at the system level carrying it), if it exists (otherwise, a dummy constant $\mathtt{\_sys}$ is put in its place). The choice of identifiers is irrelevant as long as they form a primary key for $\mathtt{tok}$.
+\begin{example}
+    One nested token from Ex.~\ref{ex:nestedTokens} is equivalently captured by the facts \begin{inparaenum}[\itshape (1)]
+        \item $\mathtt{tok}(0,\mathtt{base},\mathtt{\_sys})$,
+        \item $\mathtt{tok}(1,\mathtt{batt1},\mathtt{0})$, and
+        \item $\mathtt{tok}(2,\mathtt{batt1},\mathtt{1})$.
+    \end{inparaenum}
+\end{example}
+
+
+
+
+
+\subsection{EOS dynamics}
+
+
+When compared to PNs, EOS dynamics has to take care of two main aspects: the choice of enabling modes $(\lambda,\rho)$ next to events $e$, and the manipulation of nested markings. While modes range, in principle, over an infinite domain, we can restrict the choice over a finite set, by recalling that $\lambda$ should be a sub-marking of the current marking. After choosing a $\lambda$ and checking its compatibility with the enabling predicate for $e$, the PN markings $\Pi^1(\rho)$ and $\Pi^2_N(\rho)$ are univocally determined, for each object net $N\in\N$.  To materialize these projection in a nested marking $\rho$, we make use of the relational representation of tokens. This allows us to easily assign children tokens to their parents non-deterministically. Afterwards, we convert $\rho$ in the nested token representation and update the marking. This solution requires the call of external Python functions handle the tuples for internal markings.
+The preliminary simulations on the EOS in Ex.~\ref{ex:eosdrone} were not optimal.
+%and 
+We are currently working on a better implementation.
+
+\subsection{EOS verification}\label{ssec:eosverif}
+We specify EOS properties analogously to Sec.~\ref{sec:pnVerification}, but taking into account nested tokens. For example, the reachability of the target $\tup{\mathtt{base},\fmset{\mathtt{batt1},\mathtt{batt1}}}$ is checked by the rules
+\begin{lstlisting}[multicols=2]
+#program final.
+:- not nM(1,base,(2,0)).
+:- nM(N,base,Tup), Tup != (2,0).
+:- nM(N,field,Tup).
+\end{lstlisting}
+
+Its coverability at the system net level is specified by rules 1 and 2 above.
+Coverability at the object level is specified by the rules
+%requires a Python function $\tt @less$.
+%\begin{lstlisting}[multicols=2]
+%#program final.
+%covered :- nM(1,base,Tup), @less(Tup,(2,0)).
+%:- not covered.
+%\end{lstlisting}
+\begin{lstlisting}[multicols=2]
+#program final.
+covered :- nM(1,base,Tup), Tup <= (2,0).
+:- not covered.
+\end{lstlisting}
+%where $@less$ returns true iff the tuple $Tup$ is component-wise smaller than $(2,0)$. 
+Full coverability is checked by
+%\begin{lstlisting}[multicols=2]
+%#program final.
+%covered :- nM(N,base,Tup), @less(Tup,(2,0)).
+%:- not covered.
+%\end{lstlisting}
+\begin{lstlisting}[multicols=2]
+#program final.
+covered :- nM(N,base,Tup), Tup <= (2,0).
+:- not covered.
+\end{lstlisting}
+
+Even in this case, the specification of the amount of lossiness is orthogonal to that of the verification property and is performed using the same constraints as shown in Sec.~\ref{sec:pnVerification}.
+
+
+
+We explored the applicability of Telingo to the simulation and analysis of lossy PNs and EOSs.
+Our approach is similar to~\cite{encodingReversingASP,encodingHigherASP}, but we additionally encoded lossiness, EOSs, and provided a translator from PNML to LP syntax.
+We also conducted preliminary tests on the verification of deadlock reachability and $1$-safeness of lossy PNs on runs with zero or arbitrarily many lossy steps. When compared with state-of-the-art tools like $\tapaal$, we obtained sound results, yet with optimizable performances.
+On the one hand, the specification of lossy runs was especially elegant and flexible in Telingo, e.g., when compared to SMT-based PN verifiers~\cite{princepnbmc22}. Our approach addresses PNs in general and is applicable to PNs with reset, transfer, and inhibitory arcs. On the other hand, $\tapaal$ does not natively support the analysis of properties under lossiness, unless somehow encoded in the PN itself.
+As a byproduct of our experiments, we provide a standalone utility~\cite{dicosmoprince24} compatible with Linux to translate standard PNML files to the PN LP syntax. We hope that this translator will provide ASP practitioners with a convenient tool to approach PN benchmarks.
+The prototype for EOS needs further development before tests can be meaningfully conducted.
+This task is challenging, since PN reachability is non-elementary and several reachability problems for lossy EOSs are undecidable in general~\cite{CosmoMP24}. However, to the best of our knowledge, there are no available tools dedicated to lossy EOSs apart from ours.
+
+\subsubsection*{Conclusion}
+In this chapter, we charted the decidability boundaries for reachability, coverability in EOSs in the case of lossiness at the system, object levels and both. We also implemented a Telingo based open source tool to verify lossy Petri nets and lossy EOSs.

@@ -1,0 +1,82 @@
+\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]	
+\begin{tikzpicture}[node distance = 5em, auto, fit label/.style={yshift={(height("#1")+4pt)/2},
+inner ysep={(height("#1")+8pt)/2}, label={[anchor=north,font=\itshape]north:#1}}]
+	
+		\node [ node distance=2em,  yshift=-1em, fill=green!20,text width=5em] (inputexpr) {Input \\Expression};
+	
+	\node [ node distance=2em, below of=inputexpr,yshift=-4em,fill=green!20] (grammar) {Grammar};
+
+
+	\node [alblock, node distance=5em, text width=5em,right of=inputexpr, xshift=4em, minimum width=5em] (lexer) {Lexer +\\Parser};
+	\node [alblock, node distance=4em, below of=lexer, yshift=-2em, text width = 7em, minimum height=3em] (antlrtool) {ANTLR tool};
+	\node [alblock, node distance=4em, right of=lexer,xshift=4em] (parsetree) {parse tree};
+
+	\begin{scope}
+	\node [draw=black!50, minimum width=10em, fit={(lexer)  ([yshift=1em]lexer.north)},
+	label={[anchor=north,font=\itshape]north:Language Recognizer}] (lr) {};
+
+
+	\end{scope}
+
+
+	\node [alblock, node distance=3.5em, right of=parsetree,xshift=4em, text width=5em] (listener) {Listener\\Walker};
+	
+%	\node [alblock, node distance=5em, text width = 4 em, right of=listener,,xshift=4em] (ptree) {output tree};
+	
+	\node [ node distance=3em,  text width = 4 em, right of=listener,xshift=4em, fill=green!20] (ptree) {output tree};
+	
+	\node [allibrary,node distance=12em, above of= parsetree,yshift=-5em,xshift=1em](arl){ANTLR Runtime Library};
+		
+	\node[fit=(antlrtool)(lr)(parsetree)(listener),draw,minimum height=14em, label={[anchor=south,font=\itshape]south:Pre-Processing Module}] (ppm){};
+
+
+
+
+	\path [line] (inputexpr) -- (lexer);
+	\path [line] (lexer) -- (parsetree);
+	\path [line] (parsetree) -- (listener);
+	\path [line] (listener) -- (ptree);
+	\path [line,dashed] (arl)--(lr);
+	\path [line,dashed] (lr)--(arl);
+	\path [line,dashed] (arl)--(listener);
+	\path [line,dashed] (listener)--(arl);
+
+
+	\path [line] (grammar) -- (antlrtool);
+	\path [line] (antlrtool) -- (lr);
+	\path [line] (antlrtool.east) -| (listener.south);
+		%\path [line] (antlrtool.east)-- ([yshift=-0.5em]lr.west);
+		%\path [line] (antlrtool)|- (listener.west);
+	
+%	\path [line] (z3) -- (tool);
+%	\path [line] (tool) -- (z3);
+%	\path [line] (tool) -- (sat);
+%	\path [line] (tool) -- (unsat);
+%	\path [line] (unsat) --([xshift=2em]unsat.east) -- ([xshift=1em,yshift=-1em]tool.east) -- (tool);
+
+	
+\end{tikzpicture}

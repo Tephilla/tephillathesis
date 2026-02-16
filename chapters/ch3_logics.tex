@@ -1,0 +1,782 @@
+\chapter{Logics for Unbounded Concurrency}\label{chlogics}
+
+Reactive systems are a family of systems where there is continuous interaction between the system and its environment. Autonomous vehicles that steer according to traffic and obstacles, operating systems that handle scheduling of processes based on resource utilization, robots that navigate their terrain using various inputs are examples of reactive systems. A reactive program such as an autonomous navigation system can be viewed as an abstract function from an input domain to an output domain whose behaviour consists of a transformation from initial states to final states. Typically, they do not terminate. In the context of verification of infinite state reactive programs, in order to specify the  properties of programs, the properties need to be expressed in the form of a logic formula. Owing to their non-terminating nature, we need a mechanism for talking about the way the system evolves along potentially infinite computations. In this chapter, we discuss the various logics used in the rest of the thesis.
+
+\section{Introduction to Linear Temporal Logic}\label{sec:ltl}
+
+Temporal logic has become a well-established formalism for writing specifications. Many varieties of temporal logic have been defined in the past, we focus on \acrfull{LTL}~\cite{P77,VardiW86}.
+There is a close connection between models of LTL formulas and languages of infinite words—the models of an LTL formula constitute an $\omega$-regular language over an appropriate alphabet. As a result, the satisfiability problem for LTL reduces to checking for emptiness of $\omega$-regular languages~\cite{WolperVS83}.
+Later, in~\cite{VardiW86}, the connection between LTL and $\omega$-regular languages has been extended to model checking. Unlike the satisfiability problem, which asks if a given formula \gls{symb:alpha} has a model, the model-checking problem is one of verification: the task is to verify whether a given finite-state program $P$ satisfies a specification $\alpha$. This consists of checking that all runs of $P$ constitute models for $\alpha$.
+Since finite-state reactive programs can be represented quite naturally as B{\"u}chi automata, model checking also reduces to a problem in automata theory. It suffices to show that no run of $P$ is a model for $\neg \alpha$, which is the same as checking that the intersection of the language accepted by $P$ and the language defined by $\neg \alpha$ is empty. We shall explore the model checking algorithm in detail in Chapter.~\ref{chproblem}. First, we shall see how to express the properties in LTL.
+
+
+\begin{comment}
+\subsection{LTL Syntax}
+The LTL formulas over atomic propositions $p_1 ,\ldots, p_n$ are inductively defined as follows:
+\begin{itemize}
+  \item $p_i$ is a LTL formula.
+  \item If $\phi,\psi$ are LTL formulas, then so are their boolean combinations, $\neg \phi, \phi \lor \psi, \phi \land \psi, \phi \to \psi$
+  \item If $\phi,\psi$ are LTL formulas, $X\psi,F\phi,G\phi,\phi U \psi$ denote the next, sometime, global and until temporal operators.
+\end{itemize}
+Consider the following atomic propositions $p_1,p_2$, the interpretations of the below formulas are as follows:
+\begin{itemize}
+  \item $GFp_1$ denotes \emph{$p_1$ is true again and again}
+  \item $XX(p_1\to Fp_2)$ denotes \emph{If $p_1$ is true in the moment after next, $p_2$ will eventually be true afterwards}
+  \item $F(p_1\land X(\neg p_2 U p_1))$ denotes \emph{Sometime $p_1$ will be true and from the next moment onwards $p_2$ will not be true until $p_1$ is true}
+\end{itemize}
+The above formulas are indicative of the expressibility of LTL formulas for specifying the properties of various systems.
+LTL formulas over atomic propositions are interpreted in $\omega$-words $\alpha$ over $\mathbb{B}^n$. If $\alpha= \alpha(0)\alpha(1)\ldots \in (\mathbb{B}^n)^\omega$ then\todo[inline]{check the subscript}
+\begin{itemize}
+  \item $\alpha^i$ stands for $\alpha(i) \alpha(i+1)\ldots$ so $\alpha=\alpha^0$
+  \item $(\alpha(i))_j$ is the $j$th component of $\alpha(i)$.
+\end{itemize}
+\subsection{Semantics}
+We define the satisfaction relation $\alpha^i\models \phi$ inductively over the construction of $\phi$ as follows:
+\begin{itemize}
+  \item $\alpha^i\models p_j$ iff $(\alpha(i))_j=1$
+  \item $\alpha^i\models \neg \phi$ iff not $\alpha^i\models \phi$
+  \item similarly for $\land, \lor,\to$
+  \item $\alpha^i\models X\phi$ iff $\alpha^{i+1}\models \phi$
+  \item $\alpha^i\models F\phi$ iff for some $j \geq i$: $\alpha^{j}\models \phi$
+  \item $\alpha^i\models G\phi$ iff  $\forall j \geq i$: $\alpha^{j}\models \phi$
+  \item $\alpha^i\models \phi U \psi$ iff  for some $ j \geq i$: $\alpha^{j}\models \psi$ and $\forall k=i,\ldots,j-1:$ $ \alpha^k \models \phi$
+\end{itemize}
+\end{comment}
+
+
+\subsection{Specifying properties}
+Linear temporal logic is very useful in specifying system properties. We consider atomic properties $p_1, p_2,\ldots$ of the system (or program) to be verified.  Suppose $p_1$ and $p_1$ are atomic propositions in the context of a reactive system. We can formulate specifications of this (generic) system in LTL as follows:
+
+\begin{tabular}{p{4cm}p{10cm}}
+  %\centering
+  \textbf{Guarantee}:        & Sometime $p_1$ becomes true                                                                                 \\
+  \textbf{Safety}:           & Always $p_1$ is true                                                                                        \\
+  \textbf{Periodicity :}     & Initially, $p_1$ is true and $p_1$ is true precisely at every third moment                                  \\
+  \textbf{Obligation :}      & Sometime $p_1$ is true but $p_2$ is never true.                                                             \\
+  \textbf{Recurrence :}      & Again and again, $p_1$ is true                                                                              \\
+  \textbf{Request-Response:} & Always when $p_1$ is true, $p_2$ will be true sometime later                                                \\
+  \textbf{Until :}           & Always when $p_1$ is true, sometime later $p_1$ will be true again and in the meantime $p_2$ is always true \\
+  \textbf{Fairness :}        & If $p_1$ is true again and again, then so is $p_2$.
+\end{tabular} \\
+
+\noindent We reformulate these specifications by using the temporal operators. Their syntax and semantics are explained shortly afterwards.
+\begin{itemize}
+  \item $Gp$ for \emph{always (from now onwards) p is true}
+  \item $Fp$ for \emph{eventually (sometime, including present) p is true}
+  \item $Xp$ for \emph{p is true next time}
+  \item  $p_1 U p_2$ for \emph{$p_1$ is true until eventually $p_2$ is true}
+\end{itemize}
+
+Now, the above specifications are rewritten using LTL as follows:
+
+\begin{tabular}{p{4cm}p{10cm}}
+  %\centering
+  $Fp_1$                                                               & Sometime $p_1$ becomes true                                                                                  \\
+  $Gp_1$                                                               & Always $p_1$ is true. (See Figure~\ref{LTLBA1}).                                                             \\
+
+  $(p_1 \land X \neg p_1 \land X X \neg p_1 \land G(p_1\iff XXX p_1))$ & Initially, $p_1$ is true and $p_1$ is true precisely at every third moment.                                  \\
+
+  $Fp_1\land \neg F p_2$                                               & Sometime $p_1$ is true but $p_2$ is never true. (See Figure~\ref{LTLBA2}).                                   \\
+
+  $GFp_1$                                                              & Again and again, $p_1$ is true                                                                               \\
+
+  $G(Fp_1\to XFp_2)$                                                   & Always when $p_1$ is true, $p_2$ will be true sometime later.                                                \\
+
+  $G(p_1\to X(p_2 U p_2))$                                             & Always when $p_1$ is true, sometime later $p_1$ will be true again and in the meantime $p_2$ is always true. \\
+
+  $GFp_1\to GFp_2$                                                     & If $p_1$ is true again and again, then so is $p_2$. (See Figure~\ref{LTLBA3}).
+\end{tabular}
+
+The LTL formulas can be translated into B\"uchi automata.
+
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/1_gp1}
+  \caption{B{\"u}chi automaton for $Gp_1$}
+  \label{LTLBA1}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/1_fp1}
+  \caption{B{\"u}chi automaton for $Fp_1$}
+  \label{LTLBA2}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/1_GFp1GFp2}
+  \caption{B{\"u}chi automaton for $GFp_1\to GFp_2$}
+  \label{LTLBA3}
+\end{figure}
+
+Next, we discuss the syntax of LTL.
+
+
+\subsection{Syntax}
+The LTL formulas over atomic boolean propositions $V=\{p_1 ,\ldots, p_n\}$ are inductively defined as follows:
+\begin{itemize}
+  \item $p_i$ is a LTL formula.
+  \item If $\phi,\psi$ are LTL formulas, then so are $\neg \phi, \phi \lor \psi, \phi \land \psi, \phi \to \psi$
+  \item If $\phi,\psi$ are LTL formulas, $X\psi,F\phi,G\phi,\phi U \psi$ where $X$ is the next operator, $F$ denotes sometime, and $G$ denotes globally.
+\end{itemize}
+
+The system contains a set of states $S$, a set of initial states $I \subseteq S$ and transition relation $T\subseteq S \times S$.
+The interpretation of propositional variables may change over time but is determined by the current state of the system. This is denoted by the labelling function $L:S\rightarrow P(V)$, where $S$ is the set of states. A
+propositional variable $p$ is true in a system state $s$ iff $p \in L(s)$.
+\begin{dfn}\label{dfn:kripke}
+  A Kripke structure M is given by a tuple $M = (S,I,T,L)$ where $S$ is the set of states,
+  $I \subseteq S$ is the set of initial states, $T \subseteq S\times S$ is the transition relation and
+  $L:S \mapsto P(A)$ is the labeling function, where $A$ is the set of atomic propositions,
+  and $P(A)$ denotes the powerset over $A$.   We use labels over states to describe the atomic propositions that hold in that state.  For instance, for a state $s\in S$ the set $L(s)$ contains the atomic propositions that hold in $s$.
+\end{dfn}
+We fix one Kripke structure $K = (S, I, T,L)$ over the variables $V$ .
+Given the state $s$ is a vector containing  all variables $V$ in the current state and $s'$ is a vector of their primed copies in the successor state, the transition relation is written as  $T(s, s`)$ which is interpreted as $T(s, s')$ holds iff there is a transition from $s \rightarrow s'$.
+\subsection{Semantics}
+The semantics of LTL are defined along paths of the model. A path $\pi$ is
+an infinite sequence of states $\pi=(s_0, s_1,s_2,\dots)$ where $s_i\rightarrow s_{i+1}$. A path $\pi$ is initialized if its first state $\pi(0)=s_0$ is an initial state. An LTL formula $f$ holds along a path $\pi$ written as $\pi \models f$ iff
+\begin{itemize}
+  \item  $\pi \models  p$ iff $p \in L(\pi (0))$
+  \item  Similarly $\pi \models \neg p$ iff $p \not \in L(\pi (0))$
+  \item  $\pi \models g \lor h$ iff $\pi \models g$ or $\pi \models h$
+  \item  $\pi \models g \land h$ iff $\pi \models g$ and $\pi \models h$
+  \item  $\pi \models F g$ iff $\exists j \in \mathbb{N} : \pi^j \models g$
+  \item  $\pi \models G g$ iff $\forall j \in \mathbb{N} : \pi^j \models g$
+  \item  $\pi \models X g$ iff $\pi^ 1 \models g$
+\end{itemize}
+
+In this context, the model checking problem is to determine whether Kripke structure $K \models f$ holds. A formula $f$ has a witness in $K$ iff there is an
+initialized path $\pi$ where $\pi\models f$. Hence, $ K\models f$ iff $\neg f$ doesnt have a witness in $K$. Therefore, we can reduce the model checking problem to the search for witnesses using negation and translation into Negation Normal Form, where the negations are pushed to the variables as follows:
+\begin{itemize}
+  \item $\neg (g \land h)\equiv (\neg g) \lor (\neg h)$
+  \item $\neg F g \equiv G \neg g$
+  \item $\neg G g \equiv F \neg g$
+  \item $\neg X \equiv X \neg g$
+\end{itemize}
+
+\subsection{Bounded Semantics of LTL}\label{sec:boundsemltl}
+We recall the bounded semantics of LTL given in~\cite{BiereCCSZ03,BiereTACAS99}.
+It is observed that some infinite paths can be represented by a finite prefix with a loop. An infinite path $\pi$ is a $(k,l)$ lasso, iff $\pi (k+1+j)=\pi(l+j), \forall j \in \mathbb{N}$. This is represented in Figure~\ref{kllasso}. The path can be represented as $\pi = \pi_{stem} . \pi_{loop}^{\omega}$. In case of the finite system $K$, the search for witness can be restricted to lassos.
+\begin{figure}[ht]
+  \centering
+  \input{figures/3_klloop}
+  \caption{$(k,l)$ lasso with l=2, k=4}
+  \label{kllasso}
+\end{figure}
+
+We can rewrite the semantics given above as follows:
+\begin{itemize}
+  \item  $\pi^i \models  p$ iff $p \in L(\pi (i))$
+  \item  Similarly $\pi^i \models \neg p$ iff $p \not \in L(\pi (i))$
+  \item  $\pi^i \models g \lor h$ iff $\pi^i \models g$ or $\pi^i \models h$
+  \item  $\pi^i \models g \land h$ iff $\pi^i \models g$ and $\pi^i \models h$
+  \item  $\pi^i \models F g$ iff $\exists j \in \mathbb{N} : \pi^{i+j} \models g$
+  \item  $\pi^i \models G g$ iff $\forall j \in \mathbb{N} : \pi^{i+j} \models g$
+  \item  $\pi^i \models X g$ iff $\pi^{i+j} \models g$
+\end{itemize}
+
+In order to obtain bounded semantics, we need to observe only the first $k+1$ states, and let $i \in {0\dots k}$.
+If $\pi$ is $(k,l)$ lasso, then $\pi (k+1+j)=\pi(l+j), \forall j \in \mathbb{N}$.
+Hence, we have the following:
+\begin{itemize}
+  \item  $\pi^i \models F g$ iff $\exists j \in {\text{min}(i,l),\dots,k}: \pi^{j} \models g$
+  \item  $\pi^i \models G g$ iff $\forall j \in {\text{min}(i,l),\dots,k} : \pi^{i+j} \models g$
+  \item  $\pi^i \models X g$ iff $\pi^{i+l} \models g$ if $i < k$
+  \item  $\pi^i \models X g$ iff $\pi^{l} \models g$ if $i = k$
+
+\end{itemize}
+
+Suppose our property to be tested is a safety property $Gp$, we need a witness for $F\neg p$.  If $p$ doesnt hold in some initial state $s$ in system $K$, $k=0$ is sufficient.
+
+If $\pi$ is not a $(k,l)$ lasso, for any $l$, and we do not want to examine suffix beyond bound $k$, then we cannot draw conclusions about $\pi^k \models Xg$ nor about $\pi^k \models Gg$ for $i<k$.
+
+
+\subsection{Encoding LTL Semantics}\label{ssecencodeLTL}
+The bounded semantics of LTL are used to encode the LTL formulas which are fed to SMT solvers~\cite{BiereCCSZ03,BiereTACAS99}. The encoding can be implemented as a recursive procedure that takes an
+LTL formula $f$, a fixed bound $k$, the loop start $l$, and the position $i$ as parameters, where $l,i \in {[0,\dots k]}$. The output of this procedure is ${}_{l}{[f]_k^i}$. In case of a $(k,l)$ loop in the model.
+
+\begin{tabular}{l l}
+  ${}_{l}{[p]_k^i}\equiv p_i$                                                  & ${}_{l}{ [\neg p]_k^i}\equiv \neg p_i$                                \\
+
+  ${}_{l}{[g \lor h]_k^i}\equiv {}_{l}{[g]_k^i} \lor {}_{l}{[h]_k^i}$          & ${}_{l}{[g \land h]_k^i}\equiv {}_{l}{[g]_k^i} \land {}_{l}{[h]_k^i}$ \\
+
+  ${}_{l}{[Fg]_k^i}\equiv \bigvee^k_{\text{min}}(l,i)\enspace {}_{l}{[g]_k^i}$ &
+  ${}_{l}{[Gg]_k^i}\equiv \bigwedge^k_{\text{min}}(l,i)\enspace {}_{l}{[g]_k^i}$                                                                       \\
+  ${}_{l}{[Xg]_k^i}\equiv  {}_{l}{[g]_k^i}$ with $j=i+1$ if $i<k $ else $j=l$
+\end{tabular}
+
+In the absence of loops, we use the following encoding:
+
+
+\begin{tabular}{l l l }
+  $[Fg]^i_k\equiv \bigvee^k_{j=i} {[g]_k^i} $ & $[Gg]^i_k\equiv \bot$ & $[Xg]^i_k\equiv [g]^{i+1}_k \text{if} i<k  \text{ else} \bot \text{ if } j=k $
+\end{tabular}
+
+The full encoding is given as:
+$[f]_k \equiv [f]^0_k \lor \bigvee^k_{l=0} \land {}_{l} [f]^0_k$.
+
+Using the encoding, we can find a witness for a particular bound $k$. In case the formula is satisfiable, we are certain to have found a witness. If the formula is unsatisfiable, we can increment $k$ and look for a witness of greater length.
+This leads to the natural question, of when we should stop increasing $k$, when no witness has been found yet. We discuss the algorithm in greater detail in the later chapters.
+
+
+
+\section{LTL with Linear Integer Arithmetic and Counting}\label{sec:cltl}
+LTL is a natural choice to describe
+the temporal properties of such systems. We introduce the logic {\LC} as an extension of $LTL$ with a few differences, namely linear integer arithmetic operators and counting at the propositional level, which we describe in this section. We are interested in {\LC} as it is easy to  specify temporal properties as well as invariants in it.
+\begin{figure}[h!]
+  \begin{center}
+    \scalebox{0.8}{\input{figures/fig_APSInv.tex}}
+    \caption{A Petri net depicting an unbounded client-server system with invariants}
+    \label{fig:APSInv}
+  \end{center}
+\end{figure}
+With respect to Fig.~\ref{fig:APSInv}, consider the invariant, where there is exactly one token in either place $p_{SR}$ or $p_{SB}$ or $p_{RR}$. This is easily expressed in {\LC} as $G(\#p_{SR} + \#p_{SB} + \#p_{RR} =1)$.
+
+In the case of $LTL$, atomic formulas are propositional
+constants which have no further structure.
+In {\LC},
+there are two types of atomic formulas: (1) $P_s$ - describing basic server properties, which are propositional constants and can be used to describe the transitions of the net (2) $\beta \in \Delta$, the set of client formulas, which is formally given by:
+% The formulas $\$\beta \in \Delta$, the set of client formulas.
+
+
+%Formally, the set of client formulas $\beta \in\Delta$ is given by:
+
+\begin{equation}
+  \begin{split}
+    \alpha , \hat{\alpha}&::= \#p \mid \mathfrak{c} \mid (\mathfrak{c} \ast \#p ) \mid  (\#p \ast \mathfrak{c}) \mid (\alpha + \hat{\alpha} ) \mid (\alpha - \hat{\alpha})\\ \nonumber
+    \beta &::=  (\alpha < \hat{\alpha}) \mid (\alpha > \hat{\alpha}) \mid (\alpha \le \hat{\alpha}) \mid  (\alpha \ge \hat{\alpha}) \mid (\alpha=\hat{\alpha})
+  \end{split}
+\end{equation}
+
+
+\noindent where $p \in P_c$, the set of client propositions and $\mathfrak{c} \in \mathbb{Z}^+$.% is a non-negative integer, as noted above. %While $\Delta$ does not contain an explicit $=$ operator, it is natural to express equality of $p(x)$ and $q(x)$ as follows: 
+
+%$ ((\#x) p(x) <= q(x) \land \neg ((\#x) q(x) > p(x)))$.
+
+\noindent The set of server formulas $\Psi$ are defined as follows:
+
+\[\psi::= q \in P_s \mid \beta \in \Delta
+  \mid \lnot \psi  \mid \psi\lor\psi^{\prime}   \mid \psi\land\psi^{\prime}  \mid  X \psi  \mid F \psi\mid G \psi \mid \psi U  \psi^{\prime}\]
+where $\psi, \psi^{\prime} \in \Psi$.
+Modalities X, F, G and $U$ are the usual modal operators: Next, Eventually, Globally and Until, respectively.
+
+\subsection*{Unbounded Semantics of {\LC}}
+
+The logic {\LC} is interpreted over model sequences.  Let $CN$ be a countable set of client names that can be assigned to the processes in the system. Each client otherwise known as agent, is introduced into the system dynamically and may eventually exit the system. The clients which are currently in the system and have not yet exited are refered to as live clients (live agents). This notion becomes particularly noticeable while introducing the identfiable clients (agents) (cf. Sec.~\ref{sec:mlogic}). Formally, a model is
+a sequence $\varrho = m_0, m_1, \ldots$, where for all $i \geq 0$  $m _i$ is a triple $(\nu_i, V_i, \xi_i)$ such that:
+
+\begin{enumerate}
+
+  \item $\nu_i \subset_{fin} P_s$, gives the local properties of the server
+        at instant $i$.
+
+  \item $V_i\subset_{fin}CN$ gives the  clients alive at instant $i$. Further, for all $i \ge 0$, $V_{i+1} \subseteq V_i$ or $ V_i \subseteq V_{i+1}$ which indicates that the clients can enter or exit the system dynamically.
+
+  \item $\xi_i:V_i\to 2^{P_c}$ gives the properties satisfied by each live agent at the $i$th instant.
+
+\end{enumerate}
+% \mid (\alpha + \hat{\alpha} ) \mid (\alpha - \hat{\alpha})
+
+The evaluation of the set of terms $\alpha$ at time instance $i$ is derived from $m_i$ and given by the following function:
+$||\alpha||_i: \alpha \times \mathbb{N} \to \mathbb{N}$.
+This is defined inductively as follows:
+
+\emph{Base case:} The term $\#p$ evaluates to a non-negative integer, $||\#p||_i$ denoting the number of clients satisfying property $p$ at instance $i$ where $||\#p||_i=\{a \in V_i \mid p \in \xi_i(a)\}$.
+The evaluation of $\mathfrak{c}$ at instance $i$, $||\mathfrak{c}||_i=\mathfrak{c}$.
+
+\emph{Inductive case:}
+The terms $(\mathfrak{c} \#p )$ (and $(\#p \mathfrak{c})$) evaluates to $\mathfrak{c} ||\#p||_i$ (and $||\#p||_i \mathfrak{c}$ respectively) the multiplication of an integer denoted by $\#p$ with a constant $\mathfrak{c}$.
+The terms $(\alpha + \hat{\alpha})$ and $(\alpha - \hat{\alpha})$ evaluate to  addition and subtraction of integers $||\alpha||_i,||\hat{\alpha}||_i$.
+
+
+
+The truth of a formula at an instant in the model is given by the $\models$ relation defined by induction over the structure of $\psi$ as follows:
+
+\begin{enumerate}
+  \item $\varrho,i \models (\alpha < \hat {\alpha})$ iff $||\alpha||_i < ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models (\alpha > \hat {\alpha})$ iff $||\alpha||_i > ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models (\alpha \le \hat {\alpha})$ iff $||\alpha||_i \le ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models (\alpha \ge \hat {\alpha})$ iff $||\alpha||_i \ge ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models (\alpha = \hat {\alpha})$ iff $||\alpha||_i = ||\hat {\alpha}||_i$.
+
+
+
+  \item $\varrho,i\models q$ iff $q \in \nu_i$. Note that $q$'s denote atomic local server propositions. Therefore, a $q$ holds in the model $\varrho$ at instance $i$ if $q$ is in the set $\nu_i$.
+
+  \item $\varrho,i\models \lnot \psi$ iff $\varrho,i\not\models \psi$.
+  \item $\varrho,i\models \psi\lor\psi^{\prime}$ iff $\varrho,i\models \psi$ or $\varrho,i\models \psi^{\prime}$.
+  \item $\varrho,i\models \psi\land\psi^{\prime}$ iff $\varrho,i\models \psi$ and $\varrho,i\models \psi^{\prime}$.
+  \item $\varrho,i\models X\psi$ iff $\varrho,i+1\models \psi$.
+  \item $\varrho,i\models F \psi$ iff $\exists j\ge i$, $\varrho,j\models \psi$.
+  \item $\varrho,i\models G \psi$ iff $\forall j\ge i$, $\varrho,j\models \psi$.
+  \item $\varrho,i\models  \psi U\psi^{\prime}$ iff $\exists j\ge i$, $\varrho,j\models \psi^{\prime}$ and for all $i \le j' <j: \varrho,j'\models \psi$.
+
+
+\end{enumerate}
+
+\subsection{Two dimensional Bounded Semantics of {\LC}}\label{ssec:twodimboundedsemlc}
+Bounded semantics of LTL was described in Sec.~\ref{sec:boundsemltl}. Here we give the  bounded semantics of {\LC} in order to arrive at the SMT encoding in Sec.~\ref{sec:encodingLTL} which is necessary for BMC.
+We use $\models^{\langle\lambda,\kappa\rangle}$ as an restriction of $\models$ over bounded runs of length $\lambda$. The bound $k$ is divided into two parts: $k = \kappa + \lambda$, where \gls{symb:kappa} is a bound on the number of clients and \gls{symb:lambda} is a bound on the execution steps of the net. So we call this bounded semantics as two dimensional bounded semantics of {\LC}.
+Since the runs are bounded, there are at most $\kappa$ agents in the system, namely CN = $\{0,\ldots ,\kappa-1\}$.
+
+\begin{figure}[ht]
+  \centering
+  \scalebox{0.6}{\input{figures/noloop}}
+  \caption{Bounded loop-free path of length $\lambda$}
+  \label{fig:loopfreepath}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \scalebox{0.6}{\input{figures/klloop}}
+  \caption{Bounded path with $(\lambda,l)$ - loop}
+  \label{fig:klloop}
+\end{figure}
+
+First, we describe the bounded semantics without loop where $0\leq i \leq \lambda$:
+
+\begin{enumerate}
+
+  \item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha < \hat {\alpha})$ iff $||\alpha||_i < ||\hat {\alpha}||_i$.
+
+
+  \item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha > \hat {\alpha})$ iff $||\alpha||_i > ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha \le \hat {\alpha})$ iff $||\alpha||_i \le ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha \ge \hat {\alpha})$ iff $||\alpha||_i \ge ||\hat {\alpha}||_i$.
+
+  \item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha = \hat {\alpha})$ iff $||\alpha||_i = ||\hat {\alpha}||_i$.
+
+
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle} q$ iff $q \in \nu_i$.
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle} \lnot \psi$ iff $\varrho,i\not\models^{\langle\lambda,\kappa\rangle} \psi$.
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi\lor\psi^{\prime}$ iff $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi$ or $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi^{\prime}$.
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi\land\psi^{\prime}$ iff $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi$ and $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi^{\prime}$.
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle} X\psi \text{ iff }
+          \begin{cases}
+            \varrho,i+1\models^{\langle\lambda,\kappa\rangle} \psi     & \text{ if } (i<\lambda) \\
+
+            \varrho,i\not \models^{\langle\lambda,\kappa\rangle} X\psi & \text{otherwise }
+          \end{cases}$
+
+  \item[] When instance $i$ is less than the bound $\lambda$, the formula $\psi$ is evaluated at instance $i+1$ else, the formula is unsatisfiable.
+
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle} F \psi$ iff $\exists j: i\le j \le \lambda $, $\varrho,j\models^{\langle\lambda,\kappa\rangle} \psi$.
+
+  \item[] This formula is satisfiable if there is some instance $j$ such that $i \le j \le\lambda$ at which the property $\psi$ holds.
+
+  \item $\varrho,i\not \models^{\langle\lambda,\kappa\rangle} G \psi$.
+
+  \item[] In the absence of a loop in the bounded run, the above formula is always unsatisfiable.
+
+  \item $\varrho,i\models^{\langle\lambda,\kappa\rangle}  \psi U\psi^{\prime}$ iff $\exists j: i\le j \le \lambda$, $\varrho,j\models^{\langle\lambda,\kappa\rangle} \psi^{\prime}$ and for all $j': i \le j' <j: \varrho,j'\models^{\langle\lambda,\kappa\rangle} \psi$.
+
+  \item[] This formula is satisfied when formula $\psi^{\prime}$ is satisfied at some instance $j$  and for all instances less than $j$, formula $\psi$ is satisfied.
+
+\end{enumerate}
+
+
+Second, we describe the bounded semantics with $(\lambda,l)$-loop~\cite{BiereCCSZ03} where $0\leq i \leq \lambda$ and $0\leq l \leq \lambda$ as in Fig.~\ref{fig:klloop}. Semantics and explanations are given only where they differ from the corresponding case without loop:
+
+\begin{enumerate}
+
+  %\item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha < \hat {\alpha})$ iff $||\alpha||_i < ||\hat {\alpha}||_i$.
+
+
+  %\item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha > \hat {\alpha})$ iff $||\alpha||_i > ||\hat {\alpha}||_i$.
+
+  %\item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha \le \hat {\alpha})$ iff $||\alpha||_i \le ||\hat {\alpha}||_i$.
+
+  %\item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha \ge \hat {\alpha})$ iff $||\alpha||_i \ge ||\hat {\alpha}||_i$.
+
+  %\item $\varrho,i \models^{\langle\lambda,\kappa\rangle} (\alpha = \hat {\alpha})$ iff $||\alpha||_i = ||\hat {\alpha}||_i$.
+
+
+
+  %\item $\varrho,i\models^{\langle\lambda,\kappa\rangle} q$ iff $q \in \nu_i$.
+
+  %\item $\varrho,i\models^{\langle\lambda,\kappa\rangle} \lnot \psi$ iff $\varrho,i\not\models^{\langle\lambda,\kappa\rangle} \psi$.
+
+  %\item $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi\lor\psi^{\prime}$ iff $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi$ or $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi^{\prime}$. 
+
+  %\item $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi\land\psi^{\prime}$ iff $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi$ and $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi^{\prime}$. 
+
+
+
+  \item[10.] $\varrho,i\models^{\langle\lambda,\kappa\rangle} X\psi \text{ iff }
+      \begin{cases}
+        \varrho,i+1\models^{\langle\lambda,\kappa\rangle} \psi & \text{ if } (i<\lambda) \\
+        \varrho,l \models^{\langle\lambda,\kappa\rangle} \psi  & \text{otherwise }
+      \end{cases}$
+
+  \item[] When instance $i$ is less than the bound $\lambda$, the formula $\psi$ is evaluated at instance $i+1$ else, $\psi$ is evaluated at instance $l$, which is the next instance of $\lambda$.
+
+  \item[11.] $\varrho,i\models^{\langle\lambda,\kappa\rangle} F \psi$ iff $\exists j: min(l,i)\le j \le \lambda$, $\varrho,j\models^{\langle\lambda,\kappa\rangle} \psi$.
+
+  \item[] This formula is satisfiable if there is some instance $j$ such that $min(l,i) \le j \le\lambda$, where the formula $\psi$ is satisfied.
+
+  \item[12.] $\varrho,i\models^{\langle\lambda,\kappa\rangle} G \psi$ iff $\forall j: min(l,i)\le j \le \lambda$, $\varrho,j\models^{\langle\lambda,\kappa\rangle} \psi$.
+
+  \item[] This formula is satisfiable if for all instances $j$ such that $min(l,i) \le j \le\lambda$, the formula $\psi$ is satisfied in each instance.
+
+
+  \item[13.] $\varrho,i\models^{\langle\lambda,\kappa\rangle} \psi U\psi^{\prime} \text{ iff }
+      \begin{cases}
+        \exists j:i \le j \le \lambda, \varrho,j\models^{\langle\lambda,\kappa\rangle} \psi^{\prime} \text{ and } & \text{ if }(i\le l) \\
+        \forall j': i \le j' < j: \varrho,j' \models^{\langle\lambda,\kappa\rangle} \psi                          &                     \\
+        \exists j: i \le j \le \lambda, \varrho,j\models^{\langle\lambda,\kappa\rangle}\psi^{\prime} \text{ and } & \text{ if } (i> l)  \\
+        \forall j': i \le j' <j: \varrho,j' \models^{\langle\lambda,\kappa\rangle} \psi                           &                     \\
+        \hspace{10em}\text{or}                                                                                    &                     \\ %or
+        \exists j: l \le j < i, \varrho,j\models^{\langle\lambda,\kappa\rangle}\psi^{\prime} \text{ and }         &                     \\
+        \forall j': l \le j' < j: \varrho,j' \models^{\langle\lambda,\kappa\rangle} \psi
+      \end{cases}$
+
+  \item[] Consider the two cases:
+    \begin{itemize}
+      \item If $(i\le l)$, the current instance $i$ is less than or equal to the loop instance $l$, this formula is satisfied when formula $\psi^{\prime}$ is satisfied at some instance $j$  such that $i \le j \le \lambda$ and for all instances between $i$ and $j$, formula $\psi$ is satisfied.
+      \item If $(i> l)$, the formula may be satisfied in either of the two intervals between $i$ to $\lambda$ or between $l$ to $i$. Hence, the formula is satisfied if either of the following are satisfied: formula $\psi^{\prime}$ is satisfied at some instance $j$  such that $i \le j \le \lambda$ and for all instances less than $j$, formula $\psi$ is satisfied or, formula $\psi^{\prime}$ is satisfied at some instance $j$  such that $l \le j < i$ and for all instances between $l$ and $j$, formula $\psi$ is satisfied.
+    \end{itemize}
+
+
+
+\end{enumerate}
+
+
+
+
+
+\section{First Order Logic with Monodic restriction}\label{sec:mlogic}
+
+The monodic logic {\Lstar} is a syntactic subclass of
+\acrfull{MFOTL}~\cite{HWZ01} with two restrictions : it is monadic and all formulas have quantifier rank 1. We choose this logic {\Lstar} as it is natural for expressing properties of unbounded client-server systems where the number of clients is both unbounded and dynamic. A \emph{monodic} formula is a well-formed formula with at most one free variable in the scope of a temporal modality. In this section, we describe the syntax and semantics of {\Lstar} with suitable examples. To give a flavour of {\Lstar} and its expressibility, we enumerate some properties of APS that are not easily expressible in Linear Temporal Logic (LTL).
+Let $P_s$ be the set of atomic propositions of the server and $ P_c$ be the set of client predicates. In the APS running example, they are defined as follows:
+\begin{align*}
+  P_c
+   & =\{parking\_requested (PR),~occupy\_parking\_lot (OP),     \\
+   & \qquad~parking\_unavailable (PU), exit\_successfully (ES), \\
+   & \qquad~exited\_unsuccessfully (EU)\}                       \\
+  P_s
+   & =\{server\_ready (SR)\}
+\end{align*}
+
+
+
+
+
+
+\begin{enumerate}
+
+  \item When a vehicle requests a parking space, it is always the case that for every vehicle, it eventually exits the system, either successfully after being granted a parking space, or unsuccessfully, when its request is denied. %We can express this naturally in {\Lstar}:
+        \begin{align*}
+          \psi_1 & =\mathbf{G}_s(\forall x) \Big( parking\_requested(x) \Rightarrow               \\
+                 & \qquad\mathbf{F}_c~ (exit\_successfully(x)~\lor~exit\_unsuccessfully(x)) \Big)
+        \end{align*}
+
+  \item It is always the case that if the client occupies a parking lot, it will eventually exit the parking lot. %This can be expressed in {\Lstar} as follows:
+        \begin{align*}
+          \psi_2 & =\mathbf{G}_s(\forall x) \Big(occupy\_parking\_lot(x)\Rightarrow \mathbf{F}_c(exit\_successfully(x))\Big)
+        \end{align*}
+        %We expect that this property will hold true. 
+
+  \item There may be clients whose requests are rejected.
+        \begin{align*}
+          \psi_{3} & =\mathbf{G}_s(\exists x) \big(parking\_requested(x) \land \mathbf{F}_c (exit\_unsuccessfully(x))\big)
+        \end{align*}
+
+  \item There may be clients who have requested for parking and who wait in the parking unavailable state until they are able to exit the system.
+        \begin{align*}
+          \psi_4 & = \mathbf{G}_s(\exists x) \bigg( parking\_requested(x)~\land                                      \\
+                 & \qquad \mathbf{F}_c \big( parking\_unavailable(x)~\mathbf{U}_c~exit\_unsuccessfully(x)\big)\bigg)
+        \end{align*}
+
+\end{enumerate}
+
+
+
+It can be observed that there are no free variables in the scope of $\mathbf{G_s}$ and exactly one free variable in the scope of the client modalities. It is also possible to construct {\Lstar} specifications with propositions from $P_s$ and server transitions.
+The ease of expressibility of the client and server behaviour is the key motivation behind the logic {\Lstar} which is formally described in the subsequent section.
+
+
+\subsection{Syntax of {\Lstar}}
+%\noindent\textbf{Syntax: } 
+We describe the syntax of logic {\Lstar} below. The set of \emph{client formulae}, $\Delta$, is the \emph{boolean and temporal modal closure} of atomic client formulae $P_c$:
+
+
+\[\alpha,\beta \in \Delta ::= p(x), p\in P_c\mid \lnot\alpha \mid \alpha\lor\beta \mid  \alpha \land \beta \mid \mathbf{X}_c \alpha\mid \mathbf{F}_c\alpha \mid \mathbf{G}_c \alpha \mid \alpha ~\mathbf{U}_c~ \beta\]
+The set of \emph{server formulae}, $\Psi$, is the \emph{boolean and temporal modal closure} of $\Phi=\{(\exists x)\alpha,(\forall x)\alpha \mid \alpha \in \Delta\}$ and atomic server formulae $P_s$:
+\[\Psi ::= q \in P_s \mid \lnot \psi \mid \phi \in \Phi \mid \psi_1 \lor \psi_2 \mid \psi_1\land \psi_2 \mid \mathbf{X_s} \psi \mid \mathbf{F_s} \psi \mid \mathbf{G_s}\psi \mid \psi_1 ~\mathbf{U_s}~\psi_2\]
+
+\noindent where $\psi,\psi_1,\psi_2 \in \Psi$.
+It can be observed that in {\Lstar}, the quantifier depth is at most one and quantifier alternation is not allowed. The syntax allows us to specify only monodic formulas. Every variable in the server formulas is bounded; {\Lstar} allows for only client formulas to be quantified and we do not have quantifiers over server formulae.
+
+
+
+
+
+
+\subsection{Two dimensional Bounded Semantics of {\Lstar}}\label{ssec:semantics}
+
+\begin{figure}[ht]
+
+  \centering
+  \scalebox{0.7}{\input{figures/live_windows_overlap}}
+  \caption{Snapshot of the running example $(APS)$ depicting live windows}
+  \label{fig:livewindows}
+
+\end{figure}
+We consider the \emph{unbounded client-server systems} where all clients are of the same type and they may enter and exit the system dynamically. At any point in time, the number of clients is \emph{bounded}, but their cardinality is \emph{unknown} and \emph{dynamic}. We refer to the clients that are present in the system at any point in time as \emph{live agents} (clients). The \emph{live window} of a particular client begins when it enters the system and ends when the client exits the system. Hence, if there are several \emph{live agents}, their \emph{live windows} would overlap each other. This is interesting as it allows us to reason about the \emph{live clients} which satisfy particular properties simultaneously. We illustrate these concepts with respect to the running example $APS$ before formally defining them.
+
+%\noindent\emph{Example: }
+\begin{eg}
+  Fig.~\ref{fig:livewindows} depicts the snapshot of the system with $4$ distinguishable clients, with overlapping \emph{live windows}, with the bound $5$. The $x$ axis denotes the time instance. The clients are along the $y$ axis.  While the system is \emph{unbounded}, there are a finite number of clients at an instant, as shown in this figure.
+  %\begin{enumerate}
+  Each row shows the local state of that client. For each instance, the local state of the client is in the cell i.e., client $1$ is at state $p_{PR}$ at instance $0$.
+  For client $1$, the \emph{left boundary}, when it enters the system is at instance $0$ and its \emph{right boundary} is at instance $2$, when it exits the system . This corresponds to the client requesting parking and getting rejected.
+  There may be multiple clients in the same local state (client $3$ and client $4$ are in state $p_{PR}$ at instance $4$). There may be clients which are live at the bound $5$ and have not exited the system, such as clients $3$ and $4$. This is an interesting case, where the bound (in the snapshot) is equal to the current right boundary for the client.
+  %\end{enumerate}
+\end{eg}
+
+
+
+
+
+\noindent At the outset, we define the following objects:
+\begin{itemize}
+  \item Let $CN$ be a countable set of client names. The client enters the system and gets a unique identifier (name) from $CN$. When the client exits the system, the identifier gets discarded and is never reused.
+  \item Let $CS = (Q,\Sigma,\delta,I,F)$ be a finite state machine describing the behaviour of a client. Let $L:Q \to 2^{P_c}$ be the definition (labelling function) of each client state  $q \in Q$ in terms of a subset of properties $P_c$ true in that state. The states in $F$ are sink states with no outgoing arcs.
+  \item[] \emph{Example: }In the running example (APS), the clients have exactly one initial state $I=parking\_requested~(PR)$ and two final states namely,
+  \item[] $F=\{exit\_successfully~(ES)$, $ exit\_unsuccessfully~(EU)\}$.
+  \item Let $\mathfrak{Z}:CN \times \mathbb{N}_0 \to Q$ be a partial mapping describing the local state of each client $a \in CN$ at an instance $i \in \mathbb{N}_0$. For instance, $\mathfrak{Z}(a,i)\in q$, means that the local state of each client $a$ at instance $i$ is state $q$, where $q \in Q$.
+\end{itemize}
+
+Formally, a model is a triple $M=(\nu,V,\xi)$ where
+\begin{enumerate}
+  \item $\nu$ gives the local behaviour of the server as follows:
+
+        $\nu=\nu_0\nu_1\nu_2\ldots$, where for all $0 \le i$, $\nu_i \subseteq P_s$,
+  \item $V$ gives the set of live agents (clients) at each instance.
+
+        $V=V_0V_1V_2\ldots$, where for all $0 \le i$, $V_i$ is a finite subset of $CN$, gives the set of live agents at the $i$th instance.
+        \newline
+        For every $0\le i$, $V_i$ and $V_{i+1}$ satisfy  the following properties:
+        \begin{enumerate}
+          \item if $V_i \subseteq V_{i+1}$ then for every $a \in V_{i+1}-V_i$ such that $\mathfrak{Z}(a,i+1)\in I$.
+          \item if $V_{i+1}\subseteq V_i$ then for every $a \in V_i-V_{i+1}$ such that $\mathfrak{Z}(a,i)\in F$.
+        \end{enumerate}
+        $V$ may satisfy the following interesting property. For any $a \in CN$ and $i \in \mathbb{N}_0$ if $a \in V_i$ and if there exists  $j >i$ such that $a \not \in V_j$ then we may define the left and right boundaries of the live window for $a$, denoted by $left(a)$ and $right(a)$ where $left(a)\le i\le right(a)$. If no such $j$ exists then there is no right boundary for the live window of that client.
+
+
+  \item $\xi=\xi_0\xi_1\xi_2\cdots$, where for all $0 \le i$, $\xi_i:V_i\to 2^{P_c}$ gives the properties satisfied by each live agent at $i$th instance, in other words, the corresponding states of live agents. In terms of $\mathfrak{Z}$, $L(\mathfrak{Z}(a,i))=\xi_i(a)$. Alternatively, $\xi_i$ can be given as $\xi_i:V_i\times P_c \to\{\top,\bot\}$. %, an equivalent form.
+\end{enumerate}
+
+\section{SMT Encoding for the Logic {\Lstar}}\label{sec:Lstarpropenc}
+
+In this section, we describe the SMT encoding for {\Lstar} which will enable us to implement a bounded model checker tool for restricted $\nu$-nets using {\Lstar} specifications. Let $[\mathcal{M}]_{\langle\lambda,\kappa\rangle}$ be the SMT encoding of $\lambda$-bounded runs of the net $\mathcal{M}$ containing at most $\kappa$ agents. The SMT encoding $[\mathcal{M}]_{\langle\lambda,\kappa\rangle}$ can be given based on the definition of the restricted $\nu$-net. Let $\psi$ be a property written in the logic language {\Lstar} which is being model-checked in bounded runs of $\mathcal{M}$. For a given ${\langle\lambda,\kappa\rangle}$ and $i$ ($\psi$ is asserted at $i$, $0\le i\le \lambda$), we define two encoding functions $\prescript{}{}[\psi]^i_{\langle\lambda,\kappa\rangle}$ and $\prescript{}{l}[\psi]^i_{\langle\lambda,\kappa\rangle}$.
+The formula $[\psi]^i_{\langle\lambda,\kappa\rangle}$ denotes the SMT encoding of $\psi$, where the bounded run of length $\lambda$ and at most $\kappa$ agents in the system does not contain a loop. The formula $\prescript{}{l}[\psi]^i_{\langle\lambda,\kappa\rangle}$ denotes the SMT encoding of $\psi$, where the bounded run of length $\lambda$ and at most $\kappa$ agents contains a loop which is asserted at $i$.
+
+
+We add the following formulas about the dead agents (agents that are not alive) to the system specification:
+
+\begin{itemize}
+  \item If a client exits the parking lot, then it becomes dead in the next state.
+
+        $\delta_1 = \underset{{0\le i \le \lambda -1}}{\bigwedge} \bigg( \underset{{0\le \mathfrak{j} \le \kappa -1}}{\bigwedge}exit\_successfully(\mathfrak{j}, i) \To (dead(\mathfrak{j},i+1))\bigg)$
+
+        $\delta_2 = \underset{{0\le i \le \lambda -1}}{\bigwedge} \bigg( \underset{{0\le \mathfrak{j} \le \kappa -1}}{\bigwedge}exit\_unsuccessfully(\mathfrak{j},i) \To (dead(\mathfrak{j},i+1))\bigg)$
+
+  \item If a client is dead then it remains dead.
+
+        $\delta_3 = \underset{{0\le i \le \lambda -1}}{\bigwedge} \bigg( \underset{{0\le \mathfrak{j} \le \kappa -1}}{\bigwedge}dead(\mathfrak{j}) \To (dead(\mathfrak{j},i+1))\bigg)$
+\end{itemize}
+
+
+\noindent In case of a different case study, where we consider any other net, instead of APS, we can suitably replace $exit\_successfully(\mathfrak{j})$, $exit\_unsuccessfully(\mathfrak{j})$ by the relevant termination condition(s).
+
+The SMT encoding is derived from the bounded semantics in section~\ref{sec:mlogic}. The following encodings are extensions of similar mappings defined in~\cite{BiereTACAS99}. First, we inductively define $[\psi]^i_{\langle\lambda,\kappa\rangle}$ as follows:
+\begin{enumerate}
+  \item $\prescript{}{}[q]^i_{\langle\lambda,\kappa\rangle} \equiv q_i$
+
+  \item $\prescript{}{}[\lnot q]^i_{\langle\lambda,\kappa\rangle} \equiv \lnot q_i$
+
+        %the below two formulas containing quantifiers are the source of client names \mathfrak{j}, which range from 0 to \kappa-1
+  \item $\prescript{}{}[(\exists x)\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv  \underset{0\le \mathfrak{j} \le \kappa-1}{\bigvee}\prescript{}{}[\alpha[\mathfrak{j}/x]]^i_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{}[(\forall x)\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{0\le \mathfrak{j} \le \kappa-1}{\bigwedge}\prescript{}{}[\alpha[\mathfrak{j}/x]]^i_{\langle\lambda,\kappa\rangle}$
+
+        %or, and
+  \item $\prescript{}{}[\psi_1 \lor \psi_2]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{}[\psi_1]^i_{\langle\lambda,\kappa\rangle} \lor \prescript{}{}[\psi_2]^i_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{}[\psi_1 \land \psi_2]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{}[\psi_1]^i_{\langle\lambda,\kappa\rangle} \land \prescript{}{}[\psi_2]^i_{\langle\lambda,\kappa\rangle}$
+        %
+        %
+        % Server temporal operators: there is no identifier here (no clients, no free variables), server formulas are sentences
+        %
+        %
+  \item $\prescript{}{}[\mathbf{X_s} \psi]^i_{\langle\lambda,\kappa\rangle} \equiv
+          \begin{cases} \prescript{}{}[\psi]^{i+1}_{\langle\lambda,\kappa\rangle} & \mbox{if ($i<\lambda$)}\\ False & \mbox{otherwise}\end{cases}$
+
+  \item $\prescript{}{}[\mathbf{F_s}\psi]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{i\le j \le \lambda}{\bigvee}\prescript{}{}[\psi]^{j}_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{}[\mathbf{G_s} \psi]^i_{\langle\lambda,\kappa\rangle} \equiv False$
+
+  \item $\prescript{}{}[\psi_1\mathbf{U_s}\psi_2]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{i\le j \le \lambda}{\bigvee}([\psi_2]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{i\le j' < j}{\bigwedge}[\psi_1]^{j'}_{\langle\lambda,\kappa\rangle})$
+
+
+
+        %SMT encoding: Client atomic Formulas: loop-free
+        %11-18
+  \item 	$\prescript{}{}[p(\mathfrak{j})]^i_{\langle\lambda,\kappa\rangle} \equiv p(\mathfrak{j},i)$
+
+  \item $\prescript{}{}[\lnot \alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \lnot \prescript{}{}[\alpha]^i_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{}[\alpha \lor \beta]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{}[\alpha]^i_{\langle\lambda,\kappa\rangle} \lor \prescript{}{}[\beta]^i_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{}[\alpha \land \beta]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{}[\alpha]^i_{\langle\lambda,\kappa\rangle} \land \prescript{}{}[\beta]^i_{\langle\lambda,\kappa\rangle}$
+
+        %
+        % Prop Encoding Client temporal formulas, loop-free
+        %
+        %
+  \item $\prescript{}{}[\mathbf{X}_c \alpha]^i_{\langle\lambda,\kappa\rangle} \equiv
+          \begin{cases} \big(dead(\mathfrak{j},i+1) \To False\big) \land \big(\lnot dead(\mathfrak{j},i+1) \To \prescript{}{}[\alpha]^{i+1}_{\langle\lambda,\kappa\rangle}\big) & \mbox{if ($i<\lambda$)} \\
+              False                                                                                                                                                   & \mbox{if ($i=\lambda$)}\end{cases}$
+  \item[] If the client is dead at the instance $i+1$, the original formula evaluates to false. If the client is live, the standard bounded semantics apply.
+    Similar semantics are given in equations $16-18$ based on the client liveness at instance $j$.
+
+  \item $\prescript{}{}[\mathbf{F}_c\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{i \le j \le \lambda}{\bigvee}\bigg(\big(dead(\mathfrak{j},j) \To False\big) \land \big(\lnot dead(\mathfrak{j},j) \To \prescript{}{}[\alpha]^j_{\langle\lambda,\kappa\rangle}\big)\bigg)$
+
+  \item $\prescript{}{}[\mathbf{G}_c\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{i \le j \le \lambda}{\bigwedge}\bigg(\big(dead(\mathfrak{j},j) \To False\big) \land \big(\lnot dead(\mathfrak{j},j) \To \prescript{}{}[\alpha]^j_{\langle\lambda,\kappa\rangle}\big)\bigg)$
+
+
+
+
+        % Client Until loop free formula
+
+
+  \item $\prescript{}{}[\alpha\mathbf{U}_c\beta]^i_{\langle\lambda,\kappa\rangle} \equiv
+          \bigvee\limits_{i\leq j\leq \lambda}\bigg(\big(dead(\mathfrak{j},j) \To False\big) \land \big(\lnot dead(\mathfrak{j},j) \To {prop\_encode}_{\alpha\mathbf{U}_c\beta} \big)\bigg)$
+
+        \begin{itemize}
+          \item[] where ${prop\_encode}_{\alpha\mathbf{U}_c\beta}= \bigwedge\limits_{i\leq j\leq \lambda}\prescript{}{}[\beta]^j_{\langle\lambda,\kappa\rangle}
+              \land
+              \bigvee\limits_{i\leq j'< j}\prescript{}{}[\alpha]^{j'}_{\langle\lambda,\kappa\rangle}$
+        \end{itemize}
+
+\end{enumerate}
+%
+%
+%
+% SMT encoding With (\lambda, l) Loop
+%
+%
+%
+%
+%
+
+
+Second, we inductively define $\prescript{}{l}[\psi]^i_{\langle\lambda,\kappa\rangle}$, for the loop case as follows:
+\begin{enumerate}
+  %Atomic Server Formulas:
+  \item $\prescript{}{l}[q]^i_{\langle\lambda,\kappa\rangle} \equiv q_i$
+  \item $\prescript{}{l}[\lnot q]^i_{\langle\lambda,\kappa\rangle} \equiv \lnot q_i$
+        %Exists
+  \item $\prescript{}{l}[(\exists x)\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv  \underset{0\le \mathfrak{j} \le \kappa-1}{\bigvee}\prescript{}{l}[\alpha[\mathfrak{j}/x]]^i_{\langle\lambda,\kappa\rangle}$
+        %Forall
+  \item $\prescript{}{l}[(\forall x)\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{0\le \mathfrak{j} \le \kappa-1}{\bigwedge}\prescript{}{l}[\alpha[\mathfrak{j}/x]]^i_{\langle\lambda,\kappa\rangle}$
+        %or		
+  \item $\prescript{}{l}[\psi_1 \lor \psi_2]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{l}[\psi_1]^i_{\langle\lambda,\kappa\rangle} \lor \prescript{}{l}[\psi_2]^i_{\langle\lambda,\kappa\rangle}$
+        %and
+  \item $\prescript{}{l}[\psi_1 \land \psi_2]^i_{\langle\lambda,\kappa\rangle}\equiv \prescript{}{l}[\psi_1]^i_{\langle\lambda,\kappa\rangle} \land \prescript{}{l}[\psi_2]^i_{\langle\lambda,\kappa\rangle}$
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Temporal Formulas
+        %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item $\prescript{}{l}[\mathbf{X_s} \psi]^i_{\langle\lambda,\kappa\rangle} \equiv
+          \begin{cases} \prescript{}{l}[\psi]^{i+1}_{\langle\lambda,\kappa\rangle} & \mbox{if ($i<\lambda$)}\\ \prescript{}{l}[\psi]^l_{\langle\lambda,\kappa\rangle} & \mbox{if ($i=\lambda$)}\end{cases}$
+
+
+  \item $\prescript{}{l}[\mathbf{F_s}\psi]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{min(l,i)\le j \le \lambda}{\bigvee}\prescript{}{l}[\psi]^j_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{l}[\mathbf{G_s} \psi]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{min(l,i)\le j \le \lambda}{\bigwedge}\prescript{}{l}[\psi]^j_{\langle\lambda,\kappa\rangle}$
+
+
+  \item $\prescript{}{l}[\psi_1\mathbf{U_s}\psi_2]^i_{\langle\lambda,\kappa\rangle} \equiv
+          \begin{cases}
+            \underset{i\le j \le \lambda}{\bigvee}(\prescript{}{l}[\psi_2]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{i\le j' < j}{\bigwedge}\prescript{}{l}[\psi_1]^{j'}_{\langle\lambda,\kappa\rangle})                  & \mbox{if $(i\le l)$} \\
+                                                                                                                                                                                                                                   &                      \\
+            \bigg( \big(\underset{i\le j \le \lambda}{\bigvee}(\prescript{}{l}[\psi_2]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{i\le j' < j}{\bigwedge}\prescript{}{l}[\psi_1]^{j'}_{\langle\lambda,\kappa\rangle})\big) &                      \\
+            \hspace{25mm}\text{or}                                                                                                                                                                                                 & \mbox{if $(i> l)$}   \\
+            \big(\underset{l\le j < i}{\bigvee}(\prescript{}{l}[\psi_2]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{l\le j' < j}{\bigwedge}\prescript{}{l}[\psi_1]^{j'}_{\langle\lambda,\kappa\rangle}) \big) \bigg)        &                      \\
+          \end{cases}$
+
+
+
+        %Atomic Client Formulas 11-14
+  \item $\prescript{}{l}[p(\mathfrak{j})]^i_{\langle\lambda,\kappa\rangle} \equiv p(\mathfrak{j},i)$
+
+  \item $\prescript{}{l}[\lnot \alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \lnot \prescript{}{l}[\alpha]^i_{\langle\lambda,\kappa\rangle}$
+
+  \item $\prescript{}{l}[\alpha \lor \beta]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{l}[\alpha]^i_{\langle\lambda,\kappa\rangle} \lor \prescript{}{l}[\beta]^i_{\langle\lambda,\kappa\rangle}$
+
+
+  \item $\prescript{}{l}[\alpha \land \beta]^i_{\langle\lambda,\kappa\rangle} \equiv \prescript{}{l}[\alpha]^i_{\langle\lambda,\kappa\rangle} \land \prescript{}{l}[\beta]^i_{\langle\lambda,\kappa\rangle}$
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %
+        %Client temporal formulas 15-18
+        %
+        %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %X_c
+        %
+  \item $\prescript{}{l}[\mathbf{X}_c \alpha]^i_{\langle\lambda,\kappa\rangle} \equiv
+          \begin{cases}
+            \big(dead(\mathfrak{j},i+1) \To False\big) \land \big(\lnot dead(\mathfrak{j},i+1) \To \prescript{}{l}[\alpha]^{i+1}_{\langle\lambda,\kappa\rangle}\big) & \mbox{if ($i<\lambda$)} \\
+
+            \big(dead(\mathfrak{j},l) \To False\big) \land \big(\lnot dead(\mathfrak{j},l) \To \prescript{}{l}[\alpha]^l_{\langle\lambda,\kappa\rangle}\big)         & \mbox{if ($i=\lambda$)}
+          \end{cases}$
+
+  \item[] If the client is dead at the next instance ($i+1$ or $l$, respectively), the original formula evaluates to false. If the client is live, the standard bounded semantics apply. Similar semantics are given in equations $16-18$ based on the client liveness at instance $j$.
+    %
+    % F_c
+    %
+  \item $\prescript{}{l}[\mathbf{F}_c\alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{min(l,i) \le j \le \lambda}{\bigvee}\bigg(\big(dead(\mathfrak{j},j) \To False\big)  \land \big(\lnot dead(\mathfrak{j},j) \To \prescript{}{l}[\alpha]^j_{\langle\lambda,\kappa\rangle}\big)\bigg)$
+        %
+        %G_c
+        % 
+  \item $\prescript{}{l}[\mathbf{G}_c \alpha]^i_{\langle\lambda,\kappa\rangle} \equiv \underset{min(l,i) \le j \le \lambda}{\bigwedge}\bigg((dead(\mathfrak{j},j) \To False) \land (\lnot dead(\mathfrak{j},j) \To \prescript{}{l}[ \alpha]^j_{\langle\lambda,\kappa\rangle})\bigg)$
+        %U_c%
+        %
+        %
+        %
+        %
+
+
+
+  \item $\prescript{}{l}[\alpha\mathbf{U_c}\beta]^i_{\langle\lambda,\kappa\rangle} \equiv \\
+          \underset{min(l,i) \le j \le \lambda}{\bigvee}\bigg(\big(dead(\mathfrak{j},j) \To False\big) \land \big(\lnot dead(\mathfrak{j},j) \To {loop\_prop\_encode}_{\alpha\mathbf{U_c}\beta} \big)\bigg)$
+        ${loop\_prop\_encode}_{\alpha\mathbf{U_c}\beta}=
+          \begin{cases}
+            \underset{i\le j \le \lambda}{\bigvee}(\prescript{}{l}[\beta]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{i\le j' < j}{\bigwedge}\prescript{}{l}[\alpha]^{j'}_{\langle\lambda,\kappa\rangle})                  & \mbox{if $(i\le\lambda)$} \\
+                                                                                                                                                                                                                                  &                           \\
+            \bigg( \big(\underset{i\le j \le \lambda}{\bigvee}(\prescript{}{l}[\beta]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{i\le j' < j}{\bigwedge}\prescript{}{l}[\alpha]^{j'}_{\langle\lambda,\kappa\rangle})\big) &                           \\
+            \hspace{25mm}\text{or}                                                                                                                                                                                                & \mbox{if $(i>\lambda)$}   \\
+            \big(\underset{l\le j < i}{\bigvee}(\prescript{}{l}[\beta]^{j}_{\langle\lambda,\kappa\rangle} \land \underset{l\le j' < j}{\bigwedge}\prescript{}{l}[\alpha]^{j'}_{\langle\lambda,\kappa\rangle}) \big) \bigg)        &                           \\
+          \end{cases}$
+\end{enumerate}
+
+\subsubsection*{Conclusion}
+The above encoding is utilized in the verification tool that utilizes SMT solvers, which is described in Sec.~\ref{ssec:verif}. Our larger goal is to verify unbounded client server systems. We shall explore the challenges associated with it, the existing literature on verification of these systems and the gap that we aim to fill with our work in the upcoming chapter.

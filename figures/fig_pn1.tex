@@ -1,0 +1,38 @@
+\begin{tikzpicture}[scale=0.45]
+	
+		
+%source transition
+ \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=left:{\small $t_{0}$}] (t0) at (-10,0) {};
+		
+\node[place,label=above:{\small $p_{0}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p0) at (-8,0){} ;	
+		
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\small $t_{1}$}] (t1) at (-6,0) {};
+
+\node[place,label=above:{\small $p_{1}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p1) at (-4,2){} ;
+	
+\node[place,label=below:{\small $p_{2}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p2) at (-4,-2){} ;
+
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\small $t_{2}$}] (t2) at (-2,2) {};
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\small $t_{3}$}] (t3) at (-2,-2) {};
+
+\node[place,label=above:{\small $p_{3}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p3) at (0,0){} ;
+
+\draw[->] (t0) -- (p0);
+\draw[->] (p0) -- (t1);
+\draw[->] (t1) -- (p1);
+\draw[->] (t1) -- (p2);
+
+\draw[->] (p1) -- (t2);
+\draw[->] (p2) -- (t3);
+
+\draw[->] (t2) -- (p3);
+\draw[->] (t3) -- (p3);
+
+\draw[->] (p3) node[midway, above]{} (t0);
+\end{tikzpicture}

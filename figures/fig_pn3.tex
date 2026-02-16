@@ -1,0 +1,29 @@
+\begin{tikzpicture}[scale=0.45]
+
+
+\node[place,label=left:{\small $p_{0}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p0) at (-4,2){$\bullet$} ;	
+
+\node (i0) at (-1.5,1.5) {$1$};
+\node (i1) at (-1.5,-1.5) {$2$};
+		
+\node[place,label=left:{\small $p_{1}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p1) at (-4,-2){$\bullet\bullet$} ;
+
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=above:{\small $t_{0}$}] (t0) at (0,0) {};
+
+\node[place,label=right:{\small $p_{2}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p2) at (4,2){$\bullet\bullet$} ;	
+
+\node (i2) at (1.5,1.5) {$2$};
+\node (i3) at (1.5,-1.5) {$1$};
+		
+\node[place,label=right:{\small $p_{3}$},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p3) at (4,-2){$\bullet$} ;
+
+		
+\draw[->] (p0) -- (t0);
+\draw[->] (p1) -- (t0);
+\draw[->] (t0) -- (p2);
+\draw[->] (t0) -- (p3);
+\end{tikzpicture}

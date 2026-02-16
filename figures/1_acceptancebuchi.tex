@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\path node[circle,draw] (s) {$s$} ++ (5,0) node[circle,draw] (g) {$g$};
+\draw[-stealth] (s.east) to[out=15,in=165] ++ (1,0)
+        to[out=-15,in=-165] ++ (1,0) to[out=15,in=165] ++ (1,0)
+        to[out=-15,in=-165](g);
+\draw[-stealth,shorten >=4pt,shorten <=4pt] (g) to[out=-40,in=-90] ++ (2.5,0) to[out=90,in=0]
+        ++ (-1,1) to[out=180,in=40] (g);
+\draw[-stealth,shorten >=4pt,shorten <=4pt] (g) to[out=-60,in=-90] ++ (2,0) to[out=90,in=0]
+        ++ (-0.8,1.6) to[out=180,in=60] (g);
+\end{tikzpicture}

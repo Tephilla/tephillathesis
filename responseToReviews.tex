@@ -1,0 +1,353 @@
+
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{xcolor}
+\usepackage{xr}
+
+\externaldocument{thesis-plain}
+\newcommand{\answer}[1]{\item[] \textcolor{blue}{Answer: #1}}
+
+
+
+\title{The list of response to PhD thesis reviewers.\\ Thesis Title: Formal Verification of systems with unbounded agents\\ Author: Tephilla Prince \\ Roll No: CS18DP001}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Reviewer One Comments}
+
+\subsection{Major Comments}
+\begin{enumerate}
+      \item In a few places, notions and notations are used before being introduced. It would be good to do a
+            careful check throughout the thesis. For instance APS is used on page 18 as an example but is not
+            defined till… 39 and even there it is rather unclear. It is only really defined in pg 79 (sec 6.1.1), but
+            many properties about it are used from pg 18 onwards. This case-study should be introduced much
+            earlier as it is referred to often.
+            \answer {We have moved the case study to Sec.~\ref{sec:apscasestudy}.}
+
+      \item The prelims chapter needs a careful going over. There are many notational and other significant
+            errors. For instance weighted Petri nets are used but only unweighted are formally defined. Buchi
+            automata and acceptance are never defined but used in many places.
+
+            \answer{Chapter 1: We give the definition of Buchi automata in Definition.~\ref{dfnbuchi}.  We describe omega-regular languages before defining Buchi automata.}\\
+
+            \textcolor{blue}{Chapter 2: We formally define the weighted Petri net along with Definition.~\ref{def:pn}. }
+
+      \item In Chapter 4 algorithm 1 and 2 are not described except as pseudocode. Novelty in Algo 2 and
+            notations must be made clear. Also some proof of correctness is needed. It may be good to possibly
+            formulate a theorem saying that Algo2 is sound but not complete. Also, it seems that the Unfolding
+            of a net for doing BMC is not defined formally.
+            \begin{enumerate}
+                  \item \textcolor{blue}{Answer: Suitable description for Algorithms has been provided in Sec.~\ref{ssec:bmcdsc}.}
+                  \item \textcolor{blue}{It is well known that BMC is a technique that is incomplete therefore we believe that a separate proof would not add any novel contribution.}
+                  \item \textcolor{blue}{Unfolding the net for BMC with respect to the various logics has been defined in Section 5.2. Note that the notion of unfolding here, is different from that of Ken McMillan's notion of unfolding which has been mentioned in the beginning of Sec.4.1.}
+            \end{enumerate}
+
+
+      \item In Chapter 5, in the experiments, I had two main questions: (i) why does your approach have
+            false positives? I expected DCModelChecker to be sound but not complete, hence I am surprised to
+            see $\tilde{9\%}$ false positives which show lack of soundness. Did you examine these examples? Can you
+            identify their source and fix it? (ii) From Expt 2/3 it seems DCModelChecker2.0 is not much better
+            than DCModelChecker1.0… Especially in Table 5.3 it seems 1.0 is much better than 2.0. In Expt4
+            in sec 5.4.4, there is a statement saying “our experiments demonstrate 2.0 is better than 1.0” but these experiments don’t seem to be presented in the thesis. Can you add these and comment on
+            them, given this shows novelty and effectiveness of the 2D-BMC algorithm?
+
+            \begin{enumerate}
+                  \item \textcolor{blue}{Answer: Firstly, after the time of submission of the thesis, we have rectified some of the false positives.
+                              The false positives which were rectified were due to mistakes in the handcrafted translation of the properties, for instance, the standard format for the properties from the benchmarks is in XML, which needed to be converted into a different format that DCModelChecker can use. Hence, these errors had crept in, and they were not due to an error in the algorithm.
+                              At the time of writing, there are 7 false positives in LTLFireability Experiment 1, which is 2\%.}
+
+                  \item \textcolor{blue}{With respect to Experiment 2, we see from the plots that DCModelChecker2.0 obtains more counterexample traces than DCModelChecker1.0. We observe that DCModelChecker2.0 is better in the sense of falsification of properties (not in terms of execution times), which can be seen from the plots such as the CircadianClock-PT-000001 model, where in property 4, DCModelChecker1.0 (at bound 5 and 10) says unsat, whereas, DCModelChecker2.0 (at bound 10) gives a satisfying counterexample trace. This trend is observed in other models as well. We now explain this in detail in Sec.~\ref{exp:compv1v2}.
+                              I agree that in Table 5.3,DCModelChecker1.0 takes less time to evaluate than DCModelChecker2.0 and both of the tools have a consensus on the same answer.}
+            \end{enumerate}
+
+      \item In Chapter 6, the experimental results of DCModelChecker3.0 seem to be missing. I agree there
+            is nothing to compare with, but it would be good to present the results in a table/plot. I am a bit
+            confused actually whether this tool is available or not since it is listed in Relatedwork section as
+            well, but section 6.2 talks about tool and implementation. If it has been implemented some results
+            should be presented, else it should be made clear that the contribution is the bounded semantics and
+            the SMT encoding of the semantics but implementation is part of future work.
+
+            \answer{The experimental results have been added now (See Sec.~\ref{ssec:experimentsfotl}). At the time of submission, while this table was not present in the thesis, our model checking tool was already available as an open source software in the public domain.}
+
+      \item In Chapter 7, the results are nice but some of the proofs of theorems are referred to a conference
+            paper. These should be perhaps included here. Also in the proofs it would be good to highlight
+            where conservativeness is used to obtain decidability. Currently this seems a bit mysterious.
+            \answer{The proofs for the theorems (namely Theorem 1,2 and 3) are already present in the thesis. These theorems cite the PNSE 2024 paper, to show their source, since they are a repetition of the proofs and theorems from the conference paper. With respect to the proofs for Theorems 1, 2 and 3, the style of writing is such that the proofs follow from the previous corollaries. For instance, we say in Chapter 7 Sec 7.4, in the paragraph following Corollary 2, "since the $(\leq_f,0)$-coverability for conservative EOS is decidable, we obtain the following Theorem 1" and refer to Theorem 1.}
+
+
+\end{enumerate}
+
+\subsection{Minor Comments}
+\begin{enumerate}
+      \item glossary is empty
+            \answer{This has been rectified.}
+
+      \item[] \textbf{Chapter 1}
+      \item pg3: Buchi automata are not defined, accept states or condition not present in def 1.1.1
+            \answer{A new definition Definition.~\ref{dfnbuchi} has been added to resolve this.}
+      \item pg4: fig1.1 equivalent BA to what? Omega words not defined
+            \answer{The caption has been fixed. We describe $\omega$-word now.}
+      \item pg6,7- contributions are out of order? 5 should come earlier than 2-4?
+            \answer{As suggested, the contributions have been reordered.}
+
+      \item[] \textbf{Chapter 2}
+      \item pg11: where do you use conservativeness in entire thesis? If not needed it can be removed.
+            \answer{The notion of conservativeness is used in Chapter 7.}
+      \item Pg12: fig 2.3: the picture does not match the caption in particular the marking.
+            \answer{This has been rectified.}
+      \item Pg13: fig 2.4: same issues
+            \answer{This has been rectified.}
+
+      \item pg14: SMT solvers are used without any introduction.
+            \answer{This has been addressed in the beginning of the Sec.~\ref{sec:pnrepresentation}.}
+      \item Pg14: you seem to be using weighted petri nets in many places throughout the thesis (even in sec2.2)
+            but definition in 2.1 and semantics also are not weighted.
+            \answer{We have addressed this in Definition.~\ref{def:pn}.}
+      \item Pg17: unbounded Petri nets are used but boundedness and unbounded was not clearly defined
+            earlier?
+            \answer{Unbounded Petri Net is defined in Definition.~\ref{dfn:unboundedPN}.}
+      \item Pg17: formal definition of unfolding is not present. This is also slightly confusing since in petri nets
+            unfolding has a slightly different meaning from unfoldings for BMC...
+            \answer{We discuss the Petri net semantics in Sec.~\ref{ssec:pnsemantics} which shows  how the Petri net is unfolded. Additionally, in Sec.~\ref{sec:pnrepresentation}, we now disambiguate the notion of unfolding. In this thesis, by unfolding, we refer to the process of obtaining the subsequent configurations from the initial marking of the net. This is not to be confused with the notion of unfolding described by Ken McMillan in his seminal work on partial orders.
+            }
+
+      \item[] \textbf{Chapter 3}
+      \item pg 29: Buchi automata are not defined.
+            \answer{Definition.~\ref{dfnbuchi} has been added.}
+      \item Pg30: Kripke structure should be defined and also an examples of syntax and semantics will help.
+
+            \answer{Definition.~\ref{dfn:kripke} for Kripke structures is now added. }
+
+      \item Pg34: what is a live agent? The fact that agents and clients are same needs to be written earlier.
+            \answer{This has been addressed in Sec.\ref{sec:cltl} under subsection Unbounded semantics.}
+      \item Pg 38-41: since APS is not defined fully yet, many of these parts don’t make clear sense.
+            \answer{This has been rectified by introducing the case study earlier as suggested. See Sec.~\ref{sec:apscasestudy}.}
+
+      \item[] \textbf{Chapter 4}
+      \item pg 47: model cannot be a subpoint of verify? Maybe write both?
+            \answer{This has been rectified by posing two separate questions.}
+      \item Pg 50: unbounded net not defined in prelim?
+            \answer{This has been rectified. See Definition.~\ref{dfn:unboundedPN}.}
+      \item Pg 52: state space explosion defined after its used.
+            \answer{State space explosion has now been explained in the Introduction Section of Chapter 1. }
+
+
+      \item[] \textbf{Chapter 5}
+      \item pg58: 2D-BMC encoding needs to be defined clearly and explained better. Maybe an example will
+            help?
+            \answer{The $2D$-BMC encoding is already a part of Sec.~\ref{sec:encodingLTL}. We have suitably changed the title to reflect this. The $2D$-BMC encoding of nets and $LTL_{LIA}$ properties are difficult to read, hence the example of this is available in the ReadMe file of the associated tool.}
+
+      \item Pg63: DCModelchecker1.0 properties should perhaps be written earlier and emphasized. PNML,
+            ANTLR etc are used before they are defined.
+
+            \begin{itemize}
+                  \item \textcolor{blue}{DCModelChecker 1.0 and DCModelChecker 2.0 perform $2D$-BMC of Petri nets using the logic $LTL_{LIA}$. The key difference between the two tools is in the semantics used for the nets. DCModelChecker 1.0 can verify  properties with interleaving semantics. We incrementally extended DCModelChecker 1.0 by adding support for true concurrent semantics to the tool, to obtain DCModelChecker 2.0 which supports both.}
+                  \item \textcolor{blue}{We describe PNML and ANTLR in the beginning of Sec.~\ref{sec:arch} where we give their expansion. Later on describe their usage in Sec.~\ref{sec:preprocess}.}
+            \end{itemize}
+
+
+      \item Pg77: what tapaal used earlier?
+            \answer{The reasoning for choosing the tools for comparison are as follows.
+                  In Experiment 1 (Sec.~\ref{exp:compits}) where we compute the tool confidence as well as verify LTLFireability properties, we compare against only ITS-Tools since (at the time of experimentation) ITS-Tools was the Model Checking contest winner in the LTL Fireability category. Since the purpose of this experiment was to evaluate the tool confidence, it would not make any difference to compare against more than one tool, apart from the winning tool. In Experiment 3 (Sec.~\ref{exp:upn}) where we verify unbounded Petri nets which is not a category in the contest, we compared our tools against both ITS-Tools and Tapaal, since Tapaal is faster than ITS-Tools and we give a comparative perspective of our tool's performance. This discussion is now added to the Conclusion Sec.~\ref{ssec:conclltltool}.}
+
+      \item[] \textbf{Chapter 6}
+      \item pg 79: example of APS is coming too late?
+            \answer{The case study has been introduced to Sec.~\ref{sec:apscasestudy}.}
+      \item Pg 86: only few points in the semantics are described. If the rest are routine/similar and hence left  out it should be made clear. Else they should be added.
+            \answer{We now give the complete semantics and selectively explain the various statements.}
+      \item Pg 87: what is UCSTL? Not defined earlier. What is MFOTL? If it is important it should be defined
+            earlier, and not in related work. Proof of Lemma 1 details should be written as this is a thesis; not
+            just a sketch.
+            \begin{itemize}
+                  \item UCSTL has been removed. It is called $\mathsf{FOTL_1}$ in the rest of the thesis.
+                  \item We describe MFOTL in Sec.~\ref{sec:mlogic}.
+                  \item We give the unbounded semantics for $FOTL_1$. We refer to Lemma 1 in Armin Biere's 2003 paper titled Bounded model checking which says that if a formula is satisfied in a bounded run, it is satisfied in an unbounded run. And we state the Lemma for $FOTL_1$.
+            \end{itemize}
+
+
+      \item[] \textbf{Chapter 7}
+      \item pg91: standard Pns are defined earlier… if you are not changing the notation, can just refer to that.
+            \answer{From Chapter 1- 6, we use the standard Petri nets Definition.~\ref{def:pn}. However, in Chapter 7, we use the markings as multisets, which is clarified in Sec.~\ref{ssec:petrinetnotation}.}
+      \item Pg95: can recall conservativeness and explain where it is needed maybe? Or how it is used in [65]
+            \begin{itemize}
+                  \item We describe conservativeness of Elementary Object Systems in Sec.~\ref{sec:eos}.
+                  \item We use the property of conservativity of EOSs to obtain the decidability results in this chapter. This has been added in the end of Sec.~\ref{sec:eos}.
+            \end{itemize}
+
+      \item pg 114: why switch from SMT to ASP? May add some justification.
+            \answer{In this thesis, we mention two different encodings to PN, using SMT as well as ASP. In Sec.~\ref{ssec:eosverif}, we mention that  the ASP encoding in Telingo is elegant and natural to specify PN behaviour.}
+
+
+
+\end{enumerate}
+
+% \subsection{Additional Questions to be asked at the time of viva-voce}
+% \begin{enumerate}
+%        \item  How does the answer set programming approach compare to the bounded
+%             model checking approach for normal Petri nets? Could this be a way to unify
+%             the different approaches of the thesis?
+%             \answer{}
+%       \item Instead of using SMT over LIA, could we use Pseudo Boolean solvers or
+%             (M)ILP solvers for the various problems addressed in the thesis?
+%             \answer{}
+%       \item  From a modeling point of view are there are other case-studies other than the
+%             autonomous parking system for which the ideas in this thesis can be applied?
+%             \answer{}
+% \end{enumerate}
+
+\newpage
+
+\section{Reviewer Two Comments}
+
+\begin{enumerate}
+      \item[] \textbf{Clarifications/Amendments (if any)}
+      \item[] The writing needs considerable improvement in my honest opinion. The following are
+            chapterwise suggestions for amendments:
+      \item[] Chapter-1:
+      \item Page 3, Para 1: Mention the other ways of addressing the state-space explosion
+            problem such as state abstraction.
+            \answer{In chapter 1, the introduction has now been modified to include various other techniques such as abstraction, partial order reduction, cegar, compositional verification, on the fly verification with relevant references.}
+      \item Fig 1.3: Try to place the figure close to the text where it is referred.
+            \answer{Fig 1.3 is present in the next section. The figure 1.3 refers to bounded model checking, it is placed close to Example 1.1.5 where it is referenced.}
+      \item Page 3, Section 1.1: A definition of Buchi automaton is required before Defn 1.1.2.
+            \answer{Definition 1.1.3. has been added in Chapter 1.}
+      \item Why do you introduce the BMC problem on Buchi Automaton as the model? Why not
+            introduce Petri nets right away?
+            \answer{We follow the style of Armin Biere et al in the seminal 2003 paper titled "Bounded model checking" from which we have drawn inspiration of our encodings.
+                  Therefore, the explanation using the similar style seems helpful for our understanding to draw parallels between the existing literature and ours. }
+      \item Page 4: Para 1, Line 1: G set is undefined here.
+            \answer{This is fixed by a new formal definition of Buchi automata that we have now written (See Definition 1.1.2.). Earlier, we had an informal definition.}
+      \item  Page 5, para 1: Honestly, I did not understand the example. What is the “bound”
+            here? Because you mention “üsing the principle of bounded model checking”.
+            \answer{We have addressed the notion of the bound, in Sec.4.1.1. The same is repeated below:
+                  In the BMC approach, the number of steps upto
+                  which the system is verified, say k, indirectly places a bound on the number of tokens which are
+                  present in the net, thereby restricting the number of clients that are represented in the unbounded
+                  client-server system. For instance, when unrolling the system for k steps in the BMC approach,
+                  it indirectly places a cap that there can be atmost k newly generated tokens at a place (taking
+                  into consideration the weight of the arc and the initial marking). It is to be noted that the bound
+                  in BMC is not fixed apriori, which differentiates it from the parametric verification approach
+                  where the parameter (the number of clients) is fixed apriori.}
+      \item Page 6, Para 1, Line 5: Generally, requests are made by the clients and responded
+            by the server. It is written the opposite.
+            \answer{This has been fixed. The client requests are responded to by the server.}
+      \item[] \textbf{Chapter 2}
+      \item Page 10, last line: The PN of Figure 2.1 doesn’t show the transition weights. The PN after firing $t_1$ is the same PN of Fig 2.1? Please check.
+            \answer{The figures have been redrawn. On firing transition $t_1$, in the PN in Fig.~\ref{fig:petrinet1000}, we obtain the PN in Fig.~\ref{fig:petrinet0110}.}
+      \item Page 12, Fig 2.3: Please specify the F(p,t) and F(t,p) values, without which it is hard
+            to follow the example. $P_3$ should not have a token. Either the marking in the caption
+            is incorrect or the figure.
+            \answer{The marking in the caption of the figure has been rectified. Place $P_3$ does not have a token.}
+      \item Fig 2.4: Need a better/clear figure here. The markings in $P_3$ is not clear.
+            \answer{This corresponds to Fig.~\ref{fig:petrinet0002}. We say that "in concurrent semantics, the following sequence is also additionally possible in a single step, resulting in Fig.~\ref{fig:petrinet0002}".}
+      \item Figure 2.5: Can transitions that share tokens like $t_1$, $t_2$, fire concurrently? What if
+            firing of one disables the other? Please clarify.
+            \answer{We address this in the discussion following Definition.~\ref{defn:concurfirerule}. The condition $\sum_{t\in \tau'} F(p,t) - M(p) \geq 0$ takes care of the sufficiency of tokens at each of the pre-places of the transitions in $\tau'$ such that the transitions can be fired. This is a particularly elegant rule in the context of representing concurrent firing of transitions in a Petri net in a SMT solver. This automatically addresses scenarios where the firing of one transition might disable another, the resultant set of transitions that are subsequently fired are all valid transitions that are enabled and whose concurrent firing is allowed by the Petri net semantics.}
+
+
+
+      \item Page 14, Sect 2.2 Para 1:
+            \begin{enumerate}
+                  \item  An introduction to “ünfolding a Petri-net” is crucial here. An example to
+                        demonstrate unfolding with bounded depth would help the reader. This is
+                        shown much later in the thesis, but is required right here.
+                        \answer{In Sec.~\ref{sec:pnrepresentation}, we now disambiguate the notion of unfolding. In this thesis, by unfolding, we refer to the process of obtaining the subsequent configurations from the initial marking of the net (Petri net semantics are discussed in Sec.~\ref{ssec:pnsemantics}). This is not to be confused with the notion of unfolding described by Ken McMillan in his seminal work on partial orders.}
+                  \item Unfolding a PN with true concurrency will need smaller bound to cover
+                        markings. What is the relation between bound K of analysis in interleaving
+                        semantics vs the bound of analysis in concurrent semantics? A discussion is
+                        necessary.
+                        \answer{We do not differentiate between the bound of interleaving semantics versus concurrent semantics. Now, we discuss the difference in the executions using these two semantics, in a remark in Sec.~\ref{ssec:pnsemantics}. Given a PN where transitions $t_1, t_2, \cdots t_n$ are enabled and there are sufficient tokens in the pre places of $t_1, t_2, \cdots t_n$ such that the transitions may be fired, in the context of true concurrent semantics, we wish to fire maximal number of transitions, wherever possible. Consequently, this means that if there are intermediate markings, which are reachable by an interleaved firing of a subset of the transitions $t_1, t_2, \cdots t_n$, then those markings become unreachable when executing in a truly concurrent manner.}
+            \end{enumerate}
+
+      \item Page 18: What is the definition of an unbounded PN?
+            \answer{This has been newly added. See Definition.~\ref{dfn:unboundedPN}.}
+
+      \item Fig 2.6: What is APS? It is said much later in the thesis. Say it here.
+            \answer{As suggested by the reviewers, we move the APS case study to Sec.~\ref{sec:apscasestudy}.}
+
+      \item Page 19, Defn 2.2.1: What is v?
+            \answer{Now, in the Sec.~\ref{ssec:nunetsmodel}, before Definition.~\ref{defn:nunet}, we say the following:
+                  "To handle the movement of tokens inside the $\nu$-net, we employ a finite set of variables, $Var$ using which we label the arcs of the net. There is a special variable $\nu \in Var$, which introduces tokens into the place, which is described later.".
+                  Additionally, in the text following Definition.~\ref{defn:nunet}, we explicitly say the following:
+                  "For instance, in Fig.~\ref{fig:APS},
+                  $Var=\{\nu,s,c\}$ ".}
+
+      \item Page 20, Para 1, last line: I do not see the mode of the transition in Fig 2.6, as
+            claimed!
+            \answer{As already given in Definition.~\ref{defn:modenunet}, "A mode of a transition $t$ is a mapping $\sigma:Var(t)\to Id$, instantiating every variable in the adjacent arcs of $t$ to some identifier. "
+                  For instance, in Fig.~\ref{fig:APS}, the arc from place $p_{PR}$ to $t_{rej}$ is labeled by the variable $c$, hence only client tokens can move along that arc.
+                  The arc from place $p_{SR}$ to $t_{acc}$ is labeled by the variable $s$ hence only the server token, i.e., $0$ can move along that arc.
+                  There is exactly one arc labeled with $\nu$ from transiton $t_src$ to place $p_{PR}$ which introduces new tokens.}
+
+      \item[] \textbf{Chapter 3:}
+      \item Page 33, Sect 3.2: The state names do not match with the states of Fig 2.6.
+            \answer{Now, a new Figure.~\ref{fig:APSInv} has been given to address this issue.}
+
+      \item[] \textbf{Chapter 4:}
+      \item Sect 4.1: Say what is the distinction between Algo1 and Algo2.
+            \answer{In Sec.~\ref{ssec:bmcdsc}, a discussion on the BMC algorithms has now been added.}
+
+      \item[] \textbf{Chapter 5:}
+      \item Sect 5.4: What is MCC?
+            \answer{Model Checking Contest. This is now present in the list of abbreviations at the beginning of the thesis.}
+
+      \item Page 71: Is ITS a BMC tool? What might be the cause of the discrepancy between
+            ITS tools and DCModelchecker? Why is the tool confidence not 1? Need more
+            discussion.
+            \begin{itemize}
+                  \item[] \textcolor{blue}{Answer: ITS-Tools is not a BMC tool.}
+                  \item[] \textcolor{blue}{ITS-Tools is a symbolic model checker containing the tools its-reach, its-ctl and its-ltl. Among these, the its-reach tool can perform bounded depth exploration of the state space. However, ITS-Tools does not perform BMC of LTL properties (See Sec 2.2 in the TACAS 2015 paper titled Symbolic Model-Checking Using ITS-Tools authored by Yann Thierry-Mieg and private correspondence with the author at the end of this document).}
+                  \item[] \textcolor{blue}{For some of the properties, we have identified that the false positives were due to errors in translating the handcrafted properties. This is one of the limitations of our tools and we aim to improve it in future work.}
+            \end{itemize}
+            % \answer{  Prof. Yann says "Currently ITS-tools does use a layer of SMT when solving LTL, we try to prove simpler assertions we call "knowledge" and combine them to simplify or even prove the property. But I would not call that BMC".  For some of the properties, we have identified that the false positives were due to errors in translating the handcrafted properties. This is one of our limitations of our tools and we aim to improve it in future work.}
+            
+
+      \item Page 72, Para 3: “The execution times of DCMC 2.0 and DCMC 1.0 are
+            comparable”. Why so? Given that DCM 1.0 one works with true concurrent
+            semantics, should it not be faster? Need further discussion here.
+            \begin{itemize}
+                  \item[] \textcolor{blue}{Answer: DCModelChecker1.0 works with interleaving semantics. DCModelChecker2.0 also supports concurrent semantics whereve possible.
+                   We currently do not have an optimal encoding. We suspect that DCModelChecker2.0 takes more time to construct the huge number of constraints with each step of the unfolding. However, we need more detailed experiements to be able to say this. As part of future work, we would like to have an optimal encoding of the PN with true concurrent semantics, such that the two can be compared more clearly. This has been written as part of future work (See Sec.~\ref{ssec:conclltltool}).}
+                  \item[] \textcolor{blue}{With respect to Experiment 2, we see from the plots that DCModelChecker2.0 obtains more counterexample traces than DCModelChecker1.0. And they both have similar execution times. We observe that DCModelChecker2.0 is better in the sense of falsification of properties (not in terms of execution times), which can be seen from the plots such as the CircadianClock-PT-000001 model, where in property 4, DCModelChecker1.0 (at bound 5 and 10) says unsat, whereas, DCModelChecker2.0 (at bound 10) gives a satisfying counterexample trace. This trend is observed in other models as well. We now explain this in detail in Sec.~\ref{exp:compv1v2}.}
+                  % \item[] \textcolor{blue}{}
+            \end{itemize}
+            
+      \item Page 77: DCMC1.0 and DCMC2.0 are BMC Tools. How does evaluation of unbounded PNs in BMC tools going to be meaningful/significant? Verification of unbounded client server systems with bounded model checking reads like an oxymoron. Please clarify.
+            \answer{Now, in Sec.~\ref{ssec:bmcdsc}, we disambiguate the notion of bounds.
+                  In the BMC approach, the number of steps upto which the system is verified, say $k$, indirectly places a bound on the number of tokens which are present in the net, thereby restricting the number of clients that are represented in the unbounded client-server system.
+                  For instance, when unrolling the system for $k$ steps in the BMC approach, it indirectly places a cap that there can be atmost $k$ newly generated tokens at a place (taking into consideration the weight of the arc and the initial marking).
+                  It is to be noted that the bound in BMC is not fixed apriori, which differentiates it from the parametric verification approach where the parameter (the number of clients) is fixed apriori.}
+
+      \item In Table 5.2 experiments, what was the bound used?
+            \answer{The bound was $5$. This is mentioned in Sec.~\ref{exp:upn}.}
+
+      \item[] \textbf{Chapter 6}
+      \item Page 80, Fig 2.6: The figure number should be corrected.
+            \answer{The APS case study Fig.~\ref{fig:APS} is originally introduced in Chapter 2. Since it is being \emph{recalled} in Chapter 6, the figure number is that of the first occurrence of the figure. To avoid confusion, we now we modify the caption of the recalled figure in Chapter 6, as follows: "Recall the restricted $\nu$-net modeling an unbounded client-server system".}
+
+      \item Page 81, Para 2: These states are not shown in the v-net of FIgure 2.6. Similarly, $t_{cp}$ transition is missing. This is disappointing given that the example of this figure serves as the running example.
+            \answer{This has now been rectified. The case study is now present in Sec.~\ref{sec:apscasestudy}.}
+
+      \item Page 82: The examples are already described in Page 38. Please avoid repetition.
+            \answer{This has now been removed.}
+
+      \item Page 88: There is no discussion on the experimental results of the tool on running MC instances with $FOTL_1$ properties. This must be added!!
+            \answer{Now, we have newly introduced Sec.~\ref{ssec:experimentsfotl}, where we have a table of experimental data. To the best of our knowledge, there are no known benchmarks for $FOTL_1$ and $\nu$-nets, hence we create our own $\nu$-net model and properties in $FOTL_1$ for our experiments. 
+            Here, we refer to our open source tool, which was publicly available at the time of thesis submission also.}
+      \item I suggest that please add a limitations section to clarify the shortcomings of the tool, if any.
+            \answer{We now add a discussion of the shortcomings of the tool in the newly introduced Sec.~\ref{ssec:limitationsfotltool}.}
+\end{enumerate}
+\includepdf[pages=-]{yannemail}
+% \section{Questions for Viva-Voce}
+% \begin{enumerate}
+%       \item Why is the work on DCModelchecker1.0 and DCModelchecker2.0 not published? What could you do to make it publishable?
+%             \answer{}
+%       \item Did you participate in the Model Checking competition? What was your standing?
+%             \answer{}
+% \end{enumerate}
+\end{document}

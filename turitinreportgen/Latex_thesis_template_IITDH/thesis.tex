@@ -1,0 +1,62 @@
+\documentclass[twoside,openright]{iitdhthesis}
+
+\usepackage{graphicx}
+\usepackage{times}
+\usepackage[compress]{cite}
+\usepackage{url}
+%\usepackage[linktocpage]{hyperref}
+\usepackage[english]{babel}
+\usepackage[acronym,nonumberlist,sort=use]{glossaries}
+\usepackage{emptypage}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+\tikzset{every state/.style={minimum size=0pt}}
+
+
+\setcounter{topnumber}{4}              %max floats in top half
+\setcounter{bottomnumber}{4}           %max floats in bottom half
+\setcounter{totalnumber}{4}            %max floats per page
+\renewcommand{\topfraction}{0.9}       %max fraction of top half for floats
+\renewcommand{\bottomfraction}{0.9}    %max fraction of bottom half for floats
+\renewcommand{\textfraction}{0.1}      %min text fraction on a page
+
+\pdfinfo{
+   /Author (Author name)
+   /Title  (PhD Thesis)
+   /Subject (Thesis title)
+}
+\input{myglossary}
+\makeglossaries
+
+\newglossarystyle{custom_acronyms}{%
+  \setglossarystyle{super}% base style on the list style
+  \renewenvironment{theglossary}%
+      {\tablehead{}\tabletail{}%
+       \begin{supertabular}{lp{\glsdescwidth}}}%
+      {\end{supertabular}}%
+}
+
+\begin{document}
+\input{prelude_content}
+\input{chapter1}
+\input{chapter2}
+%include other chapters similarly
+\appendix
+\input{appendix_A}
+
+
+\bibliographystyle{IEEEtran}
+
+\clearpage
+\addcontentsline{toc}{chapter}{References}
+\renewcommand*{\bibname}{References}
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv1,ref_thesis}
+
+\clearpage
+\addcontentsline{toc}{chapter}{List of Publications}
+\renewcommand*{\bibname}{List of Publications}
+\input{mypapers.tex}
+\input{acknowledgements}
+\end{document}

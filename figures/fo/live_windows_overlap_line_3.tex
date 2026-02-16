@@ -1,0 +1,31 @@
+\begin{ganttchart}[
+vgrid,hgrid,
+%inline,
+progress label text=\relax,
+x unit=10mm,
+% title top shift=0,
+title height=1,
+foobar top shift=.15,
+foobar height=.70
+]{0}{5}
+%\gantttitlelist{0,...,5}{1}\\
+ \textganttbar{Client 1}{$pc_1$}{0}{0}  \textganttbar{}{$pc_2$}{1}{1} \\
+  \textganttbar{Client 2}{$pc_1$}{1}{1}  \textganttbar{}{$pc_3$}{2}{2}\\%  \textganttbar{}{$pc_2$}{3}{3}\\
+   \textganttbar{Client 3}{$pc_1$}{3}{3} \textganttbar{}{$pc_1$}{4}{4}\textganttbar{}{$pc_1$}{5}{5}\\
+   \textganttbar{Client 4}{$pc_1$}{4}{4} \textganttbar{}{$pc_4$}{5}{5}
+      \begin{scope}[yshift=0.33cm]
+    \draw[-] (0,0) -- (6,0);
+    
+    %\draw ([yshift=-3pt]0,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {};
+
+    \draw ([yshift=-3pt]0,0) -- ++([yshift=6pt]0,0) node[xshift=45pt, yshift=15pt, above] {time instance $\rightarrow$};
+    
+    \draw ([yshift=-3pt]1,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$0$};
+    \draw ([yshift=-3pt]2,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$1$};
+    \draw ([yshift=-3pt]3,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$2$};
+    \draw ([yshift=-3pt]4,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$3$};
+    \draw ([yshift=-3pt]5,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$4$};
+    \draw ([yshift=-3pt]6,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$5$};
+    %\draw ([yshift=-3pt]6.5,0) -- ++([yshift=6pt]0,0) node[xshift=-10pt, above] {$\cdots$};
+\end{scope}
+ \end{ganttchart}

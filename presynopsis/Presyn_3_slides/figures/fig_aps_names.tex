@@ -1,0 +1,279 @@
+	\begin{tikzpicture}[scale=0.45]
+				\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+
+%	\begin{center}
+
+		
+		\node 	at	(-3,-8) 	[rectangle, thick, draw=green!20, fill=green!5,inner sep=0pt,minimum height=5cm, minimum width=2.5cm] (bga){};
+		
+		
+		\node 	at	(3.2,-6) 	[rectangle, thick, draw=red!20, fill=red!5,inner sep=0pt,minimum height=3cm, minimum width=3cm] (bgr){};
+\visible<1-10>{		
+		\node[transition,fill=black, draw=red!50, very thick, minimum height=.4cm,minimum width=.4cm,label=right:{\textcolor{red}{\tiny{generate\_client\_ request}}}] (t0) at (1.5,0) {};
+}
+
+\visible<1>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Initially the server is ready for client requests}};}
+
+\visible<2>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Client parking request is received}};}
+
+\visible<3>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Server accepts the Client parking request}};}
+\visible<4>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Client exits the parking space}};}
+\visible<5>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Client is terminated}};}
+\visible<6>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Server is ready for more requests}};}
+\visible<7>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{A new Client parking request is received}};}
+\visible<8>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Server rejects the Client parking request}};}
+\visible<9>{
+\node[draw,text width=3cm, draw=yellow!15, fill=yellow!5] at (-8,2) {\tiny{Client is terminated unsuccessfully}};}
+
+\visible<1-10>{		
+		\node[place,label=right:\tiny{parking\_requested},draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p0) at (-1,-2){} ;			
+}	
+	\node[place,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p1) at (-5,-2){} ;
+\visible<1,2>{	
+		\node[place,label=above:\tiny{ready},draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p1) at (-5,-2){} ;
+}
+
+\visible<6,7,10>{	
+		\node[place,label=above:\tiny{ready},draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p1) at (-5,-2){} ;
+}
+
+
+\visible<3>{
+\node[place,label=above:\tiny{ready},draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p1) at (-5,-2){} ;
+}
+
+\visible<2,7>{
+\node[place,label=right:\tiny{parking\_requested},draw=red!50,fill=green!20,inner sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p0) at (-1,-2){} ;
+
+
+}
+
+%places and transitions for request granted scenarios		
+
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t1) at (-3,-4) {};
+
+\visible<2,7>{
+		\node[transition,fill=black,draw=red!50, very thick,minimum height=.4cm,minimum width=.4cm,label=right:\tiny{accept}] (t1) at (-3,-4) {};
+	}
+		
+		\node[place,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p7) at (-7,-4){} ;
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t6) at (-7,-2) {};
+
+\visible<3,4,5>{
+		\node[transition,fill=black,draw=red!50, very thick,minimum height=.4cm,minimum width=.4cm] (t6) at (-7,-2) {};
+		}
+
+\visible<3,4,5>{
+\node[place,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1,label=below:\tiny{busy}] (p7) at (-7,-4){} ;
+}	
+		
+		\node[place,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p2) at (-1,-6){} ;			
+		\node[place,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p3) at (-5,-6){} ;
+
+\visible<3>{
+		\node[place,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm,tokens=1, label=below:\tiny{granted}] (p2) at (-1,-6){} ;			
+		\node[place,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm,tokens=1, label=below:\tiny{granted}] (p3) at (-5,-6){} ;
+}
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t2) at (-3,-8) {};
+	\visible<3>{
+	\node[transition,fill=black,draw=red!50, very thick,minimum height=.4cm,minimum width=.4cm, label=right:\tiny{exit}] (t2) at (-3,-8) {};
+	}	
+		
+		
+		\node[place,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p4) at (-1,-10){} ;			
+		\node[place,,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p5) at (-5,-10){} ;
+
+
+
+\visible<4>{
+\node[place,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm,tokens=1, label=below:\tiny{exited}] (p4) at (-1,-10){} ;			
+		\node[place,,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm,tokens=1, label=below:\tiny{exited}] (p5) at (-5,-10){} ;
+}
+
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t3) at (-3,-12) {};
+
+\visible<4>{
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,draw=red!50, very thick,label=right:\tiny{terminate}] (t3) at (-3,-12) {};
+}		
+		
+		
+%request rejected scenarios		
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t4) at (1.5,-4) {};
+		
+	\visible<2,7>{	
+		\node[transition,fill=black,draw=red!50, very thick,minimum height=.4cm,minimum width=.4cm, label=right:\tiny{reject}] (t4) at (1.5,-4) {};
+		}
+
+		
+		\node[place,,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p6) at (1.5,-6){} ;
+
+\visible<8>{
+
+		\node[place,label=right:\tiny{rejected},draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p6) at (1.5,-6){} ;
+}
+
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t5) at (1.5,-8) {};
+\visible<8>{
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,draw=red!50, very thick, label=right:\tiny{terminate}] (t5) at (1.5,-8) {};
+}
+\visible<9>{
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t5) at (1.5,-8) {};
+		}
+		
+		
+		\node[place,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p8) at (5,-6){} ;
+
+\visible<8,9>{
+\node[place,draw=red!50,label=right:\tiny{rejected},fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p8) at (5,-6){} ;
+}
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm] (t7) at (5,-4) {};
+\visible<8,9>{		
+\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,draw=red!50, very thick] (t7) at (5,-4) {};
+
+}		
+%legend
+\node[place,label=right:\tiny{client place},draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (cp) at (2,-11){} ;
+	
+\node[place,label=right:\tiny{server place},draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (sp) at (8,-11){} ;
+
+\node[transition,label=right:\tiny{transition},fill=black,minimum height=.4cm,minimum width=.4cm] (t) at (2,-13) {};	
+\node[transition,label=right:\tiny{enabled transition},draw=red!50, very thick,fill=black,minimum height=.4cm,minimum width=.4cm] (t) at (8,-13) {};	
+
+\visible<11>{
+
+\node 	at	(-3,-8) 	[rectangle, thick, draw=green!20, fill=green!5,inner sep=0pt,minimum height=5cm, minimum width=2.5cm] (bga){};
+		
+		
+		\node 	at	(3.2,-6) 	[rectangle, thick, draw=red!20, fill=red!5,inner sep=0pt,minimum height=3cm, minimum width=3cm] (bgr){};
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{$t_0$},draw=red!50, very thick] (t0) at (1.5,0) {};
+		
+		\node[place,label=right:$p_0$,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p0) at (-1,-2){} ;			
+		\node[place,label=below:$p_1$,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (p1) at (-5,-2){} ;
+
+%places and transitions for request granted scenarios		
+
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=below:{$t_1$}] (t1) at (-3,-4) {};
+		
+		\node[place,label=below:$p_7$,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p7) at (-7,-4){} ;
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=left:{$t_6$}] (t6) at (-7,-2) {};
+		
+		\node[place,label=below:$p_2$,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p2) at (-1,-6){} ;			
+		\node[place,label=below:$p_3$,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p3) at (-5,-6){} ;
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=below:{$t_2$}] (t2) at (-3,-8) {};
+		
+		
+		\node[place,label=below:$p_4$,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p4) at (-1,-10){} ;			
+		\node[place,label=below:$p_5$,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p5) at (-5,-10){} ;
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=below:{$t_3$}] (t3) at (-3,-12) {};
+		
+%request rejected scenarios		
+		
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{$t_4$}] (t4) at (1.5,-4) {};
+		\node[place,label=right:$p_6$,draw=red!50,fill=green!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p6) at (1.5,-6){} ;
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{$t_5$}] (t5) at (1.5,-8) {};
+		\node[place,label=below:$p_8$,draw=red!50,fill=blue!20,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (p8) at (5,-6){} ;
+		\node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{$t_7$}] (t7) at (5,-4) {};
+}
+
+				
+		\draw[->] (t0) -- (p0);
+		\draw[->] (p0) -- (t1);
+		\draw[->] (p1) -- (t4);
+		\draw[->] (t1) -- (p7);
+		\draw[->] (p7) -- (t6);		
+ 	        \draw[->] (t6) -- (p1);
+		\draw[->] (p1) -- (t1);
+		\draw[->] (t1) -- (p2); 
+		\draw[->] (p2) -- (t2);
+		\draw[->] (t2) -- (p4);
+		\draw[->] (p4) -- (t3);
+		\draw[->] (t1) -- (p3);
+		\draw[->] (p3) -- (t2);
+		\draw[->] (t2) -- (p5);
+		\draw[->] (p5) -- (t3);
+		\draw[->] (p0) -- (t4);
+		\draw[->] (t4) -- (p6);
+		\draw[->] (p6) -- (t5);
+		\draw[->] (t4) -- (p8);
+		\draw[->] (p8) -- (t7);
+		\draw[->] (t7) -- (p1);	
+
+		
+	\end{tikzpicture}
+%\end{center}
+			
+%\vspace{-10pt}
+		%\caption{Petri net for UPS with $M_0=(0,0,0,0,0)$}
+%		\caption{Petri net for APS}  
+%		\label{fig:APS}
+

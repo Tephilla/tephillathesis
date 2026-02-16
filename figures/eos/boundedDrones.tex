@@ -1,0 +1,40 @@
+\begin{figure}[ht]
+    \centering
+    \resizebox{.79\columnwidth}{!}{
+\begin{tikzpicture}
+    \begin{scope}
+
+    \node[place,label={[name=charge0Lab]above:\scriptsize charge0}] (charge0)at (0,0){};
+    \node at(charge0){$\bullet$};
+    \node[place,label={[name=charge1Lab]above:\scriptsize charge1}] (charge1)at (-4,0){};
+    \node[place,label={[name=charge2Lab]above:\scriptsize charge2}] (charge2)at (-8,0){};
+    \node at(charge2){$\bullet$};
+
+    
+    \node[transhor,label={[name=discharging1Lab]above:\scriptsize discharging1}] (discharging1)at (-2,0){};
+    \node[transhor,label={[name=discharging2Lab]above:\scriptsize discharging2}] (discharging2)at (-6,.2){};
+
+    \node[transhor,label={[name=charging1Lab]above:\scriptsize charging0}] (charging1)at (-2,-.75){};
+    \node[transhor,label={[name=charging2Lab]below:\scriptsize charging1}] (charging2)at (-6,-.2){};
+
+    \node[draw=black,fit={(charging1)(charging1Lab)(charging2)(charging2Lab)
+    (discharging1)(discharging1Lab)(discharging2)(discharging2Lab)(charge0)(charge0Lab)(charge1)(charge1Lab)(charge2)(charge2Lab)}](objNet){};
+    \node[rotate=90,text width=2cm,align=center] at ($(objNet.west)+(-.4,0)$){Object Net $\tt{drone2}$};
+    
+    \draw[->] (charge2.north east) -- (discharging2.west);
+    \draw[->] (discharging2.east) -- (charge1.north west);
+    \draw[->] (charge1) -- (discharging1);
+    \draw[->] (discharging1) -- (charge0);
+
+    \draw[->] (charge0.south) |- (charging1.east); 
+    \draw[<-] (charge2.south) |- (charging1.west); 
+    \draw[->] (charge1.south west) -- (charging2.east); 
+    \draw[<-] (charge2.south east) -- (charging2.west); 
+    
+    \end{scope}    
+\end{tikzpicture}
+}
+    \caption{Object net $\tt{drone2}$ with one fully charged $2$-bounded battery and a fully discharged one.
+    }
+    \label{fig:boundedDrones}
+\end{figure}

@@ -1,0 +1,142 @@
+\begin{tikzpicture}[scale=0.45]
+    \tikzset{
+        %Define standard arrow tip
+        >=stealth',
+        %Define style for boxes
+        punkt/.style={
+                rectangle,
+                rounded corners,
+                draw=black, very thick,
+                text width=8.5em,
+                minimum height=2em,
+                text centered},
+        % Define arrow style
+        pil/.style={
+                ->,
+                thick,
+                shorten <=2pt,
+                shorten >=2pt,}
+    }
+    \tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+    text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+    \tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+    text width=5em, text centered, rounded corners, minimum height=4em]
+    \tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+    \tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+    minimum height=2em]
+
+
+    %	\begin{center}
+
+
+    % \node 	at	(-3,-8) 	[rectangle, thick, draw=green!20, fill=green!5,inner sep=0pt,minimum height=5cm, minimum width=2.5cm] (bga){};
+
+
+    % \node 	at	(3.2,-8) 	[rectangle, thick, draw=red!20, fill=red!5,inner sep=0pt,minimum height=5cm, minimum width=3cm] (bgr){};
+
+    %source transition
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=left:{\small $t_{src}$}] (t0) at (1.5,0) {};
+
+    %parking requested client place
+    \node[place,label=right:{\small $p_{PR}$},draw=red!50,fill=green!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p0) at (-1,-2){$\bullet$} ;
+
+    %server ready place			
+    \node[place,label=below:{\small $p_{SR}$},draw=red!50,fill=blue!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p1) at (-5,-2){$\bullet$} ;
+
+    %places and transitions for request granted scenarios		
+    %accept transition
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=below:{\small $t_{acc}$}] (t1) at (-3,-4) {};
+
+    %server busy place
+    \node[place,label=below:{\small $p_{SB}$},draw=red!50,fill=blue!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p7) at (-7,-4){} ;
+
+    %processing complete
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=left:{\small $t_{cp}$}] (t6) at (-7,-2) {};
+
+    %client place occupy parking lot op
+    \node[place,label=below:{\small $p_{OP}$},draw=red!50,fill=green!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p2) at (-1,-6){} ;
+
+    %server place request granted rg	
+    \node[place,label=below:{\small $p_{RG}$},draw=red!50,fill=blue!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p3) at (-5,-6){} ;
+
+
+    %transition exit
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=below:{$t_{exit}$}] (t2) at (-3,-8) {};
+
+    %client place Exit successfully ES
+    \node[place,label=below:{\small $p_{ES}$},draw=red!50,fill=green!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p4) at (-1,-10){} ;
+
+    %server place deallocate parking lot DP
+    \node[place,label=below:{\small $p_{DP}$},draw=red!50,fill=blue!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p5) at (-5,-10){} ;
+
+    %transition accept sink
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=below:{\small $t_{acc\_sink}$}] (t3) at (-3,-12) {};
+
+    %request rejected scenarios		
+
+    %reject transition
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{\small $t_{rej}$}] (t4) at (1.5,-4) {};
+
+
+    %client place parking unavailable PU
+    \node[place,label=right:{\small $p_{PU}$},draw=red!50,fill=green!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p6) at (1.5,-6){} ;
+
+    % transition unsuccessful exit
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{$t_{u\_exit}$}] (t5) at (1.5,-8) {};
+
+    \node[place,label=right:{\small $p_{EU}$},draw=red!50,fill=green!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (peu) at (1.5,-10){} ;
+
+
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{$t_{rej\_sink}$}] (trej) at (1.5,-12) {};
+
+    %server place request rejected RR
+    \node[place,label=right:{\small $p_{RR}$},draw=red!50,fill=blue!20,inner
+    sep=0pt,minimum height=.40cm, minimum width=.7cm] (p8) at (5,-6){} ;
+
+
+    %transition exit vehicle ev
+    \node[transition,fill=black,minimum height=.4cm,minimum width=.4cm,label=right:{\small $t_{ve}$}] (t7) at (5,-4) {};
+
+    \draw[->] (t0) -- (p0);
+    \draw[->] (p0) -- (t1);
+    \draw[->] (p1) -- (t4);
+    \draw[->] (t1) -- (p7);
+    \draw[->] (p7) -- (t6);
+    \draw[->] (t6) -- (p1);
+    \draw[->] (p1) -- (t1);
+    \draw[->] (t1) -- (p2);
+    \draw[->] (p2) -- (t2);
+    \draw[->] (t2) -- (p4);
+    \draw[->] (p4) -- (t3);
+    \draw[->] (t1) -- (p3);
+    \draw[->] (p3) -- (t2);
+    \draw[->] (t2) -- (p5);
+    \draw[->] (p5) -- (t3);
+    \draw[->] (p0) -- (t4);
+    \draw[->] (t4) -- (p6);
+    \draw[->] (p6) -- (t5);
+    \draw[->] (t4) -- (p8);
+    \draw[->] (p8) -- (t7);
+    \draw[->] (t7) -- (p1);
+
+    \draw[->] (t5) -- (peu);
+    \draw[->] (peu) -- (trej);
+
+
+\end{tikzpicture}
+%\end{center}
+
+%\vspace{-10pt}
+%\caption{Petri net for UPS with $M_0=(0,0,0,0,0)$}
+%		\caption{Petri net for APS}  
+%		\label{fig:APS}
+

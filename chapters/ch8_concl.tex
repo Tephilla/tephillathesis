@@ -1,0 +1,30 @@
+\chapter{Conclusions}\label{chconcl}
+
+We summarize the work done in this dissertation:
+\begin{itemize}
+    \item In Chapter.~\ref{chmodels} we discussed the various models for unbounded concurency. First, we discussed Petri nets, the most widely studied model, where the tokens are undistinguishable. Second, we studied $\nu$-nets, where the tokens can be distinguished using identifiers and there can be labeled arcs to enable the movement of particular tokens, which allows for a richer representation than Petri nets. We saw how $\nu$-nets can be used to represent identifiable clients in a system with single server and unbounded number of clients. Third, we explored a particular class of higher order nets, where Petri nets can be nested. When the nesting depth is restricted to two, we obtain Elementary Object Systems, which are natural for representing clients as a nested Petri net within the server Petri net. We explored the suitability of each of these models to represent the unbounded client server systems case study.
+
+    \item In Chapter.~\ref{chlogics} we discussed the various temporal logics that can be used to specify properties of the models discussed in Chapter.~\ref{chmodels}. We explored the expressibility of Linear Temporal Logic, Linear Temporal Logic with integer arithmetic {\LC} and First Order Logic with Monodic restriction {\Lstar}. In each of these logics, we looked at their applicability in expressing properties of the above concurrent models in a natural manner.
+
+    \item In Chapter.~\ref{chproblem} we explored the motivation behind verification of unbounded client server systems and the research questions that we aim to answer in this thesis. We discussed the algorithm of bounded model checking and its extension, two dimensional bounded model checking ($2$D-BMC). $2$D-BMC is particularly useful to verify models such as Petri nets where there is unboundedness in the concurrency ad well as with respect to the temporal modality.
+
+    \item In Chapter.~\ref{chltl}, we implemented a tool to perform $2$D-BMC on unbounded Petri nets with specifications written in {\LC}, a variant of Linear Temporal Logic. We described the design of the tool, the SMT encoding and the experiments where it competes with the state of the art Petri net verification tools on competition benchmarks. This is the first of its kind to support true concurrent semantics of Petri nets.
+
+    \item In Chapter.~\ref{chmfotl}, we implemented another tool to verify properties of $\nu$-nets, which are Petri nets where the tokens are distinguished. We employed a variants of First Order Logic {\Lstar}, to represent the specifications and we verified the specifications using $2$D-BMC algorithm and made use of SMT solvers to verify them.
+
+    \item In Chapter.~\ref{cheos}, we charted the decidability status of reachability, coverability problems in Elementary Object Systems, which are a type of nested Petri nets, in the context of lossiness. We additionally built a tool using Answer Set Programming, to verify the reachability, safety and deadlock properties on lossy Petri nets and lossy EOSs.
+\end{itemize}
+
+\section*{Future Work}
+
+In this work, we took the approach of representing single server multiple client systems as a single component and represented them as a single $\nu$-net.
+As part of future work, we shall explore verification of a system of $\nu$-nets, with several underlying components.
+
+We represented the single server multiple client setting using EOSs. The following are natural extensions - the single client multiple server, multiple client and multiple server settings. In a single client multiple server setting, we may represent client process as a token net whose behaviour changes dynamically in various places, corresponding to the server behaviour. It would be interesting to implement tools to verify programs following these paradigms, as they are widely in use in industry.
+
+We worked with interleaving and true concurrent semantics of Petri nets. In practice, while analysing the time spent by the tools, we see that the SMT invocation takes relatively lesser time in compared to the formulation of the constraints. In case of the true concurrent semantics, we have several more constraints that are added, to ensure that the firing of some transitions concurrently does not disable the others and so on.
+As part of future work, we would like to have an optimal encoding of the PN with true concurrent semantics, such that the two can be compared more clearly.
+
+We introduced $2$D-BMC, which is an extension of the standard bounded model checking algorithm. It would be interesting to explore the complexity and completeness criteria of this algorithm.
+
+The model checking problem for Linear Temporal Logic with integer arithmetic is undecidable, it would be interesting to see if decidability can be achieved in variants of this logic.

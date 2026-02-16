@@ -1,0 +1,531 @@
+\chapter{Models for Unbounded Concurrency}\label{chmodels}
+
+While formally verifying infinite state systems with concurrency, it is imperative to capture their behaviour in suitable abstract models.
+In this chapter, we discuss the various abstractions for modeling concurrent systems that are used in the rest of the thesis.
+
+\section{Petri nets}\label{sec:pn}
+Petri nets are a commonly used formalism for modeling the dynamic behaviour of systems~\cite{murata89,petri1962kommunikation}. Here, we recollect the standard notions associated with nets.
+\begin{figure}[ht]
+    \centering
+    \input{figures/fig_pn0}
+    \caption{A simple Petri net $N_0$ with marking $\langle 1,0,0,0 \rangle$}
+    \label{fig:petrinet1000}
+\end{figure}
+
+\begin{dfn}\label{def:pn}
+    A \emph{PN} is a tuple $N=(P,T,F)$ where $P$ is a finite set of  \emph{places}, $T$ is a finite set of \emph{transitions}, $F : (P \times T) \cup (T \times P)\longrightarrow \mathbb{N}$ is the \emph{flow function}.
+    Additionally, if the arcs are allowed to have weights, they are called \emph{weighted} Petri nets. Hence, we also have the weight function $W:F\rightarrow \mathbb{N}_0$, where $\mathbb{N}_0$ is the set of non-negative integers. In Fig.~\ref{fig:petrinet1000}, $P=\{p_0,p_1,p_2,p_3\}$, $T=\{t_0,t_1,t_2,t_3\}$ and $F$ is represented graphically by the directed arcs.
+\end{dfn}
+
+
+
+
+
+
+\begin{dfn}\label{defn:prepostPN}
+    The set $\pre{t}=\{p\in P\mid F(p,t)>0\}$ is called the \emph{set of pre-places} of $t \in T$.
+    The set $\post{t} =\{p\in P\mid F(t,p)>0\}$ is called the \emph{set of post-places} of $t \in T$.
+\end{dfn}
+For instance, in Fig.~\ref{fig:petrinet1000}, $\pre{t_0}=\emptyset$, $\pre{t_1}=\{p_0\}$, $\pre{t_2}=\{p_1\}$, $\pre{t_3}=\{p_2\}$.
+And $\post{t_0} =\{p_0\}$, $\post{t_1} =\{p_1,p_2\}$, $\post{t_2} =\post{t_3} =\{p_3\}$.
+The flow function $F$ is also described by the pre and post condition functions.
+
+\begin{dfn}
+    Given a PN $N=(P,T,F)$, the \emph{pre-condition function} $\prefun_N$ and the \emph{post-condition function} $\postfun_N$ are defined as follows:
+    \begin{align*}
+        {\prefun}_N : T\rightarrow ( P\rightarrow \mathbb{N})  & \quad\prefun_N(t)(p)=F(p,t)  \\\quad
+        {\postfun}_N : T\rightarrow ( P\rightarrow \mathbb{N}) & \quad\postfun_N(t)(p)=F(t,p)
+    \end{align*}
+\end{dfn}
+
+
+The states of the PN are the distributions of tokens in the places, described by \emph{markings}.
+
+\begin{dfn}
+    A \emph{marking} $M$ of a PN $N=(P,T,F)$ is a function $M : P \rightarrow \mathbb{N}_0$, where $\mathbb{N}_0$ is the set of non-negative integers. A \emph{marked PN} is a pair $PN=(N,M_0)$ where $N$ is a PN and $M_0$ is a marking, called \emph{initial marking}.
+\end{dfn}
+
+In Fig.~\ref{fig:petrinet1000} the marking $\langle 1,0,0,0 \rangle$, denotes the distribution of tokens in the places.
+
+\begin{dfn}[Enabledness Rule] A transition $t$ is enabled at marking $M$
+    when $\forall p\in P, M(p)\geq \prefun_N (t,p)$.
+\end{dfn}
+The \emph{enabledness rule} is a prerequisite for firing a transition $t$. On the firing of $t$, the successor of the current marking is obtained according to its pre and post conditions, i.e., by removing $F(p,t)$ tokens from each $p \in \pre{t}$ and adding $F(t,p')$ tokens to each $p' \in \post{t}$, leaving tokens in the remaining places as they are.
+
+\begin{dfn}[Firing Rule]
+    Given a marking $M$ in a Petri net, on firing an enabled transition $t$, we get the successor marking $M'$, denoted by $M \xrightarrow{t} M'$, such that:
+    \begin{align*}
+        %\forall p \in \pre{t}, p' \in \post{t}: M(p) \geq Pre(p,t) \land 
+        \forall p\in P:
+        M'(p) = M(p) - F(p,t) + F(t,p)
+    \end{align*}
+\end{dfn}
+
+
+
+If there are several enabled transitions at a given marking, exactly one of them is non-deterministically chosen to be fired in the step.
+
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/fig_pn1}
+    \caption{A simple Petri net $N_0$ with marking $\langle 0,1,1,0 \rangle$}
+    \label{fig:petrinet0110}
+\end{figure}
+
+Given the marking in Fig.~\ref{fig:petrinet1000} and on firing transition $t_1$, the marking in Fig.~\ref{fig:petrinet0110} is obtained.
+
+
+
+\begin{dfn}
+    The set of markings \emph{reachable} from marking $M$ in a given net $N$, denoted by $reach_N(M)$, is the smallest set of markings such that:
+    \begin{itemize}
+        \item $M \in reach_N(M)$ and
+        \item If $M'\xrightarrow{t}M''$ for some $t\in T$ and $M' \in reach_N(M)$, then $M'' \in reach_N(M)$.
+    \end{itemize}
+    The \emph{reachability graph} of a PN $N$ is the directed graph $(\N,E)$ where $\N$ is the set of markings of $N$, $E\subseteq \N\times\N$, and $(M,M')\in E$ iff there is some $t\in T$ such that $M\xrightarrow{t}M'$. The set of reachable markings of a marked PN $(N,M_0)$, is $reach_N(M_0)$.
+\end{dfn}
+
+\begin{dfn}[Unbounded Petri Net]\label{dfn:unboundedPN}
+    An unbounded Petri Net is a Petri Net $N=(P,T,F)$ where $P$ is a finite set of  \emph{places}, $T$ is a finite set of \emph{transitions}, $F : (P \times T) \cup (T \times P)\longrightarrow \mathbb{N}$ is the \emph{flow function} where the $reach_N(M_0)$ is infinite.
+\end{dfn}
+Alternatively, it means that there is no finite integer \(k\) such that every place \(p\in P\) has fewer than \(k\) tokens (\(M(p)\le k\)) for all reachable markings \(M\).
+
+\begin{dfn}[Conservative Petri net]
+    A PN $N=(P,T,F)$ is \emph{conservative} iff
+    \begin{align*}
+        \forall p \in P \,  \forall t \in T : F(p,t) = F(t,p)
+    \end{align*}
+\end{dfn}
+
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/fig_pn3}
+    \caption{A conservative Petri net $N_1$}
+    \label{fig:petrinet3}
+\end{figure}
+
+A Petri net $N$ is said to be \emph{conservative}, if all transitions fire token-preservingly, i.e., all transitions add exactly as many tokens to their post-places as they subtract from their pre-places. This is illustrated in Fig.~\ref{fig:petrinet3}.
+
+Markings are naturally ordered by the coverability relation $\leq$, defined as follows.
+
+\begin{dfn}
+    Given two markings $M_1$ and $M_2$, we say that a marking $M_2$ covers $M_1$, denoted by $M_1 \leq M_2$, iff $\forall p \in P, M_1(p) \leq M_2(p)$.
+\end{dfn}
+
+In Petri net $N_1$ from Fig.~\ref{fig:petrinet1000} suppose the marking $M_0 =\langle 0,0,0,0 \rangle$ and on firing $t_0$ we obtain $M_1=\langle 1,0,0,0 \rangle$, we say that $M_1$ covers $M_0$.
+
+The \emph{reachability problem} is as follows: given a marked PN $(N,M_0)$ and a marking $M$, whether $M\in reach_N(M_0)$. For instance, in Fig.~\ref{fig:petrinet3}, given the initial marking, $M_0$ is $\langle 1,2,2,1 \rangle$. We know that the marking $M_1=\langle 0,0,4,2 \rangle = reach_{N_1}(M_1)$. Hence, $M_1\in reach_{N_1}(M_1)$.
+
+It is known that the reachability problem for PN is \emph{decidable} but in non-primitive recursive time~\cite{CzerwinskiLLLM21}. The \emph{coverability problem} is as follows: given a marked PN $(N,M_0)$ and a marking $M$, whether there is a reachable marking $M'\in reach_N(M_0)$ such that $M'\leq M$. It is known that also the coverability problem is decidable and in EXPSPACE~\cite{Rackoff78}. Another problem on PN is \emph{deadlock-freeness}.
+
+\begin{dfn}[Dead Marking]
+    A marking $M$ for net $N$ is \emph{dead} if transition $t$ is not enabled at $M$ for all $t\in T$. The marked PN $(N,M_0)$ is \emph{deadlock-free}, if there is no dead marking in $reach_N(M_0)$.
+\end{dfn}
+
+For instance, in Fig.~\ref{fig:petrinet1000}, if the net is modified such that the transition $t_0$ is not present, it would result in a deadlock after obtaining the marking $\langle 0,0,0,2\rangle$.
+The \emph{deadlock-freeness} problem is as follows: given a marked PN $N$, whether $N$ is deadlock-free.
+It is well-known that deadlock-freeness and reachability are recursively equivalent and, thus, deadlock-freeness is decidable but in non-primitive recursive time complexity~\cite{Hack74,ChengEP95}.
+
+\subsection{Petri net Semantics}\label{ssec:pnsemantics}
+
+In this section, we look at the formal sematics of Petri nets, in particular the interleaving and concurrent semantics. The key difference in the two approaches, is in the firing condition. We recall the firing rule:
+
+Given an enabled transition $t$ at marking $M$, on firing $t$, we get the successor marking $M'$, denoted by $M \xrightarrow{t} M'$, such that:
+\begin{align*}
+    \forall p\in P:
+    M'(p) = M(p) - F(p,t) + F(t,p)
+\end{align*}
+
+
+In interleaving semantics, there is atmost one transition that is fired in an instance or step of the occurrence sequence. Given an initial marking $M_0=\tup{0,0,0,0}$, on firing $t_0$ twice and $t_1$ once, we obtain this sequence
+$\tup{0,0,0,0} \xrun{t_0}\tup{1,0,0,0}\xrun{t_0}\tup{ 2,0,0,0} \xrun{t_1}\tup{0,1,1,0} $ as depicted in Fig.~\ref{fig:petrinet0110}.
+
+
+
+
+\begin{recallfigure}[!ht]{fig:petrinet0110}
+    \centering
+    \input{figures/fig_pn1}
+    \caption{Recall the simple Petri net $N_0$ with marking $\langle 0,1,1,0 \rangle$}
+\end{recallfigure}
+
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/fig_pn2}
+    \caption{Petri net $N_0$  with marking $\langle 0,0,0,2 \rangle$}
+    \label{fig:petrinet0002}
+\end{figure}
+
+Now, both transitions $t_2$ and $t_3$ are enabled. In interleaving semantics, one may fire either of the two transitions, one after the other.
+However, in concurrent semantics, the following sequence is also additionally possible in a single step, resulting in Fig.~\ref{fig:petrinet0002}.
+
+$\langle 0,1,1,0\rangle \xrun{t_2,t_3}\langle 0,0,0,2\rangle $
+
+\begin{dfn}[Concurrent Firing Rule]\label{defn:concurfirerule}
+
+    Given a Petri net $N$ and a marking $M$ having a set of enabled transitions $\tau \in T$, we obtain the successor marking $M'$ on concurrent firing of a subset of transitions $\tau'\subseteq \tau$ using the following rule:
+
+    %Given a set of enabled transitions $\tau \in T$ at marking $M$, on firing $\tau$, we get the successor marking $M'$, denoted by $M \xrightarrow{\tau} M'$, such that:
+    \begin{align*}
+        %\forall p\in P:M'(p) = M(p) - F(p,t) + F(t,p)
+        \forall p\in \pre{\tau '}:
+        M'(p) = M(p) -\sum_{t\in \tau'} F(p,t) + \sum_{t \in \tau'}F(t,p)
+        \text{ if } \sum_{t\in \tau'} F(p,t) - M(p) \geq 0.
+    \end{align*}
+\end{dfn}
+
+The condition $\sum_{t\in \tau'} F(p,t) - M(p) \geq 0$ takes care of the sufficiency of tokens at each of the pre-places of the transitions in $\tau'$ such that the transitions can be fired. This is a particularly elegant rule in the context of representing concurrent firing of transitions in a Petri net in a SMT solver. This automatically addresses scenarios where the firing of one transition might disable another, the resultant set of transitions that are subsequently fired are all valid transitions that are enabled and whose concurrent firing is allowed by the Petri net semantics.
+
+
+\begin{figure}[ht]
+    \centering
+    \input{figures/fig_pn_concur}
+    \caption{Concurrent Firing of Petri net $N_1$}
+    \label{fig:pnconcur}
+\end{figure}
+
+In Fig.~\ref{fig:pnconcur}, $P=\{p_0,p_1,p_2,p_3\}$ and $T=\{t_0,t_1,t_2\}$. Given an initial marking $M_0=\langle 1,2,0,0\rangle$, the set of enabled transitions w.r.t $M_0$, is $\tau=\{t_0,t_1,t_2\}$. Suppose $\tau'=\{t_1,t_2\}$, then $\pre{\tau '}=\{p_1\}$ and the step $\langle 1,2,0,0\rangle \xrun{t_1 \& t_2}\langle 0,0,1,1\rangle $ is allowed by the concurrent firing rule stated above. However, suppose $M_1=\langle 1,1,0,0\rangle$, $\tau'=\{t_1,t_2\}$  and $\pre{\tau '}=\{p_1\}$, then the step $\langle 1,1,0,0\rangle \xrun{t_1 \& t_2} $ is not allowed by the same rule.
+
+\emph{Remark:} Given a PN where transitions $t_1, t_2, \cdots t_n$ are enabled and there are sufficient tokens in the pre places of $t_1, t_2, \cdots t_n$ such that the transitions may be fired, in the context of true concurrent semantics, we wish to fire maximal number of transitions, wherever possible. Consequently, this means that if there are intermediate markings, which are reachable by an interleaved firing of a subset of the transitions $t_1, t_2, \cdots t_n$, then those markings become unreachable when executing in a truly concurrent manner.
+
+\section{Petri net Representation for an SMT Solver}\label{sec:pnrepresentation}
+
+The bigger picture is to verify properties of the Petri net using an SMT solver~\cite{HandbookSMTBarrettT18}. Satisfiability of formulas with respect to a particular theory such as arrays, integer arithmetic, bit vectors is called as Satisfiability Modulo Thoery. The tools employing the decision procedures and programs to solve these satisfiability constraints are known as SMT solvers. Well known SMT solvers include Z3, CVC4~\cite{MouraB08,BarrettCDHJKRT11}. In this section, we discuss the representation of nets such that they can be added as constraints in an SMT solver, namely Z3. The Petri net representation with interleaving semantics and the true concurrent semantics differ. While verifying infinite state systems,~\cite{AbdullaJ01} employed backwards reachability for proving safety properties, and in case of concurrent programs, ~\cite{AbdullaJRS06} proved liveness and termination via backwards reachability. In the unbounded Petri net setting,~\cite{AbdullaIN00} is the last known work where unfoldings (in the sense of Ken McMillan~\cite{KenUnfolding92}) are discussed from a verification point of view. In state of the art Petri net verification tools, interleaving semantics is adopted~\cite{AmatDH22}. We take an alternate perspective of this and unfold unbounded Petri nets with true concurrency using the help of SMT solvers. In this thesis, by unfolding, we refer to the process of obtaining the subsequent configurations from the initial marking of the net. This is not to be confused with the notion of unfolding described by Ken McMillan in his seminal work on partial orders~\cite{KenUnfolding92}.
+
+We outline the variables and data structures that are necessary to describe the true concurrent semantics. We have a finite set of transitions, $t_0,\ldots,t_m$ described in the net, their names are in the list $tNames$. We have a finite set of places, $p_0,\ldots,p_l$ their names are in the list $pNames$. Arcs can be of either of two types: where the source is a transition and the target is a place or the source is a place and the target is a transition. The net formalism does not allow arcs between places and between transitions themselves. If they occur, the net description is erroneous, and we cannot move ahead with the unfolding.
+
+We use the vector $iWTk$ to store the expressions with respect to $k$, to compute the incident weights of transitions. We use the vector $WTk$ to store the expressions with respect to $k$, to denote the change in weights for places.
+We use two-dimensional matrices $Wt[m][l]$ and $iWt[m][l]$ to denote the net change in weights and the incidence weights (outgoing from places). The expressions for the same are stored in $WTVars$ and $iWTVars$ respectively.
+
+We construct the two-dimensional weight matrix $Wt[row][col]$ of size $m \times l$ which contains the net weight of the arcs. Initially, all the matrix entries are initialized to zero.
+
+For an arc from place $p_i$ to transition $t_j$ with the weight $w$, we have the matrix entry $Wt[i][j] = Wt[i][j] - w$.
+For an arc from transition $t_j$ to place $p_i$ with the weight $w$, we have the matrix entry $Wt[i][j] = Wt[i][j]  + w$. Now, if there are incoming and outgoing arcs of the same weights, then the net weight $Wt[i][j]=0$. Notice that, by looking only at the Wt matrix, we may not distinguish between the case where there are no arcs to and from an element of the net. Hence, it is necessary to have a separate data structure for the same. We have a two-dimensional matrix $iWt[row][col]$ of size $m \times l$ which contains the incident weights to the transitions.
+For an arc from place $p_i$ to transition $t_j$ with the weight $w$, we have the matrix entry $iWt[i][j] =Wt[i][j] - w$. The marking of the net consists of the set tokens at each place and represents the state of the net at any instance.
+The initial marking of the net can be obtained from the net description and contains the number of tokens in each of the places $p_0,\ldots,p_l$ in the net. The subsequent markings may be constructed from the matrix $Wt$ and using the transition function of the net. The transition function $TF$ describes the behaviour of the net. The initial marking of the net is stored in $initial$. We introduce a method $printTFTruthTable$ that can aid to visualise the transition function $TF$ which is an expression describing the function. Most utility methods and the $2-DBMC$ algorithm are similar to that of the interleaving semantics. For experimentation, we have three different versions for constructing the Transition Function which are equivalent to each other (as verified by truth tables, experiments with $352$ properties) and are a simplification of the expression using $\land \land $, $||$ instead of $\implies$ and so on. Experiments suggest that one version is slightly faster than the others. The variable $T[ti]$ denotes the $i$th transition being fired. Hence the expression $!T[ti]$ denotes that the $i$-th transition is not fired. For every pair of transitions and places, if there are no outgoing arc from the transition $t_i$ then the expression $preCond$ containing the precondition for firing of transitions is constructed as follows:
+\vspace{-20pt}
+\begingroup
+\allowdisplaybreaks
+\begin{align}
+    if (emptyOutTi)     & \{                                                  \\
+    preCond             & = (tmp == iWt[pi][ti] \lor tmp == 0)                \\
+                        & \land ((T[ti] \land  tmp == iWt[pi][ti])            \\
+                        & \lor (!T[ti] \land tmp == 0))                       \\
+    cumulativeIncidentW & = tmp                                               \\
+    emptyOutTi          & = !emptyOutTi\}                                     \\
+    else\{              &                                                     \\
+    preCond             & = preCond \land  (tmp == iWt[pi][ti] \lor tmp == 0) \\
+                        & \land ((T[ti]\land tmp == iWt[pi][ti])              \\
+                        & \lor  (!T[ti] \land tmp == 0))                      \\
+    cumulativeIncidentW & = cumulativeIncidentW + tmp\}
+\end{align}
+\endgroup
+The sum of incident weights at a transition $t_i$ is stored in $cumulativeIncidentW$ as an expression of the $iWt[pi][ti]$ if there is an arc from the transition $t_i$ to place $p_i$ or it is zero. If the transition is not fired, then there are no weights to be considered.
+
+If the expression is non-empty, the previously constructed $preCond$ are \textbf{anded} with the newly constructed expression and the cumulative incident weights are updated in the same manner.
+
+The post condition is constructed if the weight $Wt[pi][ti]!=0$.
+\begin{align*}
+    postCond          & = ((tmp == Wt[pi][ti]) \lor (tmp == 0) \\
+                      & \land((T[ti] \land  tmp == Wt[pi][ti]) \\
+                      & \lor (!T[ti]\land  tmp == 0))          \\
+    cumulativeWChange & = tmp                                  \\
+    emptyChangePi     & = !emptyChangePi
+\end{align*}
+Based on the above expressions, we construct the transition function $TF$
+\begin{verbatim}
+    if (emptyTF){
+            if (!emptyOutTi){
+                TF = preCond & (Px[pi] + cumulativeIncidentW >= 0) 
+                emptyTF = false}
+            if (!emptyChangePi){                    
+                if (!emptyOutTi)
+                    TF = TF & postCond 
+                    &(Py[pi] == Px[pi] + cumulativeWChange)
+                else
+                    TF = postCond &(Py[pi] == Px[pi]
+                     + cumulativeWChange)
+                emptyTF = false
+                }
+        }
+        else{
+            if (!emptyOutTi)
+                TF = TF &preCond 
+                &((Px[pi] + cumulativeIncidentW) >= 0)
+            if (!emptyChangePi)
+                TF = TF &postCond
+                 &(Py[pi] == (Px[pi] + cumulativeWChange))
+        }
+\end{verbatim}
+The transition function is a conjunction of the preconditions, postconditions and the change in the markings. In case of interleaving semantics, there is an additional conjunction to the transition function, a disjunction of each transition $t_i$, to ensure that exactly one transition is fired in a step.
+
+\subsection{$\nu$-nets}\label{ssec:nunetsmodel}
+In the rest of this thesis, we consider the specific setting of single server multiple client systems, with distinguishable clients. These distinguishable clients are represented using distinguishable tokens of the Petri net, i.e., tokens appended with identifiers~\cite{VelardoF07}. There are an unbounded number of clients and a fresh client identifier is issued whenever a new client enters the system. When clients exit, the identifiers need to be purged. While the case study is discussed in detail in Chapter.~\ref{chproblem}, here, we outline the requirements for the formal model and arrive at a suitable representation.
+
+As seen in the Sec.~\ref{sec:pn}, Petri nets are suitable to model the \emph{concurrent} behaviour of the clients and are also suitable to capture an unbounded number of clients. The places correspond to the local states of the client and server. We have a disjoint set of server places and client places. The combined interactions of the server and client processes are represented by transitions. The tokens correspond to the processes (server process, client process). Unbounded Petri nets with indistinguishable tokens are not sufficient to differentiate between processes (server process, client process). Hence we look for another model.
+At first glance, a candidate model is the colored Petri net (CPN)~\cite{JensenCPN07} which satisfies the above requirements. CPNs allow arbitrary expressions over user-defined syntax labelling the arcs, and the underlying modeling language (such as CPN Modeling Language in  CPN Tools~\cite{JensenKW07}) is highly expressive. However, we do not prefer the CPN, for the following engineering reasons.
+
+First, there is a dearth of tools to automatically \emph{unfold} unbounded colored Petri nets. Recall that the big picture is the automatic verification of unbounded client-server systems. Alternatively, suppose we represent the formal model as a CPN such as using CPN Tools, there are no existing tools that can automatically \emph{unfold} an \emph{unbounded} CPN created using CPN Tools. Existing tools can only unfold \emph{bounded} CPNs~\cite{Dal-Zilio20,BilgramJPST22}. The second candidate model is a type of $\nu$-net~\cite{VelardoF08}, which is a CPN defined over a system of component nets, which use a labelling function $\lambda$, to handle synchronization between multiple component nets of a larger net system.
+
+We restrict the $\nu$-nets to a single component, providing a simplified
+definition while doing away with the labelling function used in $\nu$-nets.
+% For our case study, this representation is sufficient to model the single server multiple client behaviour by composing the client and server behaviour in a compact manner and restricting ourselves to a single component. 
+The client behaviour can be represented as a state machine. Similarly the server behaviour can also be represented as a state machine.
+In this representation, we describe the behaviour of the single server multiple client system as a single component.
+
+We begin with some definitions that are necessary for describing the restricted $\nu$-net. Given an arbitrary set $A$, we denote by $\mathcal{MS}(A)$, the set of finite multisets of A, given by the set of mappings $m:~A\to \mathbb{N}$. We denote by $S(m)$ the support of m, defined as follows:
+$S(m)=\{a\in A \mid m(a)>0\}$. Distinguishable tokens (identifiers) are taken from an arbitrary infinite set \emph{Id}. To handle this, we add matching variables labeling the arcs, taken from a set $Var$. To handle the movement of tokens inside the $\nu$-net, we employ a finite set of variables, $Var$ using which we label the arcs of the net. There is a special variable $\nu\in Var$, which introduces tokens into the place, which is described later.
+
+\begin{figure}[ht]
+    \begin{center}
+        \scalebox{0.8}{\input{figures/2_fig_aps_vnet_v2}}
+        \caption{A restricted $\nu$-net modeling an unbounded client-server system}
+        \label{fig:APS}
+    \end{center}
+\end{figure}
+
+\begin{dfn}\label{defn:nunet}
+    A $\nu$-net is a coloured Petri net $N=(P,T,F)$, where
+    \begin{itemize}
+        \item $P$ and $T$ are finite disjoint sets of places and transitions, respectively,
+        \item $F$: $(P \times T) \cup (T \times P) \to \mathcal{MS(\text{Var})}$ defines the
+              set of arcs of the net, satisfying $\nu \not \in pre(t)$ for every $t
+                  \in T$.
+    \end{itemize}
+
+
+    For a transition $t$ of the net, we define, $post(t)=\bigcup_{p\in P} S(F(t,p))$,
+    $pre(t)=\bigcup_{p\in P} S(F(p,t))$
+    and $Var(t)= pre(t) \bigcup post(t)$.
+
+\end{dfn}
+
+For instance, in Fig.~\ref{fig:APS}, $Var=\{\nu,s,c\}$, $T=$ $\{t_{acc}$, $t_{rej}$, $t_{s\_exit}$, $t_{u\_exit}$, $t_{acc\_sink}$, $t_{rej\_sink}\}$ and $P=\{$ $p_{PR}$, $p_{SR}$, $p_{OP}$, $p_{PU}$, $p_{ES}$, $p_{EU}\}$. $pre(t_{acc})=\{s,c\}$ and $post(t_{acc})=\{s,c\}$, hence $Var(t_{acc})=\{s,c\}$.
+
+
+\begin{dfn}[Marking]
+    A marking  of a restricted $\nu$-net $N=(P,T,F)$ is a function $M:P\to(\mathcal{MS}(Id))$.
+\end{dfn}
+In Fig.~\ref{fig:APS}, the initial marking $M_0=\langle \{0\}, \{1,2\}, \emptyset, \emptyset, \emptyset, \emptyset \rangle$.
+
+\begin{dfn}[Mode]\label{defn:modenunet}
+    We denote by $S(M)$ the set of identifiers in $M$. i.e., $S(M)=\bigcup_{p\in P}S(M(p))$. A mode of a transition $t$ is a mapping $\sigma:Var(t)\to Id$, instantiating every variable in the adjacent arcs of $t$ to some identifier. %Transitions are fired with respect to some mode, that establishes which tokens are taken from preconditions.
+\end{dfn}
+
+
+Let $N$ be a restricted $\nu$-net and $M$ a marking of $N$ according to Defn.~\ref{defn:nunet}.
+
+\begin{dfn}[Enabling Rule]
+    We say that $M$ \textbf{enables} the transition $t$ with mode $\sigma$ whenever:
+
+    \begin{itemize}
+        \item If $\nu \in Var(t)$ then $\sigma(\nu)\not \in S(M)$ and
+        \item $\sigma(F(p,t))\subseteq M(p)$ for all $p \in P$.
+    \end{itemize}
+\end{dfn}
+
+Notice that if $\sigma(\nu)\not \in S(M)$ for the enabling of transition, that causes the creation of fresh (equal) identifiers in all the places reached by arcs labelled by the special variable $\nu \in Var$ that appears only in post-condition arcs.
+
+\begin{dfn}[Firing Rule]\label{nufire}
+    The reached marking of net $N$ after firing of $t$ with mode $\sigma$
+    is denoted by $M \xrightarrow{t(\sigma)}M'$, where
+    $\forall p \in P: M'(p)=M(p) - \sigma(F(p,t)) + \sigma(F(t,p))$.
+\end{dfn}
+
+In Fig.~\ref{fig:APS}, given initial marking $M=\langle \{0\}, \{1,2\}, \emptyset, \emptyset, \emptyset, \emptyset \rangle$ and $M \xrightarrow{t_{acc}} M'$, $M'=\langle \{0\}, \{2\}, \{1\}, \emptyset, \emptyset, \emptyset \rangle$, i.e., the token $\{1\}$ has moved to the place $P_{OP}$. The mode is represented in the figure.
+
+In Fig.~\ref{fig:APS}, the transitions $t_{acc}$, $t_{rej}$, $t_{s\_exit}$, $t_{u\_exit}$, $t_{acc\_sink}$, $t_{rej\_sink}$, represent the accept, reject, exit successfully, exit unsuccessfully and the two sink transitions respectively. A transition is \textbf{identifier-preserving} if $post(t)\setminus \{\nu\}\subseteq pre(t)$. Here, all of them are \emph{identifier-preserving} transitions, which ensures that the system with identified clients is represented correctly modeled. The firing of transition $t_{src}$ acts as the source. The arc labelled $\nu$ ensures that a new client identifier is generated in place $p_{PR}$. The place $p_{PR}$ contains a set of clients requesting for parking.
+In the unsuccessful scenario, the transition $t_{rej}$ is fired when the server rejects the request, which brings the vehicle to \emph{parking\_unavailable} state represented by place $p_{PU}$. On firing of transition $t_{u\_exit}$, the vehicle goes to \emph{exited\_unsuccessfully} state represented by place $p_{EU}$.
+The firing of transition $t_{rej\_sink}$ is the sink transition for the rejected parking requests. This ensures that the rejected vehicle identifier exits the system and is never reused. If the client arrives after it has exited, it is always issued a fresh identifier.
+Notice that there are arcs labelled $s$ to indicate the server which
+has identifier $0$, which is necessary for the acceptance or rejection
+of a parking request. The token with identifier $0$ is permanently present in each marking
+exactly at server place $p_{SR}$. The $\nu$ arc ensures that new
+identifiers are generated, essentially giving an unbounded number of
+agents in the $\nu$-net. The arcs labelled $c$ carry the client
+identifiers from one client place to another. The net behaves as a
+standard $\nu$-net component with autonomous transitions as described
+in~\cite{VelardoF08}. We explored simple Petri nets, with identifiable tokens. Next, we shall explore an extension of Petri nets, suitable for modeling real world software systems.
+
+\subsection{Elementary object Systems}
+
+In~\cite{valk87,Valk03}, they introduce the nets-within-nets paradigm, wherein, the tokens of the Petri net can be nets themselves. They are used to model the dynamic nature of token behaviour. This is synonymous with the object-oriented modeling approach introduced by Booch~\cite{Booch04}, which most software systems, including client-server systems follow.
+
+In nets-within-nets, one can restrict the nesting of nets, to a nesting depth of two, to obtain Elementary Object Systems (EOSs). Here, the level $0$ net is called the system net and the (nested) level $1$ net is called the object net. In our running example, of the single server multiple clients, we represent server behaviour by the system net and the client behaviour by the object nets that are nested within the system net. In EOSs, we have events, that enable firing of transitions in the system net or object net or at both levels, i.e., system autonomous, object autonomous and synchronized events. Their formal definition is given below:
+
+\begin{dfn}[\textbf{EOS}]\label{def:bussy14_eos}
+    An \emph{EOS} $\os$ is a tuple $\os=\tup{\hat{N},\N,d,\Theta}$ where:
+    \begin{compactenum}
+        \item $\hat{N}=\tup{\hat{P},\hat{T},\hat{F}}$ is a PN called \emph{system net}; $\hat{T}$ contains a special set $ID_{\hat{P}}=\{id_p\mid p\in \hat{P}\}\subseteq \hat{T}$ of \emph{idle transitions} such that, for each distinct $p,q\in \hat{P}$, we have $\hat{F}(p,id_p)=\hat{F}(id_p,p)=1$ and $\hat{F}(q,id_p)=\hat{F}(id_p,q)=0$.
+        \item $\N$ is a finite set of PNs, called \emph{object PNs}, such that $\blacksquare\in\N$ and if $(P_1,T_1,F_1), (P_2,T_2,F_2)\in\N \cup \hat{N}$,\footnote{This way, the system net and the object nets are pairwise distinct.} then $P_1\cap P_2=\emptyset$ and $T_1 \cap T_2 = \emptyset$.
+        \item $d:\hat{P}\rightarrow \N$ is called the \emph{typing function}.
+        \item $\Theta$ is a finite \emph{set of events} where each \emph{event} is a pair $(\hat{\tau},\theta)$, where $\hat{\tau}\in \hat{T}$ and  $\theta:\N \rightarrow \bigcup_{(P,T,F)\in\N} T^\oplus$,
+        such that $\theta((P,T,F))\in T^\oplus$ for each $(P,T,F)\in\N$ and, if $\hat{\tau}=id_p$, then $\theta(d(p)) \neq \emptyset$.
+    \end{compactenum}
+\end{dfn}
+
+
+\begin{dfn}[Nested Markings]
+    Let $\os=\tup{\hat{N},\N,d,\Theta}$ be an EOS. The set of \emph{nested tokens} $\nestTok(\os)$ of $\os$ is the set $\bigcup_{(P,T,F)\in\N} (d^{-1}{(P,T,F)}\times P^{\oplus})$. The set of \emph{nested markings} $\M(\E)$ of $\os$ is $\nestTok(\os)^{\oplus}$.
+    Given $\lambda,\rho\in \M(\E)$, we say that $\lambda$ is a \emph{sub-marking} of $\mu$ if $\lambda \sqleq \mu$.
+\end{dfn}
+Note that $\lambda$ is a sub-marking of $\mu$ iff there is some nested marking $\mu'$ such that $\mu=\lambda+\mu'$. EOSs inherit the graphical representation of PNs with the provision that we represent nested tokens via a dashed line from the system net place to an instance of the object net where the internal marking is represented in the standard PN way. However, if the nested token is $\tup{p,\varepsilon}$ for a system net place $p$ of type $\blacksquare$, we represent it with a black-token $\blacksquare$ on $p$. If a place $p$ hosts $n>2$ black-tokens, then we represent them by writing $n$ on $p$. Each event $\tup{\hat{\tau},\theta}$ is depicted by labeling $\hat{\tau}$ by $\tup{\theta}$ (possibly omitting double curly brackets). If there are several events involving $\hat{\tau}$, then $\hat{\tau}$ has several labels.
+
+
+\begin{example}\label{ex:cardeos}
+    Fig.~\ref{fig:cardpn} depicts the Petri net which
+    \begin{inparaenum}[\itshape (1)]
+        \item counts the parity of the $a$'s and $b$'s in the input word (firing sequence)
+        \item on seeing an $a$, the parity of the alphabet changes and the token moves to the place with $a_O$
+        \item on seeing an $b$, the parity of the alphabet changes and the token moves to the place with $b_O$.
+    \end{inparaenum}
+    The marking $M_0=\tup{1,0,0,0}$ depicts the empty word, with exactly a token in place $a_E b_E$. For instance, given the firing sequences $\sigma=abba$, $M_0 \xrun{\sigma} M_0$.
+    Fig.~\ref{fig:cardeos} depicts the equivalent EOS which counts the parity of the $a$'s and $b$'s in the input word.
+\end{example}
+
+\input{figures/eos/cardPN}
+\input{figures/eos/cardEOS}
+
+We adopt the technique in Example.~\ref{ex:cardeos}, to the running example, single server multiple client systems.
+\begin{example}\label{ex:ucseos}
+    Fig.~\ref{fig:cpn} depicts the client behaviour as a Petri net, where the places $CR$, $OP$, $EU$ and $ES$ represent \emph{generate client request}, \emph{occupy parking lot}, \emph{exit unsuccessfully} and \emph{exit successfully} respectively. Fig.~\ref{fig:spn} depicts the server behaviour as a Petri net where the places $SR$, $ACR$, $RR$ represent \emph{server ready}, \emph{accept client request}, \emph{reject request} respectively. The client behaviour can be modeled as an object net and the system places can model the server places, and we can obtain an EOS to model the combined behaviour of the single server multiple client system, where the clients are not identified, but an unbounded number of them mayh be generated. This is shown in Fig.~\ref{fig:ucseos}. Notice that on firing the source transition, there are an unbounded number of object nets that can be geberated in the EOS. The server places are all of the same type, which enable to movement of the object tokens until exit.
+\end{example}
+
+\input{figures/2_cpn}%client Petri net
+\input{figures/2_spn}%server Petri net
+
+\input{figures/2_ucseos}%EOS for UCS 
+
+Notice that the types of the system places are \emph{minimal}, as there is exactly one type of object net, to depict the client type.
+Technically, $\N=\{{\tt client},\blacksquare\}$ (even if $\blacksquare$ is unused), $d({\tt SR})=d({\tt ACR})=d({\tt RR})={\tt client}$, and $\Theta$ synchronizes $\tt accept$, $\tt reject$ and $\tt exit$ in $\hat{N}$ with $\tt enter$, $\tt abort$ and $\tt exit$ in $\tt client$.
+Formally,
+$\Theta=\{\tup{{\tt accept},\fmset{{\tt enter}}},
+    \tup{{\tt reject},\fmset{{\tt abort}}},
+    \tup{{\tt exit},\fmset{{\tt exitc}}}\}.$
+
+The marking $\mu={\tup{\mathtt{client},\fmset{\mathtt{client1},\mathtt{client2}}}}$ represents a server instance at $\tt SR$, with two client requests, waiting to be serviced.
+
+
+\begin{comment}
+\begin{example}\label{ex:eos}
+
+    Fig.~\ref{fig:unboundedDrones} depicts the system net $\hat{N}$ (the idle transitions are omitted) and object net $\tt drone$ of an EOS $\os=\tup{\hat{N},\N,d,\Theta}$ modeling a drone that
+    \begin{inparaenum}[\itshape (1)]
+        \item moves between a base and a field,
+        \item has two batteries,
+        \item consumes one charge-unit per battery per movement, and
+        \item charges its batteries by multiples of two charge-units when at base.
+    \end{inparaenum}
+    Technically, $\N=\{{\tt drone},\blacksquare\}$ (even if $\blacksquare$ is unused), $d({\tt base})=d({\tt field})={\tt drone}$, and $\Theta$ synchronizes $\tt takeOff$ and $\tt land$ (respectively $\tt charge$) in $\hat{N}$ with $\tt move$ ($\tt charge1$ and $\tt charge2$) in $\tt drone$.
+    Formally,
+    $\Theta=\{\tup{{\tt takeOff},\fmset{{\tt move}}},\tup{{\tt land},\fmset{{\tt move}}}, \tup{{\tt charge},\fmset{{\tt charge1}}},\tup{{\tt charge},\fmset{{\tt charge2}}}\}.$
+    The marking $\mu={\tup{\mathtt{drone},\fmset{\mathtt{batt1},\mathtt{batt1}}}}$ represents a single partially charged drone at $\tt base$, with two charge units in the first battery.
+\end{example}
+% \input{figures/eos/unboundedDrones}
+\end{comment}
+
+
+
+
+When firing an event $\tup{\tau,\theta}$, nested tokens in the system net are consumed according to the preconditions of $\tau$ in the standard PN way. At the same time, for each object net $N$, the inner tokens are merged so as to obtain a PN marking $\mu(N)$ for $N$ (possibly empty). Then, transitions in $\theta(N)$ are fired in the standard PN way obtaining markings $\mu'(N)$. Next, nested markings with empty inner markings are produced in the system net according to the postconditions of $\tau$. Finally, the markings $\mu'(N)$ are non-deterministically distributed among the empty nested tokens, according to the typing function. To be fired, the event must be enabled at both the system and at the object net level. This is captured by the enabledness condition, which makes use of projection operators at the system ($\Pi^1$) and at the object net level ($\Pi^2_N$ for each $N\in\N$).
+
+\begin{dfn}[{Projection Operators}]
+    Let $\os$ be an EOS $\tup{\hat{N},\N,d,\Theta}$. The \emph{projection operators $\Pi^1$} maps each nested marking $\mu=\sum_{i\in I}\tup{\hat{p}_i,M_i}$ for $\E$ to the PN marking $\sum_{i\in I}\hat{p}_i$ for $\hat{N}$. Given an object net $N\in\N$, the \emph{projection operators $\Pi^2_N$} maps each nested marking $\mu=\sum_{i\in I}\tup{\hat{p}_i,M_i}$ for $\E$ to the PN marking $\sum_{j\in J} M_j$ for ${N}$ where $J=\{i\in I\mid d(\hat{p}_i)=N\}$.
+\end{dfn}
+
+To define the enabledness condition, we need the following notation. We set $\prefun_{N}(\theta(N))=\sum_{i\in I}\prefun_N(t_i)$ where $(t_i)_{i\in I}$ is an enumeration of $\theta(N)$ counting multiplicities. We analogously set $\postfun_{N}(\theta(N))=\sum_{i\in I}\postfun_N(t_i)$.
+
+\begin{dfn}[{Enabledness Condition}]\label{def:bussy14_enable}
+    Let $\os$ be an EOS $\tup{\hat{N},\N,d,\Theta}$. Given an event $e=\tup{\hat{\tau},\theta}\in \Theta$ and two markings $\lambda,\rho\in\M(\os)$, the \emph{enabledness condition} $\Phi(\tup{\hat{\tau},\theta},\lambda,\rho)$ holds iff
+    \begin{align*}
+        \Pi^1(\lambda)=\prefun_{\hat{N}}(\hat{\tau})\ \land \Pi^1(\rho)=\postfun_{\hat{N}}(\hat{\tau})\ \land
+        \forall N\in \N,\ \Pi^2_N(\lambda)\geq \prefun_N(\theta(N))\ \land \\
+        \forall N\in\N,\ \Pi^2_N(\rho)=\Pi^2_N(\lambda)-\prefun_N(\theta(N))+\postfun_N(\theta(N))
+    \end{align*}
+    The event $e$ is \emph{enabled with mode $(\lambda,\rho)$ on a marking $\mu$} iff $\Phi(e,\lambda,\rho)$ holds and $\lambda\sqleq \mu$.
+    Its firing results in the step $\mu\xrightarrow{(e,\lambda,\rho)}\mu-\lambda+\rho$.
+\end{dfn}
+
+Notice that in Fig.~\ref{fig:ucseos}, the transitions $\tt accept$ and $\tt reject$ are both enabled due to two client object nets in place $SR$ and the object net places $\tt enter$, $\tt abort$ are enabled as well. Depending on the fired transition in the system net, the corresponding synchronizing move is taken in the object net as well, in the synchronizing event.
+\begin{comment}
+\begin{example}
+    In the setting of the EOS $\os$ and marking $\mu$ in Ex.~\ref{ex:eos} (Fig.~\ref{fig:unboundedDrones}), the event $\tup{\mathtt{charge},\fmset{\mathtt{charge1}}}$ is enabled on $\mu={\tup{\mathit{base},\fmset{\mathtt{batt1},\mathtt{batt1}}}}$ with mode $(\lambda,\rho)$ where $\lambda=\mu$ and $\rho={\tup{\mathit{base},\fmset{\mathtt{batt1},\mathtt{batt1},\mathtt{batt1},\mathtt{batt1}}}}$. Since $\lambda=\mu$, its firing results in the step $\mu\xrightarrow{\tup{e,\lambda,\rho}}\rho$.
+    Instead, the event $\tup{\mathtt{charge},\fmset{\mathtt{charge2}}}$ is enabled on $\mu$ with mode $(\lambda,\rho')$ where $\rho'={\tup{\mathit{base},\fmset{\mathtt{batt1},\mathtt{batt1},\mathtt{batt2},\mathtt{batt2}}}}$. Its firing results in the step $\mu\xrightarrow{\tup{e,\lambda,\rho'}}\rho'$. These are the only enabling modes for $\tup{\mathtt{charge},\fmset{\mathtt{charge1}}}$ and $\tup{\mathtt{charge},\fmset{\mathtt{charge2}}}$ on $\mu$. No other event is enabled on $\mu$, irrespective of the mode.
+\end{example}
+\end{comment}
+
+\begin{dfn}[Reachability in EOS]
+    The reachability problem for EOSs is defined in the usual way, i.e., whether there is a run (sequence of event firings) from an initial marking $\mu_0$ to a target marking $\mu_f$. $\mu_1={\tup{\mathtt{client},\fmset{\mathtt{client1},\mathtt{client2}}}}$ is a reachable marking.
+\end{dfn}
+
+
+\begin{dfn}[Coverability in EOS]
+    The coverability definition is standard, but with respect to the order $\preceq$ (in~\cite{kohler-busmeier_survey_2014}), the component wise ordering relation.
+    For instance, $\mu_1={\tup{\mathtt{client},\fmset{\mathtt{client1},\mathtt{client2}}}}$ and $\mu_2={\tup{\mathtt{client},\fmset{\mathtt{client1},\mathtt{client2},\mathtt{client3}}}}$. Then, $\mu_1 \preceq \mu_2$.
+\end{dfn}
+
+\subsection{A case study: Autonomous Parking System}\label{sec:apscasestudy}
+
+
+
+We consider as the running example, the Autonomous Parking System (APS) that manages parking lots and solves the search for parking lots by vehicles in crowded spaces through communication between the system (server) and the vehicle (client). This system has been successfully implemented by the industry~\cite{spark11,CaiZQZD21}. This is a type of single server multiple client system, where the clients are unbounded. The state diagrams for the server and client are given in Fig.~\ref{fig:system-model} and Fig.~\ref{fig:vehicle-model} respectively. The combined interactions between clients and the server are modelled as a Petri net in Fig.~\ref{fig:APS}.
+In this Petri net there are two types of places- client places and server places that model the client states and server states respectively. There is at most one token in the server place, and there can be an unbounded number of tokens in the client places. The number of tokens in the client places exactly corresponds to the number of clients in that state at any point in time.
+
+\begin{figure}[!h]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+
+        \scalebox{0.6}{\input{figures/fo/state_diag_aps}}
+        \caption{State diagram of server}
+        \label{fig:system-model}
+
+    \end{minipage}\hspace{2em}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+
+        \scalebox{0.6}{\input{figures/fo/state_diag_vehicle}}
+        \caption{State diagram of client}
+        \label{fig:vehicle-model}
+
+    \end{minipage}
+\end{figure}
+
+\noindent Initially,  the system is in the state
+\emph{server\_ready (SR)}, which is ready to service the requests.
+To keep the system sufficiently occupied, we assume a steady inflow of requests for parking,
+When a client inquires about parking space, the client is in the \emph{parking\_requested (PR)} state.
+The server may non-deterministically choose to either
+grant or reject the parking request based on local information such as space availability,
+the priority of incoming requests, etc. We assume two disjoint workflows for each scenario.
+First, if the server accepts the request, the server is in \emph{request\_granted (RG)} state and
+simultaneously, the client goes to \emph{occupy\_parking\_lot (OP)} state. At some point, the client gives up its allocated parking space, is in \emph{exit\_parking\_lot\_successfully} and simultaneously
+the server is in \emph{deallocate\_parking\_lot (DP)} state. This marks the successful exit of the
+client from the system. Second, if the server rejects the request, the client is in
+\emph{parking\_unavailable (PU)} state and the server is in \emph{request\_rejected (RR)} state.
+The only option is for the client to exit.
+At any point, the server can either accept or reject the request. After granting the request, the server can go to \emph{server\_busy (SB)} state. Theoretically, this description allows for an unbounded number of client requests to be processed by the server, albeit there may be limitations on the availability of parking space. We assume that the autonomous parking system can reasonably guide the vehicle manoeuvres within the parking lot. It is not difficult to observe that the combined interactions between the server and clients described above can be interleaved and modelled as a single $\nu$-net as in Fig.~\ref{fig:APS}.
+
+\begin{recallfigure}[h]{fig:APS}
+    \begin{center}
+        \scalebox{0.8}{\input{figures/2_fig_aps_vnet_v2}}
+        \caption{Recall the restricted $\nu$-net modeling an unbounded client-server system}
+    \end{center}
+\end{recallfigure}
+
+In this $\nu$-net, the places $p_{PR}$, $p_{OP}$, $p_{PU}$, $p_{ES}$, $p_{EU}$ corresponds to the client states \emph{parking\_requested}, \emph{occupy\_parking\_lot}, \emph{parking\_unavailable}, \emph{exit\_successfully}, \emph{exit\_unsuccessfully} and the place $p_{SR}$ corresponds to the server state \emph{server\_ready} respectively. The transitions in the net correspond to the transitions in the state diagrams of the server and client. The transitions $t_{acc}$, $t_{exit}$, $t_{acc\_sink}$, represent the accept, exit and the sink transition respectively. The firing of transition $t_{src}$ acts as the source, where an unbounded number of vehicle requests can be spawned.  In the unsuccessful scenario, the transition $t_{rej}$ is fired when the server rejects the request, which brings the vehicle to \emph{parking\_unavailable} state. This is a type of single server multiple client system, where the clients are unbounded. The state diagrams for the server and client are given in Fig.~\ref{fig:system-model} and Fig.~\ref{fig:vehicle-model}, respectively. The combined interactions between clients and the server are modeled as a Petri net in Fig.~\ref{fig:APS}.
+
+
+% \begin{recallfigure}[h]{fig:APS}
+%     \begin{center}
+%         \scalebox{0.8}{\input{figures/2_fig_aps_vnet_v2}}
+%         \caption{A restricted $\nu$-net modeling APS}
+%     \end{center}
+% \end{recallfigure}
+
+
+
+\subsubsection*{Conclusion}
+We make use of the above formal models for concurrency in the rest of this thesis. In order to specify their properties for verfying using bounded model checking, we need to explore how to represent the properties in a manner that is correct as well as suitably written into formulas that can be fed to SAT/SMT solvers for verification. We also introduced the running example APS, which is used in the rest of this thesis.

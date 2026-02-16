@@ -1,0 +1,273 @@
+\chapter{Bounded Model Checking}\label{chproblem}
+
+Client server systems are a computing paradigm where work loads are distributed by the service providers called server, to the service requesters called clients, or alternatively, the clients request resources from a server.
+There are variations to this model, where there are single servers and multiple clients, multiple servers and clients and communication among the various entities, passive servers and communicating clients~\cite{ChristophidesHKKTX01}. For instance, stock markets and cryptocurrency exchanges with an unbounded number of investors, multiplayer games where the players are not known apriori can be viewed as client server systems with unbounded agents which we refer to as unbounded client server systems (UCS). The larger goal is to formally verify properties on unbounded client-server systems with concurrency. In the subsequent section, we list the research problems about UCS.
+
+\section{Verification of UCS: Central questions}\label{sec:verifquestions}
+
+The central questions that we ask and address in this work are the following:
+
+\begin{enumerate}
+   \item How do we formally verify UCS?
+         % \begin{enumerate}
+   \item How do we formally model UCS?
+         % \end{enumerate}
+
+   \item How do we express properties of client-server systems naturally?
+         \begin{enumerate}
+            \item Do existing logics suffice?
+            \item What additional properties are interesting in the context of unbounded client-server systems?
+         \end{enumerate}
+
+   \item Are there formal verification tools for UCS? Can we add to the repertoire?
+         \begin{enumerate}
+            \item How are existing tools different, unique? Is another tool necessary?
+         \end{enumerate}
+\end{enumerate}
+
+\paragraph*{How do we formally verify UCS?}
+Let us address the first question- formal verification of unbounded client-server systems. In order to formally verify a system, we need to first abstract the system into a formal model and then, describe its properties as logic specifications. UCS can be viewed as a distributed system which permits concurrent servicing of requests.
+In literature, Petri nets are a well-studied formal model for representing concurrent and distributed systems. The big picture is to employ Petri nets and their extensions for modeling unbounded client-server systems where there is true concurrency in the interaction between the clients and the servers as well as unboundedness in the number of clients. In Sec.~\ref{chmodels}, we discussed the various suitable formal models - simple PNs, $\nu$-nets and EOSs. To represent the properties of the systems, we employ temporal logics (See Sec.~\ref{chlogics}).
+
+
+In order to verify the properties of the unbounded client-server systems (modeled as PNs), we discuss a formal verification technique called model checking. Traditional symbolic model checking employs an exhaustive method to analyse all possible executions of a formal model, but suffers from state space explosion. Bounded Model Checking (BMC) with satisfiability solving, is an alternate approach to address the state space explosion problem. In BMC, a symbolic execution of a transition system and the negation of a property to be verified (translated into a logic formula) is fed to a satisfiability solver. If the formula is satisfiable, a counterexample is found and the property does not hold. If the formula is unsatisfiable up to a pre-defined bound, say $k$, it is concluded that the property holds upto bound $k$. It is easy to see that this approach is not complete, however, it is widely adopted in practice for verification of safety properties (where bounds are computable). We explore the applicability of BMC to verify UCS and discuss the algorithm consequently in Sec.~\ref{secbmcalgo}.
+
+
+\paragraph*{How do we express properties of client-server systems naturally? What additional properties are interesting in the context of unbounded client-server systems?}
+
+Typically, properties such as safety (a client request is never stuck indefinitely without being accepted or rejected), reachability (a client request is eventually serviced) and deadlock-freeness (a server or client action are always taken at each instance) are relevant for study. And these properties are expressible in a temporal logic such as LTL as in Sec.~\ref{sec:ltl}.
+
+Second, we could additionally make use of interger arithmetic to specify invariants about the system in a counting logic where we have propositions that can count at the atomic level. Assuming arbitrary processes $a$, $b$, an interesting invariant would be: The total number of clients undergoing process $a$ and number of clients undergoing process $b$ does not exceed $n$. This essentially gives an upper bound and can be described in the counting logic {\LC} described in Sec.~\ref{sec:cltl}.
+
+Third, in the context of \emph{unbounded} client-server systems, where clients dynamically enter the system and exit them, it is interesting to reason about the set of clients that are live (i.e., currently interacting with the server) at that instant. If we are unable to model live clients, we would need additional mechanisms to keep track of the clients that have exit the system, which can quickly grow in number, since it is an unbounded system. Since these live clients are distinguishable (via client identifiers) we could reason easily about the live clients and rephrase the following properties over sets of live clients: safety (is it always the case that any set of live clients is never stuck indefinitely without being accepted or rejected)
+reachability (is it always the case that all live client requests are eventually serviced) and deadlock-freeness (is it always the case that a server or live client action are always taken at each instance)? These properties are expressible naturally, in a fragment of first order logic {\Lstar} described in Sec.~\ref{sec:mlogic}.
+
+
+
+
+\paragraph*{Are there formal verification tools for UCS?}
+
+Although unbounded client-server systems are abundant in the software ecosystem, to the best of our knowledge, there are no specialized tools to verify unbounded client-server systems. However, \cite{SethiTM16} are recent works in the context of verifying unbounded systems. In~\cite{SethiTM16}, they employ SMT solvers to verify unbounded concurrent data structures where there is unboundedness in the list size as well as the number of threads that may access the list. They abstract the  system to a bounded model and perform standard bounded model checking on it. We reckon that by employing a technique such as two-dimensional bounded model checking, proposed in Sec.~\ref{secbmcalgo}, it may be possible to verify the system, while allowing concurrent behaviours (which we discuss later in this section). This may result in the solver converging to a satisfying assignment quicker (which we demonstrate in our experiments).
+
+With regards to verification of unbounded nets, \cite{Abdulla04,AbdullaIN00} studied the model checking of unbounded PNs with backwards reachability, where a set of safety properties were verified.
+While modeling unbounded client-server systems as unbounded PNs (cf.Sec\ref{sec:pn}), we identify the gap in modeling the behaviour of this system with true concurrency and explore ways to verify properties beyond safety. There is no known work on verifying properties of unbounded PNs over truly concurrent semantics. The existing PN (and unbounded PN) verification tools employ interleaving semantics\cite{Abdulla04,AbdullaIN00,AbdullaJRS06,AmatDH22}. We fill this gap while focussing on unbounded client-server systems. It is to be noted that our approach is in contrast to parametric model checking on various software systems~\cite{TraonouezLR08}. We do not parameterize the dimensions, rather allow them to \emph{unfold} simultaneously.
+
+The novelty of our work is twofold; first, to give a succinct representation of unbounded client-server systems, second, to study true concurrent behaviour and consequently to formally verify unbounded client-server systems in practice over various suitable logics and providing tools for them, while taking advantage of SMT solvers.
+
+\section{Bounded Model Checking Algorithms}\label{secbmcalgo}
+
+In the subsequent section, we describe BMC algorithms with respect to verification of LTL properties on Petri nets. Notice that in Algorithm.~\ref{alg:bmc} and Algorithm.~\ref{alg:2dbmc}, the temporal property $\alpha$ can be replaced with properties in any logic from Sec.~\ref{chlogics} and the model can be replaced by any formal model. Where the unfolded configuration of the Petri net is mentioned (cf. Line. 11 in Algorithm.~\ref{alg:bmc} and cf. Line.14 in Algorithm.~\ref{alg:2dbmc}), the Petri net may be unfolded using either interleaving or true concurrent semantics.
+% \begin{comment}
+
+\begin{figure}[!ht]
+   \centering
+
+   \scalebox{0.7}{\input{figures/4_unboundedpn}}
+
+   \caption{An unbounded net}
+   \label{fig:unboundednet}
+\end{figure}
+
+
+\begin{figure}[!ht]
+   \centering
+   \scalebox{0.7}{\input{figures/4_interleaveseq}}
+
+   \caption{Sequence of firings via interleaving semantics}
+   \label{fig:interleaveseq}
+\end{figure}
+
+\begin{figure}[!ht]
+   \centering
+   \scalebox{0.7}{\input{figures/4_concurseq}}
+
+   \caption{Sequence of firings via true concurrent semantics}
+   \label{fig:concurseq}
+\end{figure}
+
+% \end{comment}
+
+\begin{example}\label{exupn}
+   Given an unbounded PN Fig.~\ref{fig:unboundednet}, one possible sequence of transition firings with interleaving semantics, where exactly one enabled transition is fired at instant is shown in Fig.~\ref{fig:interleaveseq}. The below are the other possible firing sequences:
+   \begin{enumerate}
+      \item[]$t_2\to t_1 \to t_4 \to t_3 \to t_4$
+      \item[]$t_4 \to t_2 \to t_1 \to t_2$
+   \end{enumerate}
+
+   However, with respect to Fig.~\ref{fig:unboundednet} and true concurrent semantics, we obtain the much shorter firing sequence Fig.~\ref{fig:concurseq}.
+
+\end{example}
+
+
+
+In the verification tools discussed in Sec.~\ref{chltl} and Sec.~\ref{chmfotl}, we default to using true concurrent semantics, while also allowing interleaving semantics.
+
+
+\begin{algorithm}[hbt!]
+   \caption{The standard Bounded Model Checking algorithm for Petri nets}\label{alg:bmc}
+   \textbf{Input:} Marked PN $M$, temporal property $\alpha$ in \acrfull{NNF} and bound.\\
+   \textbf{Output:} SAT with counterexample trace or UNSAT
+   \begin{algorithmic}[1]
+      \Require $bound \geq 0$
+      \State $index \gets 0$
+      \State InitializeSolver($M_{0},\alpha$)
+      \If{\textsc{solver.check()}==SAT}
+      \State Display trace and exit
+      \EndIf
+      \If{\textsc{solver.check()}==UNSAT}
+      \State $index \gets 1$
+      \While{$index \leq bound$}
+      \State $M_{index}\gets ConstructUnfoldedNet(M,index$)
+      \State InitializeSolver($M_{index}, \alpha$)
+      % \State AddToSolver($\alpha$)
+      \If{\textsc{solver.check()}==SAT}
+      \State Display trace and exit
+      \ElsIf{\textsc{solver.check()}==UNSAT}
+      \State $index \gets index+1$
+      \EndIf
+      \EndWhile
+      \EndIf
+
+   \end{algorithmic}
+\end{algorithm}
+
+\subsection{Discussion on the \gls{BMC} algorithms}\label{ssec:bmcdsc}
+First we disambiguate the notion of bounds. In the BMC approach, the number of steps upto which the system is verified, say $k$, indirectly places a bound on the number of tokens which are present in the net, thereby restricting the number of clients that are represented in the unbounded client-server system. For instance, when unrolling the system for $k$ steps in the BMC approach, it indirectly places a cap that there can be atmost $k$ newly generated tokens at a place (taking into consideration the weight of the arc and the initial marking). It is to be noted that the bound in BMC is not fixed apriori, which differentiates it from the parametric verification approach where the parameter (the number of clients) is fixed apriori.
+
+The standard BMC approach for Petri nets is given in Algorithm.~\ref{alg:bmc}. The inputs for Algorithm.~\ref{alg:bmc} are the marked PN $M$ with initial marking $M_0$, temporal property $\alpha$ in NNF and the BMC bound. The variable $index$ keeps track of the steps for which the system is being unfolded.  Line $1$-$4$ initializes the solver and checks whether the input formula is satisfied. If it is satisfied, the counterexample trace is displayed and the procedure terminates. In the case that the formula is unsatisfiable then we unfold the net for one more step (i.e., $M_{index}$) and intialize the solver to check if the formula is satisfied or not. In the case that the formula is not satisfiable, we repeat the process of unfolding the net until we either hit the BMC bound or we obtain a counterexample trace.
+
+
+\begin{algorithm}[hbt!]
+   \caption{The $2D$-BMC algorithm for Petri nets}\label{alg:2dbmc}
+   \textbf{Input:} Marked PN $M$, temporal property $\alpha$ in \acrfull{NNF} and bound.\\
+   \textbf{Output:} SAT with counterexample trace or UNSAT
+   \begin{algorithmic}[1]
+      \Require $bound \geq 0$
+      \State $index \gets 0$
+      % \If{$index==0$}
+      \State InitializeSolver($M_{0},\alpha$)
+      % \State AddToSolver($\alpha$)
+      \If{\textsc{solver.check()}==SAT}
+      \State Display trace and exit
+      \EndIf
+      \If{\textsc{solver.check()}==UNSAT}
+      \State $index \gets 1$
+      \While{$index \leq bound$}
+      \For{$\lambda \gets 1$ to $bound$}
+      \For{$\kappa \gets 1$ to $bound$}
+      \State $M_{index}\gets ConstructUnfoldedNet(M,index,\lambda,\kappa$)
+      \State InitializeSolver($M_{index}, \alpha$)
+      % \State AddToSolver($M_{index(P)}$)
+      % \State AddToSolver(UnfoldPN($\lambda$,$\kappa$))
+      % \State AddToSolver($\alpha$)
+      \If{\textsc{solver.check()}==SAT}
+      \State Display trace and exit
+      \ElsIf{\textsc{solver.check()}==UNSAT}
+      \State $index \gets index+1$
+      \EndIf
+      \EndFor
+      \EndFor
+      \EndWhile
+      \EndIf
+
+   \end{algorithmic}
+\end{algorithm}
+
+
+% Algorithm.~\ref{alg:2dbmc} has two inputs, which are the marked PN $M$ with initial marking $M_0$, temporal property $\alpha$ in NNF and the BMC bound.
+
+Recall that we described the two dimensional bounded semantics of {\LC} in Sec.~\ref{ssec:twodimboundedsemlc} where $\kappa$ is a bound on the number of clients (agents) and $\lambda$ is a bound on the execution steps of the net. In Algorithm.~\ref{alg:bmc} the unfolding of the constructed net used only the $index$. In contrast, in Algorithm.~\ref{alg:2dbmc}, the unfolding of the constructed net uses variations of $\lambda$ and $\kappa$.
+
+
+
+% The variable $index$ keeps track of the steps for which the system is being unfolded.  Line $1$-$4$ initializes the solver and checks whether the input formula is satisfied. If it is satisfied, the counterexample trace is displayed and the procedure terminates. In the case that the formula is unsatisfiable then we unfold the net for one more step i.e.,($M_{index})$ and intialize the solver to check if the formula is satisfied or not. In the case that the formula is not satisfiable, we repeat the process of unfolding the net until we either hit the BMC bound or we obtain a counterexample trace.
+
+
+
+
+
+
+
+We illustrate the usage of the algorithms via an example.
+
+\begin{example}
+   Consider the Fig.~\ref{fig:unboundednet} with the following temporal properties.
+   \begin{enumerate}
+      \item First consider the $LTL$ reachability property.
+            $F(p_0=0 \& p_1=0 \& p_2 = 0 \& p_3 = 1 \& p_4 = 1 \& p_5=1)$.
+            It is beneficial to use Algorithm.~\ref{alg:bmc} since it is a reachability property and with $5$ steps with interleaved unfolding (or $3$ steps in case of concurrent unfolding), the marking can be reached. It is not beneficial to use Algorithm.~\ref{alg:2dbmc} here, since it will not converge to a solution faster.
+
+      \item Second, consider the {\LC} property, where
+
+            $F((\#x) p_3(x) > p_0(x) \land p_4(x) > p_1(x) \land p_5(x) > p_2(x))$.
+            This property requires searching by varying both the number of tokens as well as the time instance, hence Algorithm.~\ref{alg:2dbmc} is suitable here.
+   \end{enumerate}
+\end{example}
+
+
+\subsection{Related Work}
+In symbolic model checking~\cite{McM93} the state transition system is not represented explicitly but as propositional formulas. This prevents what is known as ``state-space explosion'' problem in program verification, as it slashes the size of representation by one degree of exponent. Originally binary decision diagrams (BDDs) were used to symbolically represent systems, and operations on system states corresponded to BDD operations. In practice, BDDs can handle systems defined using hundreds of variables, but often blow up in space. The technique called Bounded Model Checking (BMC) was an attempt to replace BDDs with SAT (and now SMT) in symbolic model checking. However SAT lacks the possibility to eliminate variables, which is a key operation in BDD-based model checking. In BMC, the solution is to focus on falsification and, at least in a first approximation, drop completeness. It has been found that SAT-based model checking, at least for falsification, scales much better~\cite{SheeranSS00}.
+
+
+Autonomous Parking System (APS), which we have considered in our paper,
+is a kind of single server multiple client system, where one server and an
+unbounded number of clients collaborate. APS is an instance of an infinite
+(parameterized) family of finite state systems. Such systems are
+parameterized because the number is known only at run time.
+Such a family can usually be seen as one single infinite-state system.
+Checking reachability in parameterized systems is, in general, undecidable~\cite{AK86}.
+
+The verification problem for a family of similar state-transition systems is easy
+to formulate: Given a family $M = \{M_i\}^{\infty}_{i=1}$ of systems $M_i$ and a
+temporal formula $\alpha$, verify that for every $i$, $M_i$ satisfies $\alpha$.
+This is known as the Parameterized Model-checking Problem (PMCP).
+As mentioned above, PMCP is undecidable, in general.
+However, for {\em specific} families the problem may be solvable.
+
+In one of the earliest works on PMCP, Browne et al.~\cite{CGB89} consider the
+problem of verifying a family of token rings, that is, the family of rings of
+size $2$, size $3$, size $4$ and so on. In order to verify the entire family,
+they establish a {\em bisimulation} relation between a two-process ring and
+an $n$-process token ring for any $n\ge 2$. It follows that the two-process
+ring and the $n$-process ring satisfy exactly the same temporal formulae.
+
+In~\cite{PXZ02}, Pnueli {\it et al.} introduce the $(0,1, \infty)$-counter
+abstraction method by which a parameterized system of unbounded size is
+abstracted into a finite-state system. As each process in the parameterized
+system is finite-state, the abstract variables are limited counters which count,
+for each local state $s$ of a process, $\kappa(s)$--the number of processes
+which currently are in local state $s$. The counters are saturated at $2$,
+which means that $\kappa(s) = 2$ whenever $2$ {\em or more} processes are
+at state $s$. The emphasis is on the derivation of an {\em adequate and sound} set of
+fairness requirements that enable proofs of liveness properties of the abstract system,
+from which we can safely conclude a corresponding liveness property of the original
+parameterized system.
+
+
+Recently, BMC has been successfully used for verifying safety properties of a
+special kind of parameterized systems, namely, fault-tolerant distributed
+algorithms (FTDA). In \cite{KVW17}, Konnov et. al., demonstrate that reachability
+properties of FTDAs can be verified by BMC based techniques. In order to ensure
+completeness, an upper bound on the distance between states is required. So, they
+show that the diameters of accelerated counter systems of FTDAs have a quadratic
+upper bound in the number of local transitions.
+
+Note that APS can not be modelled as FTDAs, which are bit more specialized. In FTDAs
+the firing of a transition depends not only on the current states of a fixed number of
+processes, but also on the total number of processes \cite{Balasubramanian20}. This is quite unlike
+Petri nets which we have used to model APS.
+
+
+One of the earliest work on BMC for Petri nets was \cite{Heljanko01}. In this paper, the author applies BMC to 1-safe Petri nets by translating the bounded reachability problem for 1-safe Petri nets into constraint Boolean circuit satisfiability. The {\sc BCSat} constraint Boolean satisfiability checker is used to check whether the generated constraint circuit is satisfiable, thereby solving the bounded reachability problem of 1-safe Petri nets. BMC technique was later extended to verify properties of Timed Automata \cite{AudemardCKS02} and Timed Petri nets \cite{MeskiPPWZ11}.
+
+
+BMC using SMT Solvers has been an active area of research~\cite{PrasadBG05}. In particular, while applying BMC in the Petri net setting, techniques such as net reductions, and structural reductions~\cite{Mieg20} are applied. Recently, in~\cite{AmatBD21,AmatDH22} the generalized reachability of Petri net is encoded and solved using SMT solvers.
+
+However, BMC for Petri nets while expressing properties using LTL and its extensions while leveraging the power of SMT Solvers remains unexplored. Our work attempts to bridge this gap while preserving the original Petri net structure. In Section~\ref{sec:encodingLTL} we provide the SMT encoding of the counting logic {\LC} which distinguishes our work. In~\cite{SahinNO20} a similar counting linear temporal logic for specifying properties of multi-robot applications is proposed. In contrast, {\LC} uniquely supports specifying properties of client-server systems.
+
+A recent related work on SMT-based verification of safety properties of parameterized multi-agent system (PMAS) using infinite-state model checking was done in \cite{FelliGM21}.  A similar work is \cite{BKL17}, where the authors describe parameterised verification of an unbounded number of data-aware multi-agent systems whose properties are specified using a branching temporal logic. In \cite{KouvarosL16}
+parameterised verification of multi-agent systems is explored and a model checker MCMAS-P implementing parameterised model checking is also described. In these papers, they perform parameterised model checking, whereas in our case, we do not know the number of agents beforehand. In \cite{Goranko21} they consider dynamic multi-agent systems (HD-MAS) where the number of agents evolve which is the closest formal model to ours. Our logic can easily be extended to express properties of multi-agent systems which is part of future work.
+
+
+\subsubsection*{Conclusion}
+Now that we have charted out the boundary of what has been verified with respect to these unbounded client server systems, we shall utilize the logics from Chapter.~\ref{chlogics} to specify properties of these systems on Petri nets and build a verification tool in the upcoming chapter.

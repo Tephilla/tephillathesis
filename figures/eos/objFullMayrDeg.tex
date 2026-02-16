@@ -1,0 +1,45 @@
+\begin{figure}[ht]
+    \centering
+\begin{tikzpicture}
+    \begin{scope}
+
+        \node[place,label={[name=p1Lab]above:\scriptsize $p_1$}] (p1)at (-1.5,0){};
+        \node[place,label={[name=p2Lab]above:\scriptsize $\mathit{count}$}] (p2)at (1.5,-.5){};
+        \node[place,label={[name=p3Lab]below:\scriptsize $p_2$}] (p3)at (-1.5,-1){};
+        \node[transhor,label={[name=tau1Lab]above:\scriptsize $\tau_1 \tup{\mathit{inc}_2}$}] (tau1)at (0,0){};
+        \node[transhor,label={[name=tau2Lab]below:\scriptsize $\tau_2 \tup{\mathit{inc}_1}$}] (tau2)at (0,-1){};
+        \node[draw=black,fit={(tau1)(tau1Lab)(tau2)(tau2Lab)(p1)(p1Lab)(p2)(p2Lab)(p3)(p3Lab)}](sysNet){};
+        \node[rotate=-90,text width=2cm,align=center] at ($(sysNet.east)+(.35,0)$){System net $\hat{N}$};
+        
+        \draw[->] (p1) -- (tau1);
+        \draw[->] (tau1) -- (p2);
+        \draw[->] (tau1) -- (p3);
+        \draw[->] (p3) -- (tau2);
+        \draw[->] (tau2) -- (p2);
+        \draw[->] (tau2) -- (p1);    
+    \end{scope}
+
+    \begin{scope}[xshift=-3cm]%object N1
+        \node[place,label={[name=pLab]above:\scriptsize $p$}] (p)at (0,0){$\bullet$};
+        \node[transhor,label={[name=t1Lab]above:\scriptsize $\mathit{inc}_1$}] (t1) at (-1,0){};
+        \node[draw=black,fit={(p)(pLab)(t1)(t1Lab)}](objNet1){};
+        \node[rotate=90,text width=2cm,align=center] at ($(objNet1.west)-(.5,0)$){Object net $N_1$};
+        \draw[->] (t1) -- (p);
+    \end{scope}    
+
+
+    \begin{scope}[xshift=-3cm, yshift=-1.45cm]%object N2
+        \node[place,label={[name=qLab]above:\scriptsize $q$}] (q)at (0,0){};
+        \node[transhor,label={[name=t2Lab]above:\scriptsize $\mathit{inc}_2$}] (t2) at (-1,0){};
+        \node[draw=black,fit={(q)(qLab)(t2)(t2Lab)}](objNet2){};
+        \node[rotate=90,text width=2cm,align=center] at ($(objNet2.west)-(.5,0)$){Object net $N_2$};
+        \draw[->] (t2) -- (q);
+    \end{scope}    
+
+\draw[dashed](objNet1)--(p1.center);
+    
+\end{tikzpicture}
+    \caption{The lossiness-counter gadget $\G$ in Def.~\ref{def:lossiness-counterGadget} (where $d(p_1)=N_1, d(p_2)=N_2,d(count)=\blacksquare$) with initial marking $\mu_0=\fmset{\tup{p_1,\fmset{p}}}$.
+    }
+    \label{fig:objFullMayrDegree}
+\end{figure}

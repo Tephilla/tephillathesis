@@ -1,0 +1,57 @@
+
+		\begin{tikzpicture}[scale=0.4]
+			\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+
+		
+		
+		\node 	(s1)		at	(0,10) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small parking\_requested(PR)};
+		
+		
+		
+		\node 	(s2)		at	(-4,6) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small occupy\_parking\_lot(OP)};
+		
+				
+		\node 	(s3)		at	(-6,2) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small exited\_successfully(ES)};
+		
+				
+		\node 	(s4)		at	(7.5,3) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small parking\_unavailable(PU)};
+		
+		\node 	(s5)		at	(7.5,-2) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small exited\_unsuccessfully(EU)};
+
+		
+		\draw[->, thick]	(s1)	to	node[auto]{\small server accepts}	(s2);
+		
+		\draw[->, thick]	(s1)	to	node[auto]{\small server rejects}	(s4);
+		
+		\draw[->, thick]	(s2)	to	node[auto]{\small successful exit}	(s3);
+		
+		\draw[->, thick]	(s4)	to	node[auto]{\small unsuccessful exit}	(s5);
+		
+
+		
+		\end{tikzpicture}

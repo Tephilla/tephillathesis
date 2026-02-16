@@ -1,0 +1,37 @@
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+
+    \begin{scope}[rotate=90,xscale=-1]
+        \node[place,label=above:$c_j$] (cj)at (0,1.5){};
+        \node[place,label=below:$c_j'$](cj')at (2,1.5){$n$};
+        \node[place,label=right:$\mathit{next}_i$] (next)at (1,0){$0$};
+        \node[transhor,label=above:$t_i^1\tup{\mathit{dec}_N}$] (t1)at (0,0){};
+        \node[transhor,label=below:$t_i^2$](t2)at (2,0){};
+        \node[place,label=above:$q$](q)at (0,-1.5){$1$};
+        \node[place,label=below:$q'$](q')at (2,-1.5){$0$};
+    \end{scope}
+
+
+        \begin{scope}[xshift=-4.75cm,yshift=-1cm]
+        \node[transvert,label={[name=incNlab]above:$\mathit{inc}_N$}](incN)at (0,0){};
+        \node[place,label={[name=pLab]above:$p$}](p)at(1,0){$n$};
+        \node[transvert,label={[name=decNlab]above:$\mathit{dec}_N$}](decN)at (2,0){};
+        \draw[->](incN)--(p);
+        \draw[<-](decN)--(p);
+        \node[draw=black,fit={(incNlab)(incN)(pLab)(p)(decNlab)(decN)}](obj){};
+        \end{scope}
+
+        \draw[dashed] (obj) -- (cj.center);
+        \draw[<->] (cj)--(t1);
+        \draw[->] (q)--(t1);
+        \draw[->] (t1)--(next);
+        \draw[->] (next)--(t2);
+        \draw[<-] (t2)--(cj');
+        \draw[->] (t2)--(q');
+        
+    \end{tikzpicture}
+    \caption{Part of $\E$ capturing a decrement instruction $i=\tup{q,-,j,q'}$ on the counter $j$.}
+    \label{fig:objectLossy2CMdec}
+\end{figure}

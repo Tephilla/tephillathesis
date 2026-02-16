@@ -1,0 +1,106 @@
+\begin{recallfigure}[ht]{fig:ucseos}
+\centering
+    
+\begin{tikzpicture}[scale=0.45]
+                \tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    punkt/.style={
+        rectangle,
+        rounded corners,
+        draw=black, very thick,
+        text width=8.5em,
+        minimum height=2em,
+        text centered},
+    % Define arrow style
+    pil/.style={
+        ->,
+        thick,
+        shorten <=2pt,
+        shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+\node[transition,label=above:{\scriptsize{source}},fill=black,minimum height=.4cm,minimum width=.4cm] (src) at (0,0) {};
+
+\node[place,label=above:{\scriptsize{SR}},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm, tokens=1] (sr) at (2,0){$\bullet$} ;
+
+%forked row 1
+\node[transition,label=above:{\scriptsize{accept}},fill=black,minimum height=.4cm,minimum width=.4cm] (tacr) at (4,1) {};
+
+\node[place,label=above:{\scriptsize{ACR}},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (acr) at (6,1){} ;
+
+\node[transition,label=above:{\scriptsize{exit}},fill=black,minimum height=.4cm,minimum width=.4cm] (te) at (8,0) {};
+
+
+%forked row 2
+\node[transition,label=below:{\scriptsize{reject}},fill=black,minimum height=.4cm,minimum width=.4cm] (trr) at (4,-1) {};
+
+\node[place,label=below:{\scriptsize{RR}},draw=red!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (rr) at (6,-1){} ;
+
+%server arcs
+\draw[->] (src) -- (sr);
+\draw[->] (sr) -- (src);%bidirectional arc to ensure server always ready
+\draw[->] (sr) -- (tacr);
+\draw[->] (tacr) -- (acr);
+\draw[->] (acr) -- (te);
+\draw[->] (sr) -- (trr);
+\draw[->] (trr) -- (rr);
+\draw[->] (rr) -- (te);
+
+
+%object net depicting clients
+
+\node[place,label=above:{\scriptsize{CR}},draw=blue!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (cr) at (2,-6){$\bullet\bullet$} ;
+
+%forked row 1
+\node[transition,label=above:{\scriptsize{enter}},fill=black,minimum height=.4cm,minimum width=.4cm] (top) at (4,-5) {};
+
+\node[place,label=above:{\scriptsize{OP}},draw=blue!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (op) at (6,-5){} ;
+
+\node[transition,label=above:{\scriptsize{exitc}},fill=black,minimum height=.4cm,minimum width=.4cm] (tes) at (8,-5) {};
+
+\node[place,label=above:{\scriptsize{ES}},draw=blue!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (es) at (10,-5){} ;
+
+%forked row 2
+\node[transition,label=below:{\scriptsize{abort}},fill=black,minimum height=.4cm,minimum width=.4cm] (teu) at (4,-7) {};
+
+\node[place,label=below:{\scriptsize{EU}},draw=blue!50,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (eu) at (6,-7){} ;
+
+\node(dummy0) at (6,-4){} ;
+\node(dummy1) at (6,-8){} ;
+\node(dummy2) at (2,-4){} ;
+
+\draw[->] (cr) -- (top);
+\draw[->] (top)-- (op);
+\draw[->] (op) -- (tes);
+\draw[->] (tes) -- (es);
+\draw[->] (cr) -- (teu);
+\draw[->] (teu)-- (eu);
+
+% \draw[->] (src) -- (cr);
+% \draw[->] (cr) -- (src);
+
+\node[draw=black,fit={(cr)(top)(op)(dummy0)(tes)(es)(teu)(eu)(dummy1)}](objNet){};
+
+\draw[dashed] (sr) -- (dummy2);
+
+\end{tikzpicture}
+
+\caption{EOS modeling the single server (unbounded) multiple client system}
+
+\end{recallfigure}

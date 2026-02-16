@@ -1,0 +1,51 @@
+\section{Appendix: Unbounded semantics of {\Lstar}}\label{ssec:verif}
+In this section, we introduce some satisfiability relations with respect to {\Lstar}.
+Given a valid model $M=(\nu,V,\xi)$, the satisfiability relations $\models$  and $\models_x$ can be defined, via induction over the structure of the server formulae $\psi\in \Psi$, and client formulae $\alpha\in \Delta$, respectively. 
+%  We selectively describe some of the important relations that provide insight into the others.
+\begin{enumerate}
+  \item $M,i\models q$ iff $q \in \nu_i$.
+  \item[] The atomic server formula $q \in P_s$  is satisfied in the model $M$ at instant $i$ if and only if $q$ is a member of the local state of the server $\nu_i$ at instant $i$, where $i \in \mathbb{N}_0$.
+
+  \item $M,i\models \lnot q$ iff $q \not\in \nu_i$.
+
+  \item $M,i \models (\exists x)\alpha$ iff $\exists a\in CN$, $a \in V_i$ and $M,[x\mapsto a],i\models_x \alpha$.
+  \item[] The client formula $\alpha$ is satisfied at some instant $i$ if and only if $\alpha$ is satisfied in any of the \emph{live} clients in $V_i$ i.e, for some client $a \in CN$ and the client name $a \in V_i$, where $i \in \mathbb{N}_0$.
+
+  \item $M,i \models (\forall x)\alpha$ iff $\forall a\in CN$, if $a \in V_i$ then $M,[x\mapsto a],i\models_x \alpha$.
+
+  \item $M,i\models \psi_1\lor\psi_2$ iff $M,i\models \psi_1$ or $M,i\models \psi_2$.
+
+  \item $M,i\models \psi_1\land\psi_2$ iff $M,i\models \psi_1$ and $M,i\models \psi_2$.
+
+  \item $M,i\models \mathbf{X_s}\psi$ iff $M,i+1\models \psi$.
+
+  \item $M,i\models \mathbf{F_s}\psi$ iff $\exists j \ge i$, $M,j\models \psi$.
+  \item[] The server formula $\mathbf{F_s}\psi$ is satisfied at some instant $i$ if and only if there is some instant $j \ge i$, where the formula $\psi$ holds.
+
+  \item $M,i\models \mathbf{G_s} \psi$ iff $\forall j \ge i$, $M,j\models \psi$.
+
+  \item $M,i\models \psi_1\mathbf{U_s}\psi_2$ iff $\exists j \ge i$, $M,j\models \psi_2$ and $\forall j':i\le j' < j: M,j' \models \psi_1$.
+
+  \item[]
+
+  \item $M,[x\mapsto a],i\models_x p(x)$ iff $\xi_i(a,p)=\top$.
+
+  \item $M,[x\mapsto a],i\models_x \lnot \alpha$ iff $M,[x\mapsto a],i\not\models_x \alpha$.
+
+  \item $M,[x\mapsto a],i\models_x \alpha\lor \beta$ iff $M,[x\mapsto a],i\models_x\alpha$ or $M,[x\mapsto a],i\models_x\beta$.
+
+
+  \item $M,[x\mapsto a],i\models_x \alpha\land \beta$ iff $M,[x\mapsto a],i\models_x\alpha$ and $M,[x\mapsto a],i\models_x\beta$.
+
+  \item $M,[x\mapsto a],i\models_x \mathbf{X}_c\alpha$ iff $M,[x\mapsto a],i+1\models_x \alpha$ and $a\in V_{i+1}$.
+
+  \item $M,[x\mapsto a],i\models_x \mathbf{F}_c\alpha$ iff $\exists j\ge i$, $a\in V_j$, $M,[x\mapsto a],j\models_x \alpha$ .
+  \item[] The client formula $\mathbf{F}_c\alpha$ is satisfied at some instant $i$ if and only if there is some instant $j \ge i$, where the formula $\alpha$ holds in any of the \emph{live} clients in $V_j$.
+
+  \item $M,[x\mapsto a],i\models_x \mathbf{G}_c\alpha$ iff $\forall j\ge i$, $a\in V_j$, $M,[x\mapsto a],j\models_x \alpha$.
+
+  \item $M,[x\mapsto a],i\models_x \alpha\mathbf{U}_c\beta$ iff $\exists j \ge i$, $M,[x\mapsto a],j\models_x \beta$ and $\forall j':i\le j'  < j: M,j' \models \alpha$ and $a\in V_j$.
+
+\end{enumerate}
+
+

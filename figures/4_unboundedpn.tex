@@ -1,0 +1,92 @@
+
+	\begin{tikzpicture}[scale=0.45]
+				\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+%row 0	
+%p0 1 token
+
+\node[place,label=above:p0,inner
+sep=0pt,minimum height=1cm, minimum width=1cm, tokens=1] (p0) at (0,0){} ;
+
+%p1 1 token
+
+\node[place,label=above:p1,inner
+sep=0pt,minimum height=1cm, minimum width=1cm, tokens=1] (p1) at (7,0){} ;
+
+
+%p2 1 token
+
+\node[place,label=above:p2,inner
+sep=0pt,minimum height=1cm, minimum width=1cm, tokens=1] (p2) at (14,0){} ;
+
+\node[transition,minimum height=0.8cm,minimum width=0.8cm] (t5) at (-3,0) {t5};	
+
+%row 1 TRANSITIONS
+
+\node[transition,minimum height=0.8cm,minimum width=0.8cm] (t0) at (-3,-5) {t0};
+
+\node[transition,minimum height=0.8cm,minimum width=0.8cm] (t1) at (3,-5) {t1};	
+
+\node[transition,minimum height=0.8cm,minimum width=0.8cm] (t2) at (7,-5) {t2};	
+
+\node[transition,minimum height=0.8cm,minimum width=0.8cm] 
+(t3) at (11,-5) {t3};	
+
+\node[transition,minimum height=0.8cm,minimum width=0.8cm] 
+(t4) at (17,-5) {t4};
+
+%row 2	places 
+\node[place,label=below:p3,inner
+sep=0pt,minimum height=1cm, minimum width=1cm] (p3) at (0,-10){} ;
+
+\node[place,label=below:p4,inner
+sep=0pt,minimum height=1cm, minimum width=1cm] (p4) at (7,-10){} ;
+
+\node[place,label=below:p5,inner
+sep=0pt,minimum height=1cm, minimum width=1cm] (p5) at (14,-10){} ;
+
+\path[->] (p0) edge(t1); 
+\path[->] (t0) edge(p0); 
+\path[->] (t1) edge(p3);
+\path[->] (p3) edge(t0);
+
+\path[->] (t1) edge(p1); 
+\path[->] (p4) edge(t1); 
+\path[->] (t2) edge(p4);
+\path[->] (p1) edge(t2);
+\path[->] (p1) edge(t3);
+\path[->] (t3) edge(p4);
+
+\path[->] (p2) edge(t4); 
+\path[->] (t4) edge(p5); 
+\path[->] (p5) edge(t3);
+\path[->] (t3) edge(p2);
+
+\path[->] (t5) edge(p0);
+
+
+\end{tikzpicture}

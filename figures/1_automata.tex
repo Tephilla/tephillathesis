@@ -1,0 +1,11 @@
+\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto] 
+\node[state,initial] (s)   {$s$}; 
+\node[state,accepting] (g_1) [above right=of s] {$g_1$}; 
+\node[state,accepting] (g_2) [below right=of s] {$g_2$};        
+\path[->] 
+(s) edge  node {b} (g_1)
+edge  node [swap] {a} (g_2)
+edge [loop above] node {a,b} ()
+(g_1) edge [swap] node {a} (g_2)
+(g_2) edge [loop right] node {b} ();
+\end{tikzpicture}

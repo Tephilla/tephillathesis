@@ -1,0 +1,508 @@
+\chapter{First Order LTL Tool with Monodic restriction}\label{chmfotl}
+\section{FO LTL over Petri nets with names}
+
+Formal verification of Petri nets is well studied. In practice, many communication protocols, services and applications are client-server systems. These systems can be modeled as Petri nets and verified using existing tools. However, these tools are not specifically suited for unbounded client-server systems as they do not allow the user to explicitly specify client and server properties as well as their unboundedness. Traditional logics such as LTL or CTL are not suitable for expressing these properties either. It is necessary to find suitable logics to express properties of unbounded client-server systems where the number of clients is not known a priori and the clients are distinguishable. To specify the properties of such systems, we consider a one variable fragment of \acrfull{MFOTL}, called {\Lstar} which is described in detail in Section~\ref{sec:mlogic}. We propose a restriction on the $\nu$-net to model the unbounded client server system. This model has been described earlier in Sec.~\ref{sec:apscasestudy}.
+
+
+\begin{recallfigure}[ht]{fig:APS}
+  \begin{center}
+    \scalebox{0.8}{\input{figures/2_fig_aps_vnet_v2}}
+    \caption{Recall the restricted $\nu$-net modeling an unbounded client-server system}
+  \end{center}
+\end{recallfigure}
+
+\section{Tool and Implementation}
+
+The verification tool follows the same underlying architecture as DCModelChecker 2.0, where we employ Z3 to perform SMT queries using Linear Integer Arithmetic theory. The key difference is in the choice of logic and model.  We make use of ANTLR to pre-process the $\nu$-net, as previously discussed. In the rest of this chapter, we refer to the {\Lstar} properties of the APS case study (See.~\ref{sec:apscasestudy}). Since this is a first of its kind, there are no similar tools to compare the results of the model checker. However, we can see from the liveness windows that the counterexample or UNSAT obtained from the tool are justified.
+
+\begin{recallfigure}[!ht]{fig:dc2arch}
+  \centering
+  \scalebox{0.5}{\input{figures/fig_arch}}
+  \caption{DCModelChecker  3.0 architecture}
+\end{recallfigure}
+
+
+\subsection*{Recognizing {\Lstar} properties}
+A valid {\Lstar} formula has the server formula $sformula$ which contains the client formula $cformula$ as a sub formula.
+\begin{lstlisting}
+grammar mlogic;
+input :  sformula EOF;
+sformula
+    : sorop | sandop | simpliesop | suntilop | snotop
+        | snextop | sdiamondop | sboxop ;
+cformula
+    : (corop | candop | cimpliesop | cuntilop | cnotop
+        | cnextop | cdiamondop | cboxop );
+\end{lstlisting}
+We define the server temporal modalities:
+\begin{lstlisting}
+sorop
+    : (exists | forall )(place_x | snotop )
+       OR
+      ssubformula;
+sandop
+    : (exists | forall )(place_x | snotop )
+       AND
+      ssubformula;
+simpliesop
+    :  (exists | forall )(place_x | snotop )
+       IMPLIES
+      ssubformula;
+suntilop
+      : (exists | forall ) (place_x | snotop | snextop | sdiamondop | sboxop)
+       SUNTIL
+      ssubformula;
+
+snotop
+    : NOT (exists | forall ) ssubformula;
+snextop
+    : SNEXT (exists | forall ) ssubformula;
+sdiamondop
+    : SDIAMOND (exists | forall ) ssubformula;
+sboxop
+    : SBOX (exists | forall )  ssubformula;
+
+ssubformula : LPAREN (cformula| place_x | snotop | snextop | sdiamondop
+                      | sboxop | sandop | sorop | simpliesop | simpliesop) RPAREN;
+\end{lstlisting}
+Consequently, we define the client temporal modalities:
+\begin{lstlisting}
+corop
+    : (place_x | cnotop | cnextop | cdiamondop | cboxop)
+        OR
+        csubformula;
+candop
+    : (place_x | cnotop | cnextop | cdiamondop | cboxop)
+        AND
+        csubformula;
+cimpliesop
+    : (place_x | cnotop | cnextop | cdiamondop | cboxop)
+        IMPLIES
+        csubformula;
+cuntilop
+    : (place_x | cnotop | cnextop | cdiamondop | cboxop)
+        CUNTIL
+        csubformula;
+cnotop
+    : NOT csubformula;
+cnextop
+    : CNEXT csubformula;
+cdiamondop
+    : CDIAMOND csubformula;
+cboxop
+    : CBOX csubformula;
+
+csubformula: LPAREN (place_x | cnotop | cnextop | cdiamondop
+                     | cboxop | candop | corop | cimpliesop | cuntilop) RPAREN;
+\end{lstlisting}
+We provide the rules governing quantifiers:
+\begin{lstlisting}
+exists : EXISTS VAR;
+forall : FORALL VAR;
+place_x : PLACE DIGIT LPAREN VAR RPAREN;
+\end{lstlisting}
+We recognize the valid tokens for the various temporal modalities and operators:
+\begin{lstlisting}
+EXISTS: 'E';
+FORALL: 'V';
+PLACE : 'p';
+NOT : '~';
+SNEXT : 'X_s';
+SDIAMOND : 'F_s';
+SBOX : 'G_s';
+CNEXT : 'X_c';
+CDIAMOND : 'F_c';
+CBOX : 'G_c';
+OR : '|';
+AND : '&';
+IMPLIES : '%';
+SUNTIL : 'U_s';
+CUNTIL : 'U_c';
+\end{lstlisting}
+We recognize the valid symbols such as paranthesis and identifiers and spaces:
+\begin{lstlisting}
+LPAREN : '(';
+RPAREN : ')';
+NAME : '\'' ~[']+ '\'';
+VAR: [a-z];
+DIGIT : '-'?[0-9]+;
+ENDLINE : ('\r\n'|'\n'|'\r')+ -> skip;
+WHITESPACE : [\t ]+ -> skip;
+\end{lstlisting}
+
+Instead of providing separate parser and lexer rules, we provide the grammar for recognizing {\Lstar} in one shot. Using the above rules, we validate the {\Lstar} specifications in the accompanying tool.
+\subsection{Observations}\label{ssec:obsr}
+We list down some observations about the logic {\Lstar} which supplement our
+understanding of the language.
+
+\begin{dfn}{Ghost Interval }
+  Given a temporal property of a client, whose right boundary is
+  $\lambda '$ such that the $\lambda ' < \lambda$. There is a ghost interval between
+  $\lambda$ and $\lambda'$ where the formula $\alpha$ need not be asserted.
+\end{dfn}
+
+
+
+\begin{recallfigure}[ht]{fig:livewindows}
+  \centering
+  \scalebox{0.7}{\input{figures/live_windows_overlap}}
+  \caption{Snapshot of the running example $(APS)$ depicting live windows}
+\end{recallfigure}
+
+In Fig.~\ref{fig:livewindows}, there is a \emph{ghost interval} for client $1$ between $1$ (right boundary) and $5$ (the bound $\lambda$).\\
+
+Let $\psi_5 = (\forall x) \Big( \mathbf{G}_c \big(parking\_requested(x)
+    \mathbf{U}_c~ exit\_successfully(x) \big)\Big)$. In $\psi_5$,
+$\mathbf{G}_c$ holds only till the \emph{live window} ends for the corresponding client i.e, this will be asserted only as long as the client is \emph{live}. Similarly, all other client temporal modalities $\mathbf{F}_c$, $\mathbf{U}_c$, and $\mathbf{X}_c$ need not be asserted beyond the \emph{live window} of that particular client.
+
+
+At any given time, there are as many client lassos as there are clients, which are then combined to
+construct the server lasso. For currently \emph{active} clients the right boundary
+will be the execution bound $\lambda$.
+
+We list down some of the properties that cannot be expressed in {\Lstar}:
+\begin{enumerate}
+  \item Consider the property, where there is at least one token in either place $p_{SR}$ or $p_{SB}$ or $p_{RR}$. From the net, $p_{SR}+p_{SB}+p_{RR} = 1$ is an invariant.
+        These places represent the server being available, busy and the server rejecting the request.
+
+  \item The following property is not expressible in {\Lstar}: It is always the case that the client request with an identifier (say) $1001$ is rejected.
+  \item It is always the case that if the client request is accepted at time instance $x$, then the client exits the parking space at time instance $z$, $z>x$.
+        %\item Formulas involving alternating quantifiers are not permitted.
+  \item Formulas with quantifiers before server temporal modality are not permitted.
+
+  \item We do not have formulas of type, client $i$ satisfies a formula whereas client $j$ doesn't satisfy the same formula. We do not have equality/inequality to differentiate between the clients. We assume that all clients behave the same way and are of the same type. In the future, this model could be extended to clients of a finite set of types.% in which case properties with equality will be useful to us.
+
+  \item We cannot compare clients in the same state.
+
+        \begin{align*}
+          \psi_6 = \mathbf{G}_s ((\exists x)(\exists y)parking\_requested(x) \land parking\_requested(y) \land \\
+          \mathbf{F}_c(exit\_successfully (x) \land \mathbf{F}_c (exit\_successfully (y)))
+        \end{align*}
+
+  \item Here, there are no free variables either in the scope of $\mathbf{G_s}$ or $\mathbf{F_s}$.
+        \begin{align*}
+          \text{Let } \psi_7 = \big(\mathbf{G_s} (\exists x)~parking\_requested(x)\big) \land \big(\mathbf{F_s}(\exists y)~parking\_requested(y)\big)
+        \end{align*}
+  \item[]  The formula $\psi_7$ states that it is always the case that there is a client who has requested parking and eventually, there exists a client who has also requested parking. However, we cannot compare these two clients in our logic.
+\end{enumerate}
+
+
+
+
+%It can be observed that there are no free variables in the scope of $\mathbf{G_s}$ and exactly one free variable in the scope of the client modalities. It is also possible to construct {\Lstar} specifications with propositions from $P_s$ and server transitions.
+The ease of expressibility of the client and server behaviour is the key motivation behind the logic {\Lstar} which is formally described in Sec.~\ref{sec:mlogic}.
+
+\subsection{Experimental results}\label{ssec:experimentsfotl}
+We test the properties of the APS case study (See Sec.~\ref{sec:apscasestudy}) written using {\Lstar} using our open source tool~\cite{zenodomfotl}. The tool provides the detailed counterexample trace when the property is violated. We assume a bound of $5$ for the below experiments in Table.~\ref{tab:experimentsmfotltool}. The properties are present in Sec.~\ref{sec:mlogic}. To the best of our knowledge, there are no known benchmarks for {\Lstar} and $\nu$-nets, hence we create our own $\nu$-net model using a PN editor called Wolfgang and properties in {\Lstar} for our experiments. 
+% In order to verify properties of other $\nu$-nets, we create the model using a PN editor called Wolfgang and then specify the properties in {\Lstar}.
+\begin{table}[h!]
+  \centering
+  \caption{Experiments on APS}
+  \label{tab:experimentsmfotltool}
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    Property ID & Nesting Depth of temporal operators & Number of clauses & time (ms) \\
+    \hline
+    $\psi_1$    & 2                                           & 3                 & 0.32      \\
+
+    \hline
+    $\psi_2$    & 2                                           & 2                 & 0.4       \\
+    \hline
+    $\psi_3$    & 2                                           & 2                 & 0.5       \\
+    \hline
+    $\psi_4$    & 2                                           & 3                 & 0.38      \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Limitations of the tool}\label{ssec:limitationsfotltool}
+The current toolchain depends on a PNML Editor, Wolfgang~\cite{PNWolfgang}, which we use to draw the net and mention the arc labels. However, identifiable tokens are not supported by the Wolfgang editor, as it is primarily a Petri net and Colored Petri net simulation tool. Hence, we have to handcraft the $\nu$-net arcs, which is not sustainable when the number of places and transitions are huge.
+While there are several tools to model other types of PNs, to the best of our knowledge, there are none that provide a graphical representation of $\nu$-nets. We consider this as a future extension to this work. We would like to perform detailed experiments for various other $\nu$-net models and by varying the nesting depth of the formulas, to identify if it has an impact on the execution times.
+
+While the logic {\Lstar} allows us to reason about distinguishable clients, we cannot describe properties of each individual client. In future, we would like to explore different logics to do the same.
+\section{Bounded Semantics of {\Lstar}}\label{ssec:bsem}
+We introduce the (unbounded) satisfaction relation $\models_{x}$ with respect to the free variable $x$, where $x$ is used to denote the client names. This relation is not necessary for the BMC tool, but it is useful in Lemma.~\ref{lem:bound}. Hence it is given in Appendix.~\ref{ssec:verif}.
+
+In this section, we describe the bounded semantics of {\Lstar} in order to arrive at the SMT encoding, which is necessary for BMC.
+We use $\models^{k}$ as a restriction on $\models$, where $k$ is the bound in the BMC strategy.
+To tackle the unbounded number of clients as well as unboundedness in the unfolding of the model, it is necessary to introduce two bounds: $\kappa$ is a bound on the number of clients and $\lambda$ is a bound on the execution steps of the net. The two parameters $\kappa$ and $\lambda$ are independent of each other. Since the runs are bounded, there are atmost $\kappa$ clients in the system, namely CN = $\{0,\ldots ,\kappa-1\}$.
+
+\begin{figure}[!h]
+    \begin{minipage}{0.5\textwidth}
+        \centering
+
+        \scalebox{0.7}{\input{figures/live_windows_overlap_line}}
+         \caption{Snapshot at bound = $2$}
+    \label{fig:livewindowsline}
+  \
+    \end{minipage}\hspace{2em}
+    \begin{minipage}{0.5\textwidth}
+        \centering
+
+        
+        \scalebox{0.7}{\input{figures/live_windows_overlap_line_3}}
+    \caption{Snapshot at bound = $5$ }
+    \label{fig:livewindowsline3}
+
+    \end{minipage}
+\end{figure}
+
+
+\begin{recallfigure}[ht]{fig:loopfreepath}
+  \centering
+  \scalebox{0.6}{\input{figures/noloop}}
+  \caption{Recall the bounded loop-free path of length $\lambda$}
+\end{recallfigure}
+
+We describe the bounded semantics of {\Lstar} in two subsections, based on the existence of a loop in the behaviour of the net (in Sec.~\ref{ssec:boundedLoop}) and without a loop (in Sec.~\ref{ssec:boundedloopfree}).
+\subsection{Bounded Semantics Without Loop}\label{ssec:boundedloopfree}
+
+First, we describe the bounded semantics without loop as shown in Fig.~\ref{fig:loopfreepath} where $0\leq i \leq \lambda$, where $i$ is the current instance on the bounded path. We introduce $\models^{k}_x$ as an extension of the satisfaction relation $\models^{k}$.% with respect to the free variable $x$, where $x$ is used to denote the client names.%, where the formula is evaluated and $k$ is the bound:
+
+\begin{enumerate}
+  \item $M,i\models^{k} q$ iff $q \in \nu_i$.
+
+  \item $M,i\models^{k} \lnot q$ iff $q \not\in \nu_i$.
+
+  \item $M,i \models^{k} (\exists x)\alpha$ iff $\exists a\in CN$, $a \in V_i$ and $M,[x\mapsto a],i\models^{k}_x \alpha$.
+
+  \item[] The above formula is satisfied when there is at least one live client such that $\alpha$ is satisfied in the model at instance $i$ for the particular live client $a$.
+    Given $\alpha={pc}_1 \lor {pc}_2$ and the snapshot of the system with the bound $2$ is in Fig.~\ref{fig:livewindowsline}. Here, $CN=\{1,2\}$. At instance $i=0$, model $M$ satisfies formula $\alpha$. Hence, this formula holds true at instance $0$.
+
+  \item $M,i \models^{k} (\forall x)\alpha$ iff $\forall a\in CN$, if $a \in V_i$ then $M,[x\mapsto a],i\models^{k}_x \alpha$.
+
+  \item[] The above formula is satisfied when the $\alpha$ is satisfied in the model at instance $i$ for all live clients in the set $CN$. Given $\alpha={pc}_4$ and Fig.~\ref{fig:livewindowsline}. The model $M$ does not satisfy the formula for all clients, since client $2$ does not satisfy $\alpha$.
+
+  \item $M,i\models^{k} \psi_1\lor\psi_2$ iff $M,i\models^{k} \psi_1$ or $M,i\models^{k} \psi_2$.
+
+  \item $M,i\models^{k} \psi_1\land\psi_2$ iff $M,i\models^{k} \psi_1$ and $M,i\models^{k} \psi_2$.
+
+
+  \item $M,i\models^{k} \mathbf{X_s}\psi$ iff $
+          \begin{cases}
+            M,i+1\models^{k} \psi                & \text{if }(i<\lambda) \\
+            M,i\not \models^{k}\mathbf{X_s} \psi & \text{otherwise }
+          \end{cases}$
+
+  \item[] When instance $i$ is less than the bound $\lambda$, the formula $\psi$ is evaluated at instance $i+1$ else, the formula is unsatisfiable.
+
+
+
+  \item $M,i\models^{k} \mathbf{F_s}\psi$ iff $\exists j: i \le j \le\lambda$ , $M,j\models^{k} \psi$.
+
+  \item[] This formula is satisfiable if there is some instance $j$ such that $i \le j \le\lambda$ at which the property $\psi$ holds. Given $\psi= (\exists x){pc}_4$. In Fig.~\ref{fig:livewindowsline}, the formula is unsatisfiable. However, in Fig.~\ref{fig:livewindowsline3}, it is satisfiable at instance $5$, where client $4$ is in local state ${pc}_4$.
+
+  \item $M,i\not\models^{k} \mathbf{G_s} \psi$
+
+  \item[] In the absence of a loop in the bounded run, the above formula is always unsatisfiable, since global server behaviour cannot be evaluated without a loop.
+
+  \item $M,i\models^{k} \psi_1\mathbf{U_s}\psi_2$ iff $\exists j: i \le j \le\lambda$, $M,j\models^{k} \psi_2$ and $\forall j': i \le j' < j: M,j' \models^{k} \psi_1$.
+
+  \item[] This formula is satisfied when formula $\psi_2$ is satisfied at some instance $j$  and for all instances less than $j$, formula $\psi_1$ is satisfied.
+    %
+    %
+    %\newline\newline
+    %
+
+
+  \item $M,[x\mapsto a],i\models^{k}_x p(x)$ iff $\xi_i(a,p)=\top$.
+
+  \item[] This formula is satisfied if the property $p$ is satisfied by live agent $a$ at instance $i$. Here, the free variable $x$ is substituted by the client name $a$.
+  \item $M,[x\mapsto a],i\models^{k}_x \lnot \alpha$ iff $M,[x\mapsto a],i\not\models^{k}_x \alpha$.
+
+  \item $M,[x\mapsto a],i\models^{k}_x \alpha\lor \beta$ iff $M,[x\mapsto a],i\models^{k}_x\alpha$ or $M,[x\mapsto a],i\models^{k}_x\beta$.
+
+
+  \item $M,[x\mapsto a],i\models^{k}_x \alpha\land \beta$ iff $M,[x\mapsto a],i\models^{k}_x\alpha$ and $M,[x\mapsto a],i\models^{k}_x\beta$.
+
+        %\item $M,[x\mapsto a],i\models^{k}_x \mathbf{X}_c\alpha$ if $i<\lambda$ and $a \in V_{i+1}$ then $M,[x\mapsto a],i+1\models^{k}_x \alpha$ else $M,[x\mapsto a],i\not \models^{k}_x \mathbf{X}_c\alpha$. % formatted below
+
+
+  \item $M,[x\mapsto a],i\models^{k}_x \mathbf{X}_c\alpha$ iff $
+          \begin{cases}
+            M,[x\mapsto a],i+1\models^{k}_x \alpha                 & \text{if } (i<\lambda \text{ and } a \in V_{i+1}) \\
+            M,[x\mapsto a],i\not \models^{k}_x \mathbf{X}_c \alpha & \mbox{otherwise }
+          \end{cases}$
+
+  \item[] If the instance $i$ is less than the bound $\lambda$ and the client is a live client at instance $i+1$, then the formula is evaluated at the instance $i+1$ for the live client $a$; else the original formula is not satisfied.
+
+  \item $M,[x\mapsto a],i\models^{k}_x \mathbf{F}_c\alpha$ iff $\exists j: i \le j \le\lambda$, $a\in V_j$ and $M,[x\mapsto a],j\models^{k}_x \alpha$.
+
+
+  \item[] This formula is satisfiable if there is some instance $j$ such that $i \le j \le\lambda$ at which the property $\alpha$ is satisfied for the client $a$ and the client $a$ is a live client at instance $j$. Given $\alpha={pc}_2$. In Fig.~\ref{fig:livewindowsline} and Fig.~\ref{fig:livewindowsline3}, the formula is satisfiable at instance $1$ due to client $1$.
+
+  \item $M,[x\mapsto a],i \models^{k}_x \mathbf{G}_c\alpha \text{ iff }\\
+          \begin{cases}
+            M,[x\mapsto a],j \not \models^{k}_x \alpha                           & \text{if }(\forall j> i \text{ and } a\in V_j) \\
+            \forall j':i\le j'<j, M,[x\mapsto a],j' \models^{k}_x \alpha         & \text{otherwise }                              \\
+            \text{where } j>i \text{ be the least instance where }a \not \in V_j &
+          \end{cases}$
+
+  \item[] For all instances $j$ such that $j>i$ if client $a$ is live at instance $j$, the formula is not satisfiable at $j$.
+    Let $j$ be the least instance where client $a$ is not live. For all instances $j'$ such that $i\le j'<j$, formula $\alpha$ is evaluated at $j'$.
+
+  \item $M,[x\mapsto a],i\models^{k}_x \alpha\mathbf{U}_c\beta$ iff $\exists j \ge i$, $a\in V_j$,  $M,[x\mapsto a],j\models^{k}_x \beta$, and $\forall j': i \le j'  < j$,  $M,[x\mapsto a],j' \models^{k} \alpha$.
+
+
+  \item[] This is satisfied when $\beta$ is satisfied at some instance $j$ and client $a$ is a live client at $j$; and for all instances less than $j$, client formula $\alpha$ is satisfied.
+
+\end{enumerate}
+
+Notice that in the bounded semantics equations $15$-$18$, the semantics depend crucially on whether $a$ is a live agent. Similarly, we can describe the bounded semantics with $(\lambda,l)$ - loop similar to the $(k,l)$ - loop in ~\cite{BiereCCSZ03}. As shown in Fig.~\ref{fig:klloop}, $i$ is the current instance on the bounded path, where the formula is evaluated, $\lambda$ is the bound and $l$ is the start position of the loop, where $0\leq i \leq \lambda$ and $0\leq l \leq \lambda$. Consider the following lemma that relates the bounded and unbounded semantics of logic {\Lstar}.
+
+
+
+\begin{recallfigure}[ht]{fig:klloop}
+  \centering
+  \scalebox{0.6}{\input{figures/klloop}}
+  \caption{Recall the bounded path with $(\lambda,l)$ - loop}
+\end{recallfigure}
+
+\subsection{Bounded Semantics with Loop}\label{ssec:boundedLoop}
+We now give the bounded semantics for {\Lstar} with loop as seen in Fig.~\ref{fig:klloop}.
+\begin{enumerate}
+  \item $M,i\models^{k} q$ iff $q \in \nu_i$.
+
+  \item $M,i\models^{k} \lnot q$ iff $q \not\in \nu_i$.
+
+  \item $M,i \models^{k} (\exists x)\alpha$ iff $\exists a\in CN$, $a \in V_i$ and $M,[x\mapsto a],i\models^{k}_x \alpha$.
+
+  \item $M,i \models^{k} (\forall x)\alpha$ iff $\forall a\in CN$, if $a \in V_i$ then $M,[x\mapsto a],i\models^{k}_x \alpha$.
+
+  \item $M,i\models^{k} \psi_1\lor\psi_2$ iff $M,i\models^{k} \psi_1$ or $M,i\models^{k} \psi_2$.
+
+  \item $M,i\models^{k} \psi_1\land\psi_2$ iff $M,i\models^{k} \psi_1$ and $M,i\models^{k} \psi_2$.
+
+
+  \item $M,i\models^{k} \mathbf{X_s}\psi$ iff $
+          \begin{cases}
+            M,i+1\models^{k} \psi & \text{ if } (i <\lambda) \\
+            M,l\models^{k} \psi   & \text{otherwise }
+          \end{cases}$
+
+  \item[] When instance $i$ is less than the bound $\lambda$, the formula $\psi$ is evaluated at instance $i+1$ else, $\psi$ is evaluated at instance $l$, which is the next instance of $\lambda$.
+
+
+  \item $M,i\models^{k} \mathbf{F_s}\psi$ iff $\exists j: min(l,i)\le j \le \lambda$, $M,j\models^{k} \psi$.
+
+  \item[] This formula is satisfiable if there is some instance $j$ such that $min(l,i) \le j \le\lambda$, where the formula $\psi$ is satisfied.
+
+  \item $M,i\models^{k} \mathbf{G_s} \psi$ iff $\forall j: min(l,i)\le j \le \lambda$, $M,j\models^{k} \psi$.
+
+  \item[] This formula is satisfiable if for all instances $j$ such that $min(l,i) \le j \le\lambda$, the formula $\psi$ is satisfied in each instance.
+
+
+  \item $M,i\models^{k} \psi_1\mathbf{U_s}\psi_2 \text{ iff }
+          \begin{cases}
+            \exists j:i \le j \le \lambda, M,j\models^{k} \psi_2 \text{ and } & \text{ if }(i\le l) \\
+            \forall j': i \le j' < j: M,j' \models^{k} \psi_1                 &                     \\
+            \exists j: i \le j \le \lambda, M,j\models^{k}\psi_2 \text{ and } & \text{ if } (i> l)  \\
+            \forall j': i \le j' <j: M,j' \models^{k} \psi_1                  &                     \\
+            \hspace{10em}\text{or}                                            &                     \\ %or
+            \exists j: l \le j < i, M,j\models^{k}\psi_2 \text{ and }         &                     \\
+            \forall j': l \le j' < j: M,j' \models^{k} \psi_1
+          \end{cases}$
+
+  \item[] Consider the two cases:
+    \begin{itemize}
+      \item If $(i\le l)$, the current instance $i$ is less than or equal to the loop instance $l$, this formula is satisfied when formula $\psi_2$ is satisfied at some instance $j$  such that $i \le j \le \lambda$ and for all instances between $i$ and $j$, formula $\psi_1$ is satisfied.
+      \item If $(i> l)$, the formula may be satisfied in either of the two intervals between $i$ to $\lambda$ or between $l$ to $i$. Hence, the formula is satisfied if either of the following is satisfied: formula $\psi_2$ is satisfied at some instance $j$  such that $i \le j \le \lambda$ and for all instances less than $j$, formula $\psi_1$ is satisfied or, formula $\psi_2$ is satisfied at some instance $j$  such that $l \le j < i$ and for all instances between $l$ and $j$, formula $\psi_1$ is satisfied.
+    \end{itemize}
+    %
+    %
+  \item $M,[x\mapsto a],i\models^{k}_x p(x)$ iff $\xi_i(a,p)=\top$.
+
+  \item $M,[x\mapsto a],i\models^{k}_x \lnot \alpha$ iff $M,[x\mapsto a],i\not\models^{k}_x \alpha$.
+
+  \item $M,[x\mapsto a],i\models^{k}_x \alpha\lor \beta$ iff $M,[x\mapsto a],i\models^{k}_x\alpha$ or $M,[x\mapsto a],i\models^{k}_x\beta$.
+
+
+  \item $M,[x\mapsto a],i\models^{k}_x \alpha\land \beta$ iff $M,[x\mapsto a],i\models^{k}_x\alpha$ and $M,[x\mapsto a],i\models^{k}_x\beta$.
+
+
+  \item $M,[x\mapsto a],i\models^{k}_x \mathbf{X}_c\alpha \text{ iff }
+          \begin{cases}
+            M,[x\mapsto a],i+1\models^{k}_x \alpha                & \text { if } i <\lambda \text{ and }a \in V_{i+1} \\
+            M,[x\mapsto a],l\models^{k}_x \alpha                  & \text{ if } i = \lambda \text{ and }a \in V_{l}   \\
+            M,[x\mapsto a],i\not\models^{k}_x \mathbf{X}_c \alpha & \text{ otherwise }
+          \end{cases}$
+  \item[] When current instance $i$ is less than the bound $\lambda$, and the client $a$ is a live agent at the next instance $i+1$, the formula is evaluated at instance $i+1$ else, in the current instance if the bound $\lambda$ and the client is live at instance $l$, then the formula is evaluated at instance $l$, which is the next instance of $\lambda$. Otherwise, the original formula does not hold.
+
+
+
+  \item $M,[x\mapsto a],i\models^{k}_x \mathbf{F}_c\alpha$ iff $\exists j: min(l,i) \le j \le\lambda$ , $a\in V_j$ , $M,[x\mapsto a],j\models^{k}_x \alpha$.
+
+
+  \item[] This formula is satisfiable if there is some instance $j$ such that $min(l,i) \le j \le\lambda$, and the client $a$ is live at instance $j$, where the formula $\psi$ is satisfied.
+
+  \item $M,[x\mapsto a],i\models^{k}_x \mathbf{G}_c\alpha$ iff $\forall j: min(l,i) \le j \le\lambda$ , $a\in V_j$ , $M,[x\mapsto a],j\models^{k}_x \alpha$.
+
+
+
+
+
+  \item $M,[x\mapsto a],i\models^{k} \alpha\mathbf{U_c}\beta \text{ iff }\\
+          \begin{cases}
+            \exists j:i \le j \le \lambda,a\in V_j, M,[x\mapsto a],j\models^{k} \beta \text{ and } & \text{ if }(i\le l) \\
+            \forall j': i \le j' < j: M,[x\mapsto a],j' \models^{k} \alpha                         &                     \\
+            \exists j: i \le j \le \lambda,a\in V_j, M,[x\mapsto a],j\models^{k}\beta \text{ and } & \text{ if } (i> l)  \\
+            \forall j': i \le j' <j: M,[x\mapsto a],j' \models^{k} \alpha                          &                     \\
+            \hspace{10em}\text{or}                                                                 &                     \\
+            \exists j: l \le j < i$,$a\in V_j, M,[x\mapsto a],j\models^{k}\beta \text{ and }       &                     \\
+            \forall j': l \le j' < j, M, [x\mapsto a], j'\models^{k} \alpha.
+          \end{cases}$
+
+
+  \item[] Consider the two cases:
+    \begin{itemize}
+      \item If $(i\le l)$, the current instance $i$ is less than or equal to the loop instance $l$, and the client $a$ is live at instance $j$ then this formula is satisfied when formula $\psi_2$ is satisfied at some instance $j$  such that $i \le j \le \lambda$ and for all instances between $i$ and $j$, formula $\psi_1$ is satisfied.
+      \item If $(i> l)$, the formula may be satisfied in either of the two intervals between $i$ to $\lambda$ or between $l$ to $i$. Hence, the formula is satisfied if either of the following is satisfied: formula $\psi_2$ is satisfied at some instance $j$  such that $i \le j \le \lambda$ and the client $a$ is live at instance $j$ and for all instances less than $j$, formula $\psi_1$ is satisfied or, formula $\psi_2$ is satisfied at some instance $j$ such that $l \le j < i$ and the client $a$ is live at instance $j$ and for all instances between $l$ and $j$, formula $\psi_1$ is satisfied.
+    \end{itemize}
+\end{enumerate}
+
+The Lemma 1, states that if a LTL formula is satisfied in a bounded run, then it is also satisfied in an unbounded run.
+\begin{lemma}[~\cite{BiereCCSZ03}]\label{lem:boundltlbiere}
+  Let f be a LTL formula and $\Pi$ be a path then $\Pi \models^{k} f \implies \Pi\models f$.
+\end{lemma}
+
+
+Following this, we state a similar lemma for {\Lstar}:
+\begin{lemma}\label{lem:bound}
+  Let f be a {\Lstar} formula and $\Pi$ be a path then $\Pi \models^{k}_x f \implies \Pi\models_{x} f$.
+\end{lemma}
+% Lemma~\ref{lem:bound} is similar to the Lemma 1 in~\cite{BiereCCSZ03}.
+% \noindent \textbf{Proof Sketch: } The proof proceeds by performing a case-by-case analysis of the client and server formulae. For instance, consider the server atomic formula $f=q$. It needs to be proved that $\Pi \models^{i}_k q \implies \Pi\models^{i} q$. Consider the left hand side.
+% \begin{itemize}
+%   \item[-] $\Pi \models^{i}_k q$
+%   \item IFF $q \in v_i$ (Using the semantics described in Section~\ref{ssec:bsem})
+%   \item[-] IFF $\Pi\models^{i} q$
+% \end{itemize}
+
+% Lemma~\ref{lem:bound} is similar to the one in~\cite{BiereCCSZ03} and the complete proof is left to the reader based on the sketch given above.
+
+\begin{thm}
+  {\Lstar} is decidable.
+\end{thm}
+\begin{proof}
+  MFOTL is decidable~\cite{HWZ01}.
+  {\Lstar} is a syntactic fragment of MFOTL which is monodic and restricted to quantifier rank 1.
+\end{proof}
+
+\section{Related Work}\label{sec:relconcl}
+An $MFOTL$ formula $\varphi$ is {\sf monodic} if every subformula has at most one free variable, in the scope of $\psi$'s. Decidability is shown by encoding models of a monodic sentence $\varphi$ in structures called {\sf quasimodels} and then expressing the statement ``there exists a quasimodel satisfying a given monodic sentence'' as a monadic second order sentence. In~\cite{HKKWZ}, they show that the monodic fragment is also $EXPSPACE$-complete.
+In this work, we propose a one-variable fragment of $MFOTL$, called {\Lstar} for unbounded client-server systems. Additionally, we have provided the bounded semantics which led to the SMT encoding of this logic. The SMT encoding is desirable for implementing a bounded model checking tool where the properties are specified in this logic for unbounded client-server systems.
+
+\noindent\emph{Parametric verification:} In contrast to the BMC approach, there is existing literature on parametric verification such as~\cite{Lowe22}, where authors consider a fixed number of identifiable processes on which safety and deadlock-freedom is verified. %They perform parametric verification by obtaining an upper bound using the view abstraction technique.
+In~\cite{DecidableReasoningOOPSLA17}, they work with a decidable fragment of First Order Logic, with a
+quantifier prefix $\exists^{\ast}\forall^{\ast}$, popularly known as the Bernays-Sch\"{o}nfinkel-Ramsey Class, where the temporal modalities are not considered in the same manner as in MFOTL. Their goal is to check the inductive invariants for safety and liveness properties, with expert inputs, whereas, ours focuses on automatic, push button verification of properties including safety, liveness and deadlock over unbounded $\nu$-nets without additional user intervention. Another key difference here, is how the fragment that we consider has only one sort, whereas, in~\cite{DecidableReasoningOOPSLA17}, there are many sorts, some of which are bounded due to domain knowledge. %Additionally, they verify the implementation of the Paxos protocol, whereas, we verify the design of the unbounded client server system against its properties. 
+In comparison with~\cite{KVW17}, where parametric verification of threshold automata where there are identifiers, our approach allows for an unbounded number of identified processes, without imposing an explicit bound on the number of processes.
+%Our approach is different from parametric verification, since the number of clients is unknown apriori, which is in contrast with
+In~\cite{LeaderElectionTACAS17,Lowe22,UnboundedMAS16,KVW17} the bounds are predetermined and in~\cite{DecidableReasoningOOPSLA17}, a part of the parameters are predetermined and bounded.
+
+\noindent\emph{Interactive Theorem Proving:} While employing Interactive Theorem Provers or proof systems such as $TLA^+$~\cite{Chen2016,Chand2016,KonnovLSW23}, user expertise and guidance during the verification process, in contrast to BMC approach which is automatic. Recently, in~\cite{KarpMillerCOQ17,KarpMillerMinCovCOQ24}, the interactive theorem prover COQ has been used for verifying the foundational Karp-Miller algorithm for computing the coverability tree. This technique has not been extended yet, to verify Petri net properties.
+As part of future work, we would like to build a BMC tool that takes in {\Lstar} specifications for unbounded client-server systems based on the SMT encoding given in this work. Building verification tools for unbounded client-server systems is a non-trivial engineering pursuit. The BMC implementation using {\Lstar} specifications will join the arsenal of tools such as KREACH~\cite{DixonL20}, Petrinizer~\cite{EsparzaLMMN14}, QCOVER~\cite{BlondinFHH16}, ICOVER~\cite{GeffroyLS18} for nets.
+We can also have multiple types of clients in the unbounded client-server systems, which may model a richer set of systems. Alongside this, the complexity and decidability of model checking unbounded client-server systems using {\Lstar} specifications is yet to be explored.
+
+\subsubsection*{Conclusion}
+In this chapter, we discussed a verification tool for Petri nets with identifiers and a variant of First Order Logic. In the upcoming chapter, we consider Petri nets with nesting and look at suitable temporal properties on them and build a tool to verify them as well.
+

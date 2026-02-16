@@ -1,0 +1,8 @@
+\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto]
+\node[state,initial] (q_0)   {$s1$};
+\node[state,accepting] (q_1) [ right=of q_0] {$s2$};
+\path[->]
+(q_0) edge[above]  node {b} (q_1)
+        edge [loop above] node {a,b} ()
+        (q_1) edge[loop above]  node {b} ();
+\end{tikzpicture}
