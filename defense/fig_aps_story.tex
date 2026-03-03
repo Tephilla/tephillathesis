@@ -1,0 +1,55 @@
+\begin{tikzpicture}[scale=0.45, note/.style={rectangle callout, fill=#1}]
+				\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+        
+
+		
+		\node 	at	(1,1) 	[rectangle, thick, draw=yellow!20, fill=black!30,inner sep=0pt,minimum height=4cm, minimum width=5.5cm] (bga){};
+		%Row0
+        \node 	at	(5,3.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s1){};
+		
+		\node 	at	(2.5,3.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s2){};
+		
+		\node 	at	(0,3.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s3){};
+		
+		\node 	at	(-2.5,3.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s4){};
+		
+		%closed gate
+		\node 	at	(6.6,1.8) 	[rectangle, thick, draw=green!90, fill=black!60,inner sep=0pt,minimum height=1cm, minimum width=0.2cm] (gate){};
+		
+		%car outside gate
+		\node 	at	(8,1.8) 	[rectangle, thick,inner sep=0pt,minimum height=1cm, minimum width=0.2cm] (car){\faCar};
+		
+		 \node [note=yellow!50, callout absolute pointer={(8,2)}] at (11,4) {Can I park here?};
+		%Row1
+		\node 	at	(5,-0.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s5){};
+		
+		\node 	at	(2.5,-0.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s6){};
+		
+		\node 	at	(0,-0.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s7){};
+		
+		\node 	at	(-2.5,-0.5) 	[rectangle, thick, draw=yellow!90, fill=black!5,inner sep=0pt,minimum height=1cm, minimum width=0.5cm] (s8){};
+		
+		\node 	at	(6,7.5) 	[circle, thick, draw=red!50,inner sep=0pt,minimum height=1cm, minimum width=1cm] (parking){\large P};
+		
+		\node 	at	(6,5.5) 	[rectangle, thick, draw=red!50,inner sep=0pt,minimum height=-.2cm, minimum width=0.2cm] (hidden){};
+		
+		\draw (parking) -- (hidden);
+\end{tikzpicture}		
+		

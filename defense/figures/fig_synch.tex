@@ -1,0 +1,57 @@
+			\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+
+	
+	\begin{tikzpicture}[scale=0.45]
+		
+		
+				
+		
+		\node[place,minimum height=.4cm,minimum width=.7cm,label=left:{$p_0$}] (p0) at (-2,0) {$\{1,2\}$};
+		
+				
+		\node[place,minimum height=.4cm,minimum width=.9cm,label=left:{$p_1$}] (p1) at (2,0) {$\{3\}$};
+		
+		\node[transition,fill=black,label=left:$t_0$,inner
+sep=0pt,minimum height=.40cm, minimum width=.5cm] (t0) at (0,-2){} ;
+
+\node[place,minimum height=.4cm,minimum width=.9cm,label=left:{$p_2$}] (p2) at (0,-5) {};
+		
+
+
+		
+		\draw[->] (p0) -- (t0);		
+		\draw[->] (p1) -- (t0);		
+		\draw[->] (t0) -- (p2);
+		
+	\end{tikzpicture}
+
+			
+\vspace{-10pt}
+		%\caption{Synchronization in nets}  
+		\label{fig:avoid2}
+

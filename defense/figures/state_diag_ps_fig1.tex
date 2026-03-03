@@ -1,0 +1,56 @@
+
+		\begin{tikzpicture}[scale=0.4]
+			\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+
+	
+		\node 	at	(0,4) 	[rectangle, thick, draw=red!20,fill=blue!10,inner sep=0pt,minimum height=4cm, minimum width=7cm]{};		
+		
+		\node 	(f1)		at	(0,10) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small new};
+		
+		\node 	(f2)		at	(0,6) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small runnable};
+		
+		\node 	(f3)		at	(-4,2) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small running};
+		
+		\node 	(f4)		at	(4,2) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small blocked};
+		
+		\node 	(f5)		at	(-4,-2) 	[ellipse, thick, draw=red!50,fill=green!20,inner sep=0pt,minimum height=.70cm, minimum width=1.5cm]{\small terminated};
+		
+		
+		\draw[->, thick]	(f1)	to	node[auto]{\small load}	(f2);
+		
+		\draw[->, thick]	(f3)	to	node[auto,swap]{\small block}	(f4);
+		
+		\draw[->, thick]	(f4)	to	node[auto,swap]{\small interrupt}	(f2);
+		
+		\draw[->, thick]	(f3)	to	node[auto]{\small terminate}	(f5);
+		
+		\draw[->, bend left=10, thick]	(f2)	to	node[auto]{\small run}	(f3);
+		
+		\draw[->, bend left=10, thick]	(f3)	to	node[auto]{\small deschedule}	(f2);
+		
+		\end{tikzpicture}

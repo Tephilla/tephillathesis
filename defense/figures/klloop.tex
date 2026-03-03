@@ -1,0 +1,15 @@
+		\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto,minimum size=1em] 
+		\node[state] (s)   {}; 
+		%\node[state] (s1) [ right=of s] {}; 
+		\node[state,font=\Large] (sl) [ right=of s] {$s_l$};		
+		\node[state] (sl1) [ right=of sl] {};
+		\node[state,font=\Large] (si) [ right=of sl1] {$s_i$};
+		\node[state,font=\Large] (sk) [ right=of si] {$s_\lambda$};
+		\path[->] 
+		(s) edge  node {} (sl)
+		%(s1) edge  node {} (sl)
+		(sl)	edge  node{} (sl1)
+		(sl1)	edge  node{} (si)
+		(si)	edge  node{} (sk)
+		(sk)	edge [bend right] node {}(sl)	;
+		\end{tikzpicture}	

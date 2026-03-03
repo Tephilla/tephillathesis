@@ -1,0 +1,41 @@
+Title : Formal Verification of systems with unbounded agents
+Abstract of the talk :
+The complexity and size of software has increased with time.  And with it,
+the necessity to provide mathematical guarantees of its correctness.
+
+Empirical studies show that, the sooner the errors are identified and rectified
+in the software development life cycle, the lesser are the error costs. If there
+are errors in the design of the software, they propagate to the implementation
+stage where they become tedious to resolve.
+Being able to verify the specifications of these systems in the design stage of
+the software development (such as using bounded model checking) is an important
+activity that can be done using formal techniques. The characteristics of the
+software play a role in the choice of the formal technique to verify a software.
+ 
+Client server systems are one of the largest programming paradigms. Crypto exchanges
+with an unbounded number of investors, multiplayer games where the number of players
+are not known apriori and services with an unbounded customer base are instances of
+unbounded client server systems.
+We focus on client server systems with a single server and unboundedly many clients,
+where the number of clients is not known a priori. A major challenge is to identify
+the suitable model to abstract the behaviour of the systems. The second challenge is
+to identify suitable logics to specify the properties. The third challenge is to
+identify suitable formal techniques and to verify the properties on the model.
+
+First, we discuss how we model unbounded client-server systems as unbounded Petri nets
+and their temporal properties are expressed in Linear Temporal Logic (LTL) with
+integer arithmetic. The system evolves in two dimensions namely, the number of
+clients and number of execution steps. Hence, we propose a technique for exploiting
+these two dimensions, called two dimensional bounded model checking (2D-BMC),
+where we utilize SMT solvers.
+
+Third, we look at the scenario where clients have their own internal structure and we
+model them as a Petri net which is interacting with the server Petri net and there
+can be an unbounded number of such client Petri nets. This is a type of higher order
+Petri nets, which allow nesting of Petri nets called Elementary Object Systems (EOS).  
+We specify the temporal properties on EOSs and implement a prototype to verify them.
+We also explore the possibility of losing information in the EOS at various nesting
+levels and their effects on the reachability and coverability problems and chart their
+decidability status. This gives us a suite of formal verification tools for client
+server systems with unbounded clients using various concurrent models and using various
+suitable logics to represent their properties.

@@ -1,0 +1,38 @@
+\begin{tikzpicture}[scale=0.45]
+				\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		rounded corners,
+		draw=black, very thick,
+		text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20,
+text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20,
+text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm,
+minimum height=2em]
+
+\node[place,label=above:$p_0$,inner
+sep=0pt,minimum height=1cm, minimum width=1cm, tokens=1] (p0) at (0,0){} ;
+\node[place,label=above:$p_1$,inner
+sep=0pt,minimum height=1cm, minimum width=1cm, tokens=1] (p1) at (7,0){} ;
+\node[place,label=below:$p_2$,inner
+sep=0pt,minimum height=1cm, minimum width=1cm] (p2) at (3,-10){} ;
+\node[transition,minimum height=0.8cm,minimum width=0.8cm, fill=red!50] (t1) at (3,-5) {$t_0$};
+\path[->] (p0) edge(t1);
+\path[->] (p1) edge(t1);
+\path[->] (t1) edge(p2);
+\end{tikzpicture}

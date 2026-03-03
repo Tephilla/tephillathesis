@@ -1,0 +1,82 @@
+	\begin{tikzpicture}[>=stealth,scale=0.9] 
+			\tikzset{
+	%Define standard arrow tip
+	>=stealth',
+	%Define style for boxes
+	punkt/.style={
+		rectangle,
+		% rounded corners,
+		draw=black, very thick,
+		% text width=8.5em,
+		minimum height=2em,
+		text centered},
+	% Define arrow style
+	pil/.style={
+		->,
+		thick,
+		shorten <=2pt,
+		shorten >=2pt,}
+}
+\tikzstyle{aldecision} = [diamond, draw, fill=blue!20, text width=4.5em, text badly centered, node distance=2.5cm, inner sep=0pt]
+\tikzstyle{alblock} = [rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+\tikzstyle{allibrary} = [draw, ellipse,fill=red!20, node distance=2.5cm, minimum height=2em]
+
+
+	\foreach \i in {0,3.6,7.2,10.8,12.5} {
+		\draw[gray,very thin] (0,\i) -- (12.5,\i);
+		\draw[gray,very thin] (\i,0) -- (\i,12.5);
+	}
+	\draw[->] (-.72,3) -- (-.72,4.92) node[above] {\begin{turn}{90} execution steps ($\lambda$)\end{turn}};
+	\draw[->] (3,-0.72) -- (4.92,-0.72) node[right] {number of tokens($\kappa$)};
+	%\node[draw=none] at (3.5,-1.2) (key) {execution steps + number of clients $=$ bound};
+	\begin{scope}[every node/.style={
+		circle,draw,
+		minimum size=.8cm,
+		align=center,
+		font=\footnotesize,
+		inner sep=0pt
+	}]
+	
+	%column lambda=0
+	\node[rectangle] at (1.728,1.872) (00) {$[\mathcal{M},\psi]_{\langle 0,0\rangle}$}; 
+	\node[rectangle] at (1.728,5.472) (10) {$[\mathcal{M},\psi]_{\langle 1,0\rangle}$}; 
+	\node[rectangle] at (1.728,9.072) (20) {$[\mathcal{M},\psi]_{\langle 2,0\rangle}$};
+	\node[rectangle,draw=none] at (1.728,11.75) (30) {$\vdots$};
+	%column lambda=1  
+	\node[rectangle] at (5.472,1.872) (01) {$[\mathcal{M},\psi]_{\langle 0,1\rangle}$};
+	\node[rectangle] at (5.472,5.472) (11) {$[\mathcal{M},\psi]_{\langle 1,1\rangle}$};
+	%\node[rectangle] at (3.6,6.1) (21) {$(M,\psi)_{(2,1)}$};
+%	\node[rectangle,draw=none,rotate=90] at (3.6,6.1) (21) {$\cdots$};
+	%\node[rectangle,draw=none] at (3.6,8.5) (31) {$\cdots$};
+	%column lambda=2 
+	\node[rectangle] at (9.072,1.872) (02) {$[\mathcal{M},\psi]_{\langle0,2\rangle}$};
+	%\node[rectangle] at (6.3,3.8) (12) {$(M,\psi)_{(1,2)}$};
+%	\node[rectangle,draw=none] at (6.3,3.8) (12) {$\cdots$};
+	%\node[rectangle] at (6.3,6.1) (22) {$(M,\psi)_{(2,2)}$}; 
+	%column lambda=3
+%	\node[rectangle,draw=none] at (8.5,1.3) (03) {$\cdots$}; 
+	%\node[rectangle,draw=none] at (8.5,3.8) (13) {$\cdots$};
+	
+	%k=1 unfolding arrows
+%	\draw[red,->] (00) -- (10);
+	\draw[red,->] (00) -- (01);
+	\draw[red,->] (01) -- (10);
+	%k=2 unfolding arrows
+	\draw[blue,->] (10) -- (02);
+	\draw[blue,->] (02) -- (11);	
+	\draw[blue,->] (11) -- (20);  
+	%k=3 unfolding arrows
+	\draw[->] (20) -- (30); 
+%	\draw[->] (11) -- (21); 
+%	\draw[->] (11) -- (12);
+%	\draw[->] (02) -- (03);
+
+	%\draw[->] (12) -- (13);
+	%\draw[->] (21) -- (31);
+   
+
+	
+	\end{scope}
+	
+	\end{tikzpicture}

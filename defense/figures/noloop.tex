@@ -1,0 +1,10 @@
+		\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto] 
+		\node[state] (s)   {}; 
+		\node[state,font=\Large] (si) [ right=of s] {$s_i$};
+		\node[state] (si1) [ right=of si] {};
+		\node[state,font=\Large] (sk) [ right=of si1] {$s_\lambda$};
+		\path[->] 
+		(s) edge  node {} (si)
+		(si) edge  node {} (si1)
+		(si1)	edge  node{} (sk);
+		\end{tikzpicture}	
