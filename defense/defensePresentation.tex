@@ -13,6 +13,9 @@
 \usetikzlibrary{positioning,shapes.callouts}
 \usepackage{rotating}
 \usepackage{pdfpages}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
 \useinnertheme{rectangles}%itemized bullets as rectangles
 \newcommand{\tup}[1]{\langle#1\rangle}
 \newcommand{\TS}{\mathit{TS}}
@@ -104,6 +107,17 @@ fill=white
     \tiny{J. Stecklein, “Error cost escalation through the project life cycle, 2010}
 \end{frame}
 
+\begin{frame}{What is model checking?}
+    \begin{center}
+
+
+        Does  \includegraphics[width=10em]{figures/softwareio} satisfy \includegraphics[width=2em]{figures/requirements} ?
+
+        \includegraphics[width=2em]{figures/updownarrow}
+
+        Does  \includegraphics[width=5em]{figures/SchedulerPN} satisfy \includegraphics[width=5em]{figures/spec1} ?
+    \end{center}
+\end{frame}
 
 \begin{frame}
     \frametitle{\small{Running example: Unbounded Client-Server System (UCS)}}
@@ -458,8 +472,8 @@ fill=white
         \hfill%
         \begin{column}{.6\textwidth}
             \begin{itemize}
-                \item In BMC, ``We ask whether the system $M$ has any counterexample of length $k$ to (property) $\psi$. This bounded problem is encoded into SAT.'' - A.Biere
-                \item In $2D$-BMC, we ask whether the system $M$ has any counterexample of length $\lambda$ and number of clients $\kappa$ to $\psi$ and encode this bounded problem into SMT.
+                \item In BMC, ``We ask whether the system $M$ has any counterexample of length $k$ to (property) $\psi$. This bounded problem is encoded into SAT.'' - A.Biere\footnote{Linear Encodings of Bounded LTL Model Checking, Biere et al, LMCS, 2006}
+                \item In $2D$-BMC, we ask whether the system $M$ has any counterexample to $\psi$, of length $\lambda$ and number of tokens $\kappa$  and encode this bounded problem into SMT.
             \end{itemize}
         \end{column}%	
     \end{columns}
@@ -642,7 +656,7 @@ fill=white
     \end{itemize}
 
 \end{frame}
-\begin{frame}\frametitle{Challenge 2: Modelling an Unbounded Client-Server (UCS)}
+\begin{frame}\frametitle{Challenge 2: Modelling an UCS with \colorbox{green!30}{distinguishable clients}}
     \huge{What if clients needed to be distinguished?}
 \end{frame}
 
@@ -1196,7 +1210,7 @@ fill=white
 
 
 
-\begin{frame}\frametitle{Challenge 3: Modelling an Unbounded Client-Server (UCS)}
+\begin{frame}\frametitle{Challenge 3: Modelling an UCS with \colorbox{green!30}{internal structure}}
     \huge{What if clients had an internal structure?}
 \end{frame}
 
@@ -1207,6 +1221,13 @@ fill=white
 \begin{frame}
     \input{figures/2_spn}%server Petri net
 \end{frame}
+
+
+\begin{frame}{Modelling UCS via Elementary Object Systems}
+    \input{figures/2_ucseos}%EOS for UCS 
+\end{frame}
+
+
 
 \begin{frame}
     \begin{block}{Question: What properties of the system are we interested in?}
@@ -1220,98 +1241,9 @@ fill=white
 \end{frame}
 
 
-\begin{frame}{Modelling UCS via Elementary Object Systems}
-    \input{figures/2_ucseos}%EOS for UCS 
-\end{frame}
 
-
-% \begin{frame}
-% \frametitle{Included Slides}
 \includepdf[pages={8-33}]{eosslides.pdf}
-% \end{frame}
-%EOS Keynote slides
-% \begin{frame}{What are EOSs?}
-%     \includegraphics[width=0.95\textwidth]{part3slides/1}
-% \end{frame}
 
-
-
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/2}
-% \end{frame}
-
-
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/3}
-% \end{frame}
-
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/4}
-% \end{frame}
-
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/5}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/6}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/7}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/8}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/9}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/10}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/11}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/12}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/13}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/14}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/15}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/16}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/17}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/18}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/19}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/20}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/21}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/22}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/23}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/24}
-% \end{frame}
-% \begin{frame}
-%     \includegraphics[width=0.95\textwidth]{part3slides/25}
-% \end{frame}
 
 \begin{frame}
     \frametitle{Contributions}
@@ -1337,7 +1269,7 @@ fill=white
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{List of publications (ongoing):}
+\begin{frame}{List of publications:}
     \begin{enumerate}
 
         \item[5]   Francesco Di Cosmo, Soumodev Mal, Tephilla Prince:
@@ -1351,12 +1283,32 @@ fill=white
     \end{enumerate}
 \end{frame}
 
+
+\begin{frame}{List of open source tools built}
+    \begin{enumerate}
+        \item DCModelChecker verifies PN over counting LTL properties \url{https://doi.org/10.6084/m9.figshare.19875226}
+        \item DCModelChecker1.0 verifies PN over {\LC} with interleaved semantics \url{https://doi.org/10.5281/zenodo.7084996}
+        \item DCModelChecker2.0 verifies PN over {\LC} allowing concurrent semantics \url{https://doi.org/10.5281/zenodo.7198485}
+        \item UCSChekcer verifies $\nu$-nets over {\Lstar} properties \url{https://doi.org/10.5281/zenodo.15847737}
+        \item NWN Telingo Analyser: verifies safety, deadlock, reachability of lossy and perfect PN and EOSs \url{https://doi.org/10.5281/zenodo.11401876}
+    \end{enumerate}
+
+\end{frame}
 \appendix
 \begin{frame}
     \centering
     \huge{Appendix}
 \end{frame}
 
+\begin{frame}{\tiny Travel Agency Case Study}
+    \begin{figure}
+        \centering
+        % \resizebox{0.5\linewidth}{!}{\include{figures/fig_travelagencyv0_vnet}}
+        \scalebox{0.3}{\include{figures/fig_travelagencyv0_vnet}}
+        % \caption{Travel Agency Case Study}
+        % \label{fig:travelnunet}
+    \end{figure}
+\end{frame}
 
 \begin{frame}{Bounded Semantics}
     $M,[x\mapsto a],i\models^{k}_x \mathbf{F}_c\alpha$ iff\\

@@ -1,0 +1,67 @@
+\begin{tikzpicture}[scale=0.3, transform shape]
+    \centering
+    \node[transition,fill=black,label=below:$t_{src}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tsrc) at (0,1){} ;
+
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=left:{\small $p_{il}$}] (pil) at (-4,-1) {$\{1\}$} edge[pre] node[auto] {$\nu$} (tsrc);
+
+    \node[place,draw=blue!80,minimum height=.4cm,minimum width=.9cm,label=left:{\small $p_{sr}$}] (psr) at (-12,-1) {$\{0\}$};
+
+    \node[transition,fill=black,label=below:$t_{st}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tst) at (0,-1){} edge[pre] node[auto] {c} (pil);
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=right:{\small $p_{ss}$}] (pss) at (2,-3) {} edge[pre] node[auto] {c} (tst);
+    \node[transition,fill=black,label=below:$t_{lf}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tlf) at (0,-4){} edge[pre] node[auto] {c} (pss);
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=below:{\small $p_{bf}$}] (pbf) at (-2,-4) {} edge[pre] node[auto] {c} (tlf);
+    \node[transition,fill=black,label=left:$t_{vf}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tvf) at (-4,-4){} edge[pre] node[auto] {c} (pbf) edge[pre] node[auto,pos=0.2] {c} (pil) edge[pre] node[auto] {s} (psr);
+
+
+    \node[transition,fill=black,label=below:$t_{lb}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tlb) at (0,-7){} edge[pre] node[auto] {c} (pss);
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=below:{\small $p_{bb}$}] (pbb) at (-2,-7) {} edge[pre] node[auto] {c} (tlb);
+    \node[transition,fill=black,label=left:$t_{vb}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tvb) at (-8,-7){} edge[pre] node[auto,pos=0.2] {c} (pbb) edge[pre] node[auto,pos=0.1] {c} (pil) edge[pre] node[auto] {s} (psr);
+
+
+    \node[transition,fill=black,label=below:$t_{lt}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tlt) at (0,-10){} edge[pre] node[auto] {c} (pss);
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=below:{\small $p_{bt}$}] (pbt) at (-2,-10) {} edge[pre] node[auto] {c} (tlt);
+    \node[transition,fill=black,label=left:$t_{vt}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tvt) at (-12,-10){} edge[pre] node[auto,pos=0.1] {c} (pbt) edge[pre] node[auto,pos=0.1] {c} (pil) edge[pre] node[auto,pos=0.2] {s} (psr);
+
+    \node[place,draw=blue!80,minimum height=.4cm,minimum width=.9cm,label=left:{\small $p_{sa}$}] (psa) at (-10,-14) {}
+    edge[pre] node[auto,pos=0.1] {s} (tvf)
+    edge[pre] node[auto,pos=0.1] {s} (tvb)
+    edge[pre] node[auto,pos=0.1] {s} (tvt);
+
+
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=left:{\small $p_{cp}$}] (pcp) at (-6,-14) {}
+    edge[pre] node[auto,pos=0.1] {c} (tvf)
+    edge[pre] node[auto,pos=0.1] {c} (tvb)
+    edge[pre] node[auto,pos=0.1] {c} (tvt);
+
+    \node[transition,fill=black,label=below:$t_{vp}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tvp) at (-8,-16){}
+    edge[pre] node[auto,pos=0.5] {s} (psa)
+    edge[pre] node[auto,pos=0.5] {c} (pcp);
+
+    \node[place,draw=blue!80,minimum height=.4cm,minimum width=.9cm,label=below:{\small $p_{rp}$}] (prp) at (-10,-18) {}
+    edge[pre] node[auto,pos=0.5] {s} (tvp);
+
+
+    \node[place,draw=red!80,minimum height=.4cm,minimum width=.9cm,label=below:{\small $p_{es}$}] (pes) at (-6,-18) {}
+    edge[pre] node[auto,pos=0.5] {c} (tvp);
+
+
+    \node[transition,fill=black,label=below:$t_{exit}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (texit) at (-2,-18){}
+    edge[pre] node[auto] {d} (pes);
+
+    \node[transition,fill=black,label=below:$t_{udb}$,inner
+        sep=0pt,minimum height=.40cm, minimum width=.5cm] (tudb) at (-16,-18){}
+    edge[pre] node[auto] {s} (prp)
+    edge[->] node[auto] {s} (psr);
+
+\end{tikzpicture}
+
