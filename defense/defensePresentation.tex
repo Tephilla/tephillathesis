@@ -63,7 +63,7 @@ fill=white
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\title{Formal verification of infinite state systems with \textcolor{purple}{unbounded} agents}
+\title{Formal verification of systems with \textcolor{purple}{unbounded} agents}
 
 
 \author[ Tephilla Prince]{Tephilla Prince \\Indian Institute of Technology Dharwad \\\vspace{3em} Supervisors:\\Prof. Ramchandra Phawade\\Prof. S. Sheerazuddin}
@@ -93,7 +93,7 @@ fill=white
         \centering
         \smartdiagramset{module minimum width=2.5cm,text width=2cm}
         \smartdiagramadd[circular diagram]{
-            Gather Requirements,Design,Code,Testing,Maintenance
+            {Gather \\Requirements},Design,Code,Testing,Maintenance
         }{}
         \caption{Traditional Software Development Life Cycle}
         \label{fig:sdlc}
@@ -356,21 +356,14 @@ fill=white
         \end{column}
         \hfill
         \begin{column}{.5\textwidth}
-            Finite sets of atomic client propositions $P_c$ and server propositions $P_s$:
+            Let $t_c$ be the set containing all token counters.
             \small{
                 \begin{align*}
-                    P_c
-                     & =\{parking\_requested (PR),            \\
-                     & \qquad~occupy\_parking\_lot (OP),      \\
-                     & \qquad~parking\_unavailable (PU),      \\
-                     & \qquad~exit\_successfully (ES),        \\
-                     & \qquad~exited\_unsuccessfully (EU)\}   \\
-                    P_s
-                     & =\{server\_ready (SR),                 \\
-                     & \qquad~server\_busy(SB),               \\
-                     & \qquad~request\_granted (RG),          \\
-                     & \qquad~request\_rejected(RR),          \\
-                     & \qquad~deallocate\_parking\_lot (DP)\}
+                    t_c
+                     & =\{\#p_{PR}, ~\#p_{OP},~\#p_{PU},      \\
+                     & \qquad~\#p_{ES},~\#p_{EU},~ \#p_{SR},  \\
+                     & \qquad~\#p_{SB}, ~\#p_{RG},~ \#p_{RR}, \\
+                     & \qquad~\#p_{DP}\}
                 \end{align*}
             }
         \end{column}%
@@ -407,11 +400,10 @@ fill=white
 
 \begin{frame}{Linear Temporal Logic with Integer Arithmetic {\LC}}
 
-    In {\LC},there are two types of atomic formulas:
-    \begin{enumerate}
-        \item $P_s$ - describing basic server properties, which are propositional constants and can be used to describe the transitions of the net
-        \item $\beta \in \Delta$, the set of client formulas
-    \end{enumerate}
+
+    In {\LC}, at the propositional level, we allow token counters and arithmetic operators over them.
+
+    Let $t_c$ be the set containing all token counters. The formulas in {\LC} are given as follows:
     \begin{equation}
         \begin{split}
             \alpha , \hat{\alpha}&::= \#p \mid \mathfrak{c} \mid (\mathfrak{c} \ast \#p ) \mid  (\#p \ast \mathfrak{c}) \mid (\alpha + \hat{\alpha} ) \mid (\alpha - \hat{\alpha})\\ \nonumber
@@ -420,16 +412,36 @@ fill=white
     \end{equation}
 
 
-    \noindent where $p \in P_c$, the set of client propositions and $\mathfrak{c} \in \mathbb{Z}^+$.% is a non-negative integer, as noted above. %While $\Delta$ does not contain an explicit $=$ operator, it is natural to express equality of $p(x)$ and $q(x)$ as follows: 
+    \noindent where $\#p \in t_c$ and $\mathfrak{c} \in \mathbb{Z}^+$.
+
+
+    \[\psi::= \beta \mid \lnot \psi  \mid \psi\lor\psi^{\prime}   \mid \psi\land\psi^{\prime}  \mid  X \psi  \mid F \psi\mid G \psi \mid \psi U  \psi^{\prime}\]
+    Here, the modalities X, F, G and $U$ have the same meaning as the LTL temporal operators Next, Eventually, Globally and Until, respectively.
+
+
+    % In {\LC},there are two types of atomic formulas:
+    % \begin{enumerate}
+    %     \item $P_s$ - describing basic server properties, which are propositional constants and can be used to describe the transitions of the net
+    %     \item $\beta \in \Delta$, the set of client formulas
+    % \end{enumerate}
+    % \begin{equation}
+    %     \begin{split}
+    %         \alpha , \hat{\alpha}&::= \#p \mid \mathfrak{c} \mid (\mathfrak{c} \ast \#p ) \mid  (\#p \ast \mathfrak{c}) \mid (\alpha + \hat{\alpha} ) \mid (\alpha - \hat{\alpha})\\ \nonumber
+    %         \beta &::=  (\alpha < \hat{\alpha}) \mid (\alpha > \hat{\alpha}) \mid (\alpha \le \hat{\alpha}) \mid  (\alpha \ge \hat{\alpha}) \mid (\alpha=\hat{\alpha})
+    %     \end{split}
+    % \end{equation}
+
+
+    % \noindent where $p \in P_c$, the set of client propositions and $\mathfrak{c} \in \mathbb{Z}^+$.% is a non-negative integer, as noted above. %While $\Delta$ does not contain an explicit $=$ operator, it is natural to express equality of $p(x)$ and $q(x)$ as follows: 
 
     %$ ((\#x) p(x) <= q(x) \land \neg ((\#x) q(x) > p(x)))$.
 
-    \noindent The set of server formulas $\Psi$ are defined as follows:
+    % \noindent The set of server formulas $\Psi$ are defined as follows:
 
-    \[\psi::= q \in P_s \mid \beta \in \Delta
-        \mid \lnot \psi  \mid \psi\lor\psi^{\prime}   \mid \psi\land\psi^{\prime}  \mid  X \psi  \mid F \psi\mid G \psi \mid \psi U  \psi^{\prime}\]
-    where $\psi, \psi^{\prime} \in \Psi$.
-    Modalities X, F, G and $U$ are the usual modal operators: Next, Eventually, Globally and Until, respectively.
+    % \[\psi::= q \in P_s \mid \beta \in \Delta
+    %     \mid \lnot \psi  \mid \psi\lor\psi^{\prime}   \mid \psi\land\psi^{\prime}  \mid  X \psi  \mid F \psi\mid G \psi \mid \psi U  \psi^{\prime}\]
+    % where $\psi, \psi^{\prime} \in \Psi$.
+    % Modalities X, F, G and $U$ are the usual modal operators: Next, Eventually, Globally and Until, respectively.
 
     % In $\mathcal{L}_{C}$,
     % there are two types of atomic formulas:
@@ -588,8 +600,50 @@ fill=white
 %         \label{2dbmcunfolding}
 %     \end{figure}
 % \end{frame}
+\begin{frame}{PN Semantics}
 
+    \begin{columns}[T] % align columns
+        \begin{column}{.4\textwidth}
+            \begin{figure}
+                \centering
 
+                \scalebox{0.5}{\input{4_unboundedpn}}
+
+                \caption{An unbounded net}
+                \label{fig:unboundednet}
+            \end{figure}
+        \end{column}
+        \hfill
+        \begin{column}{.6\textwidth}
+            \begin{figure}
+                \centering
+                \scalebox{0.7}{\input{4_interleaveseq}}
+
+                \caption{Sequence of firings via interleaving semantics}
+                \label{fig:interleaveseq}
+            \end{figure}
+
+            \begin{figure}
+                \centering
+                \scalebox{0.7}{\input{4_concurseq}}
+
+                \caption{Sequence of firings via concurrent semantics}
+                \label{fig:concurseq}
+            \end{figure}
+        \end{column}%
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}{Tool Architecture}
+    \begin{figure}[!ht]
+        \centering
+        \scalebox{0.5}{\input{fig_ppm}}
+        \caption{Pre-Processing the model and formula using ANTLR}
+        \label{ANTLRflow}
+
+    \end{figure}
+\end{frame}
 
 \begin{frame}{Tool Architecture}
     \begin{figure}[!ht]
@@ -598,7 +652,12 @@ fill=white
         \caption{DCModelChecker  architecture}
 
     \end{figure}
+    \begin{enumerate}
+        \item DCModelChecker1.0 verifies PN over {\LC} with interleaved semantics \url{https://doi.org/10.5281/zenodo.7084996}
+        \item DCModelChecker2.0 verifies PN over {\LC} allowing concurrent semantics \url{https://doi.org/10.5281/zenodo.7198485}
+    \end{enumerate}
 \end{frame}
+
 
 \begin{frame}{Experimental Results}
     \begin{figure}[ht]
@@ -839,7 +898,7 @@ fill=white
 \end{frame}
 
 
-\begin{frame}\frametitle{Modelling an Unbounded Client-Server (UCS)}
+\begin{frame}\frametitle{Modelling an Unbounded Client-Server (UCS)\footnote{On Verifying Unbounded Client-Server Systems, T.Prince, EUMAS'23}}
     \begin{columns}[T] % align columns
         \begin{column}{.5\textwidth}
             \begin{figure}
@@ -1258,8 +1317,8 @@ fill=white
 \begin{frame}{List of publications:}
     \begin{enumerate}
         \item Ramchandra Phawade, Tephilla Prince, S. Sheerazuddin:
-              Bounded Model Checking for Unbounded Client Server Systems. Arxiv (2026),  submitted to TopNOC
-        \item Ramchandra Phawade, Tephilla Prince, S. Sheerazuddin: Verification of Unbounded Client-Server Systems with Distinguishable Clients Arxiv (2026), submitted to TopNOC
+              Two dimensional bounded model checking for unbounded Petri nets. Arxiv (2026),  submitted to TopNOC
+        \item Ramchandra Phawade, Tephilla Prince, S. Sheerazuddin: Verification of Unbounded Client-Server Systems with Distinguishable Clients. Arxiv (2026), submitted to TopNOC
         \item   Tephilla Prince:
               On Verifying Unbounded Client-Server Systems. Springer EUMAS 2023: 465-471
         \item   Francesco Di Cosmo, Tephilla Prince:
@@ -1275,7 +1334,7 @@ fill=white
         \item[5]   Francesco Di Cosmo, Soumodev Mal, Tephilla Prince:
             Deciding Reachability and Coverability in Lossy EOS. PNSE@Petri Nets 2024: 74-95
 
-        \item[6] Francesco Di Cosmo, Soumodev Mal, Tephilla Prince: Decidability and Complexity of Reachability and Coverability in Lossy EOS (Yet to be submitted to Fundamenta Informatica)
+        \item[6] Francesco Di Cosmo, Soumodev Mal, Tephilla Prince: Decidability and Complexity of Reachability and Coverability in Lossy EOS (Yet to be submitted)
 
 
 
@@ -1284,13 +1343,13 @@ fill=white
 \end{frame}
 
 
-\begin{frame}{List of open source tools built}
+\begin{frame}{List of tools built}
     \begin{enumerate}
-        \item DCModelChecker verifies PN over counting LTL properties \url{https://doi.org/10.6084/m9.figshare.19875226}
+        % \item DCModelChecker verifies PN over counting LTL properties \url{https://doi.org/10.6084/m9.figshare.19875226}
         \item DCModelChecker1.0 verifies PN over {\LC} with interleaved semantics \url{https://doi.org/10.5281/zenodo.7084996}
         \item DCModelChecker2.0 verifies PN over {\LC} allowing concurrent semantics \url{https://doi.org/10.5281/zenodo.7198485}
-        \item UCSChekcer verifies $\nu$-nets over {\Lstar} properties \url{https://doi.org/10.5281/zenodo.15847737}
-        \item NWN Telingo Analyser: verifies safety, deadlock, reachability of lossy and perfect PN and EOSs \url{https://doi.org/10.5281/zenodo.11401876}
+        \item UCSChecker verifies $\nu$-nets over {\Lstar} properties \url{https://doi.org/10.5281/zenodo.15847737}
+        \item NWN Telingo Analyser: verifies lossy and perfect PN and EOSs over LTL properties \url{https://doi.org/10.5281/zenodo.11401876}
     \end{enumerate}
 
 \end{frame}
@@ -1299,6 +1358,17 @@ fill=white
     \centering
     \huge{Appendix}
 \end{frame}
+
+\begin{frame}{Experimental Results}
+    Our experiments evaluate the following:
+    \begin{enumerate}
+        \item  the correctness of results returned by DCModelChecker 2.0 in comparison with the state-of-the-art ITS-Tools, obtaining tool confidence 0.94, 6 false positives out of 320 tests.
+        \item  the comparison of DCModelChecker 2.0 on FireabilityCardinality properties which are not verifiable by tools in the MCC for various bounds,
+        \item verification of unbounded Petri nets in comparison with other tools,
+        \item the strength of DCModelChecker 2.0 is in additionally verifying invariants specified in {\LC} which are not verifiable by tools in the MCC nor DCModelChecker 1.0.
+    \end{enumerate}
+\end{frame}
+
 
 \begin{frame}{\tiny Travel Agency Case Study}
     \begin{figure}
@@ -1310,6 +1380,42 @@ fill=white
     \end{figure}
 \end{frame}
 
+\begin{frame}
+    \begin{enumerate}
+        \item[1] If a client has entered the system, then eventually it will exit the system. This can be expressed as $\Phi_1$=$\mathbf{G}_s(\forall x) \big( p_{il}(x) \Rightarrow \mathbf{F}_c~p_{es}(x) \big)$.
+        \item[2]  If a client has entered the system, then it will not be in the place $p_{il}$ after exiting the system. This can be expressed as $\Phi_2$=$\mathbf{G}_s(\forall x) \big( p_{es}(x) \Rightarrow \neg p_{il}(x) \big)$.
+        \item[3]  If a client has entered the system and it has chosen the mode of journey as flight, then eventually it will be in the place $p_{cp}$, where they share their payment information. This can be expressed as $\Phi_3$=$\mathbf{G}_s(\forall x) \big( p_{il}(x) \land p_{bf}(x)\Rightarrow \mathbf{F}_c~p_{cp}(x) \big)$.
+
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \begin{enumerate}
+        \item[4]  If a client has entered the system and it has chosen the mode of journey as flight, and its journey is not yet validated by the server, then eventually it will be in the place $p_{cp}$, where they share their payment information to the server. This can be expressed as $\Phi_4$=$\mathbf{G}_s(\forall x) \big( p_{il}(x) \land p_{bf}(x) \land \neg p_{cp}(x)\Rightarrow \mathbf{F}_c~p_{cp}(x) \big)$.
+        \item[5]  If a client has entered the system, then eventually it will be in the place $p_{cp}$, after which it gets server approval. This can be expressed as $\Phi_5$=$\mathbf{G}_s(\forall x) \big( p_{il}(x) \Rightarrow \mathbf{F}_c~p_{cp}(x) \big)$.
+        \item[6] If a client's payment has been validated, then it will not be in the place $p_{cp}$. This can be expressed as $\Phi_6$=$\mathbf{G}_s(\forall x) \big( p_{es}(x) \Rightarrow \neg p_{cp}(x) \big)$.
+        \item[7] If a client is searching for a journey it can only choose either of the three flight, train or bus journeys. $\Phi_7$=$\mathbf{G}_s(\forall x) \big( p_{ss}(x) \Rightarrow F_c( p_{bf}(x) \lor p_{bt}(x) \lor p_{bb}(x) \big)$.
+    \end{enumerate}
+
+\end{frame}
+\begin{frame}
+    \begin{figure}
+        \begin{center}
+            \scalebox{0.3}{\includegraphics{table1}}
+        \end{center}
+
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}
+    \begin{figure}
+        \begin{center}
+            \scalebox{0.3}{\includegraphics{table2}}
+        \end{center}
+
+    \end{figure}
+\end{frame}
 \begin{frame}{Bounded Semantics}
     $M,[x\mapsto a],i\models^{k}_x \mathbf{F}_c\alpha$ iff\\
     $\exists j: i \le j \le k$, $a\in V_j$ and $M,[x\mapsto a],j\models^{k}_x \alpha$.
